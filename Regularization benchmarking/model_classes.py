@@ -39,6 +39,13 @@ class LeNet(nn.Module):
         self.fc2 = nn.Linear(in_features=120, out_features=84)
         self.fc3 = nn.Linear(in_features=84, out_features=10)
 
+        # Orthogonal initialization of weight matrices
+        nn.init.orthogonal_(self.conv1.weight)
+        nn.init.orthogonal_(self.conv2.weight)
+        nn.init.orthogonal_(self.fc1.weight)
+        nn.init.orthogonal_(self.fc2.weight)
+        nn.init.orthogonal_(self.fc3.weight)
+
         self.counter = 0
 
         self.L = nn.CrossEntropyLoss()
@@ -63,6 +70,7 @@ class LeNet(nn.Module):
         l1_lmbd=0.00001,
         l2=False,
         l2_lmbd=0.0001,
+        l1_l2=False,
         soft_svb=False,
         soft_svb_lmbd=0.01,
         jacobi_reg=False,
@@ -72,15 +80,34 @@ class LeNet(nn.Module):
     ):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
+
         # L1 regularization
         if l1:
+            l1_loss = 0
             for param in self.parameters():
-                loss += l1_lmbd * torch.norm(param, 1)
+                l1_loss += l1_lmbd * torch.norm(param, 1)
+            loss += l1_loss
+            return loss, l1_loss
 
         # L2 regularization
         if l2:
+            l2_loss = 0
             for param in self.parameters():
-                loss += l2_lmbd * torch.norm(param, 2) ** 2
+                l2_loss += l2_lmbd * torch.norm(param, 2) ** 2
+            loss += l2_loss
+            return loss, l2_loss
+
+        # L1 and L2 regularization
+        if l1_l2:
+            l1_l2_loss = 0
+            l1_loss = 0
+            l2_loss = 0
+            for param in self.parameters():
+                l1_loss += l1_lmbd * torch.norm(param, 1)
+                l2_loss += l2_lmbd * torch.norm(param, 2) ** 2
+            l1_l2_loss = l1_loss + l2_loss
+            loss += l1_l2_loss
+            return loss, l1_l2_loss
 
         # Soft SVB regularization
         if soft_svb:
@@ -88,11 +115,13 @@ class LeNet(nn.Module):
             # Main loss function term for soft SVB from Jia et al. 2019:
             w_orth = w.transpose(0, 1) @ w  # W^T * W
             w_orth = w_orth - torch.eye(w_orth.shape[0])  # W^T * W - I
-            loss += soft_svb_lmbd * torch.linalg.norm(w_orth, ord="fro") ** 2
+            soft_svb_loss = soft_svb_lmbd * torch.linalg.norm(w_orth, ord="fro") ** 2
+            loss += soft_svb_loss
+            return loss, soft_svb_loss
 
         # Jacobi regularization
         if jacobi_reg:
-            if self.counter % 50 == 0:
+            if self.counter % 190 == 0:
                 self.counter += 1
                 jacobi = torch.autograd.functional.jacobian(self.forward, x)
                 jacobi = jacobi.transpose(-2, -1) @ jacobi
@@ -105,12 +134,11 @@ class LeNet(nn.Module):
                 return loss, jacobi_loss
             else:
                 self.counter += 1
-                return loss, None
-
+                return loss, 0
         # Jacobi determinant regularization
 
         if jacobi_det_reg:
-            if self.counter % 50 == 1:
+            if self.counter % 100 == 1:
                 self.counter += 1
                 jacobi = torch.autograd.functional.jacobian(self.forward, x)
                 jacobi = jacobi.transpose(-2, -1) @ jacobi
@@ -122,8 +150,8 @@ class LeNet(nn.Module):
                 return loss, jacobi_loss
             else:
                 self.counter += 1
-                return loss, None
-        return loss
+                return loss, 0
+        return loss, loss
 
     def train_step(
         self,
@@ -133,6 +161,7 @@ class LeNet(nn.Module):
         l1_lmbd=0.00001,
         l2=False,
         l2_lmbd=0.0001,
+        l1_l2=False,
         soft_svb=False,
         soft_svb_lmbd=0.01,
         jacobi_reg=False,
@@ -142,38 +171,27 @@ class LeNet(nn.Module):
     ):
         self.opt.zero_grad()
 
-        if jacobi_reg or jacobi_det_reg:
-            loss, jacobi_loss = self.loss_fn(
-                data,
-                labels.long(),
-                l1=l1,
-                l1_lmbd=l1_lmbd,
-                l2=l2,
-                l2_lmbd=l2_lmbd,
-                soft_svb=soft_svb,
-                soft_svb_lmbd=soft_svb_lmbd,
-                jacobi_reg=jacobi_reg,
-                jacobi_reg_lmbd=jacobi_reg_lmbd,
-                jacobi_det_reg=jacobi_det_reg,
-                jacobi_det_reg_lmbd=jacobi_det_reg_lmbd,
-            )
-
-        else:
-            loss = self.loss_fn(
-                data,
-                labels.long(),
-                l1=l1,
-                l1_lmbd=l1_lmbd,
-                l2=l2,
-                l2_lmbd=l2_lmbd,
-                soft_svb=soft_svb,
-                soft_svb_lmbd=soft_svb_lmbd,
-            )
+        loss, reg_loss = self.loss_fn(
+            data,
+            labels.long(),
+            l1=l1,
+            l1_lmbd=l1_lmbd,
+            l2=l2,
+            l2_lmbd=l2_lmbd,
+            l1_l2=l1_l2,
+            soft_svb=soft_svb,
+            soft_svb_lmbd=soft_svb_lmbd,
+            jacobi_reg=jacobi_reg,
+            jacobi_reg_lmbd=jacobi_reg_lmbd,
+            jacobi_det_reg=jacobi_det_reg,
+            jacobi_det_reg_lmbd=jacobi_det_reg_lmbd,
+        )
         loss.backward()
         self.opt.step()
-        if jacobi_reg or jacobi_det_reg:
-            return loss.item(), jacobi_loss
-        return loss.item()
+        if reg_loss != 0:
+            return loss.item(), reg_loss.item()
+        else:
+            return loss.item(), reg_loss
 
 
 ### RESNET

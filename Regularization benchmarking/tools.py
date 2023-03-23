@@ -20,11 +20,17 @@ def plot_results(epochs, losses, accuracies, title=None):
     plt.show()
 
 
-def plot_jacobi_results(epochs, losses, jacobi_losses, accuracies, title=None):
-    """Plot results after training a model."""
+def plot_reg_results(epochs, losses, reg_losses, accuracies, title=None):
+    """Plot results after training a model with regularization."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
     ax1.plot(epochs, losses, "o--", label="Total Loss")
-    ax1.plot(epochs, jacobi_losses, "o--", label="Jacobi Loss")
+    ax1.plot(epochs, reg_losses, "o--", label="Regularization Loss")
+    ax1.plot(
+        epochs,
+        np.asarray(losses) - np.asarray(reg_losses),
+        "o--",
+        label="Cross Entropy Loss",
+    )
     ax1.set_xlabel("Epoch Number")
     ax1.set_ylabel("Loss")
     ax1.set_title("Losses")
