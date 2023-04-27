@@ -121,7 +121,7 @@ class LeNet(nn.Module):
 
         # Jacobi regularization
         if jacobi_reg:
-            if self.counter % 190 == 0:
+            if self.counter % 50 == 0:
                 self.counter += 1
                 jacobi = torch.autograd.functional.jacobian(self.forward, x)
                 jacobi = jacobi.transpose(-2, -1) @ jacobi
