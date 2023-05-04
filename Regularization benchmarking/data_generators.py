@@ -52,6 +52,35 @@ def data_loader_CIFAR10_32_32():
     )
     return train_loader, test_loader
 
+def data_loader_CIFAR100_32_32():
+    """Load CIFAR100 data for use with LeNet. Pictures are 32x32x3"""
+    
+    transform = transforms.Compose(
+        [
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.5071, 0.4865, 0.4409],
+                std=[0.2009, 0.1984, 0.2023],
+            ),
+        ]
+    )
+
+    train_set = datasets.CIFAR100(
+        root="./data", train=True, download=True, transform=transform
+    )
+    train_loader = torch.utils.data.DataLoader(
+        train_set, batch_size=128, shuffle=False, num_workers=2
+    )
+
+    test_set = datasets.CIFAR100(
+        root="./data", train=False, download=True, transform=transform
+    )
+    test_loader = torch.utils.data.DataLoader(
+        test_set, batch_size=128, shuffle=False, num_workers=2
+    )
+    return train_loader, test_loader
+
 
 def data_loader_CIFAR10(
     data_dir, batch_size, random_seed=42, valid_size=0.1, shuffle=True, test=False
