@@ -6,9 +6,9 @@ The folders *Start training*, *UMI*, *UMI RNN* and *JAX* contains testing of reg
 The folder *Regularization benchmarking* contains the actual project with comparison of regularization techniques. I use the network LeNet, and the datasets MNIST, CIFAR10 and CIFAR100 to do the testing. I test how the regularization techniques perform on test data, and visualize parts of the NN to investigate the effect of regularization.
 
 ## Overview of Regularization Methods
-(Explaination from ChatGPT)
+(Explanations from ChatGPT)
 
-#### Comparison: No Regularization**:
+#### Comparison: No Regularization:
 In the absence of any regularization, a model simply minimizes the loss function on the training data. This can lead to overfitting, especially in high-dimensional models with many parameters, because the model becomes too complex and learns to fit the training data too closely, including its noise. As a result, it often performs poorly on unseen data. Regularization methods are therefore used to prevent overfitting by adding constraints to the learning process.  
 
 **L1 Regularization**: L1 regularization, also known as Lasso regularization, involves adding a term to the loss function that penalizes the absolute value of the weights. This encourages the model to have sparse weights, meaning that many weights are zero. This can lead to a model that is easier to interpret, because it effectively performs feature selection, choosing a subset of the input features to focus on.  
