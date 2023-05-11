@@ -1,6 +1,5 @@
 # Regularization of Neural Networks
 Project: Exploring soft and hard constraints in artificial neural networks.
-Under the BioAI group at Simula.
 
 The folders *Start training*, *UMI*, *UMI RNN* and *JAX* contains testing of regularization on a simple toy problem, and learning how to use pytorch and build/train NNs.
 
