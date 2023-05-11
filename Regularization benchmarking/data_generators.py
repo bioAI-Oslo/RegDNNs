@@ -52,9 +52,10 @@ def data_loader_CIFAR10_32_32():
     )
     return train_loader, test_loader
 
+
 def data_loader_CIFAR100_32_32():
     """Load CIFAR100 data for use with LeNet. Pictures are 32x32x3"""
-    
+
     transform = transforms.Compose(
         [
             transforms.Resize((32, 32)),
