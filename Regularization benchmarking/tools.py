@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from tqdm import tqdm
 
 
@@ -109,3 +110,29 @@ def svb(model, eps=0.001):
             pass
     new_weights = U @ torch.diag(sigma) @ V
     model.fc1.weight.data = new_weights
+
+
+class SaveOutput:
+    def __init__(self):
+        self.outputs = []
+
+    def __call__(self, module, module_in, module_out):
+        self.outputs.append(module_out)
+
+    def clear(self):
+        self.outputs = []
+
+
+def register_hooks(model):
+    save_output = SaveOutput()
+    layer_names = []
+
+    # Register hooks for conv and fc layers
+    hook_handles = []
+    for name, layer in model._modules.items():
+        if isinstance(layer, (nn.Conv2d, nn.Linear)):
+            handle = layer.register_forward_hook(save_output)
+            hook_handles.append(handle)
+            layer_names.append(name)
+
+    return save_output, hook_handles, layer_names

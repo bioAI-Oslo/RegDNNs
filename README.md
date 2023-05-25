@@ -41,7 +41,7 @@ Confidence penalty regularization adds a penalty to the loss function based on t
 #### Label Smoothing Regularization
 Label Smoothing is a form of regularization where the target labels for a classification problem are replaced with smoothed versions. Instead of having a hard one-hot encoded target, each target will have a small value for each incorrect class and the rest of the value for the correct class. This encourages the model to be less confident, reducing the risk of overfitting and improving generalization.  
 
-#### Hessian Regularization
+#### Hessian Regularization (Not working)
 Hessian regularization involves adding a term to the loss function that penalizes the Frobenius norm of the Hessian of the model's outputs with respect to its inputs. The Hessian is a matrix that describes the second-order derivatives of the model. Penalizing the norm of the Hessian encourages the model to have outputs that change linearly or sub-linearly with respect to small changes in the inputs. This can help prevent overfitting by discouraging the model from fitting the training data too closely. However, like with Jacobi regularization, calculating the Hessian matrix can be computationally expensive for complex models.  
 
 #### Noise Injection to Inputs
@@ -60,26 +60,31 @@ The most straightforward way to visualize the effect of regularization is by plo
 #### Weight Distributions
 For L1, L2, and Elastic Net regularization, you can visualize the distribution of the weights in the model. L1 regularization should result in many weights being exactly zero, while L2 regularization will typically result in a distribution with smaller magnitudes.
 
-#### Activation Maps
-For Dropout and Noise Injection, you can visualize the activation maps of your model. These can give you a sense of how the model's behavior changes with and without the noise induced by these regularization methods.
-
-#### Gradient and Hessian Matrices
-For gradient and Hessian based regularizations, you can visualize these matrices or their norms. Changes in these matrices can provide insights into how these regularization methods affect the model's sensitivity to changes in the input features.
+#### Feature Map Visualizations
+Especially in the context of convolutional neural networks (CNNs), visualizing the feature maps - the activations of the convolutional layers - can provide insight into what features the network is learning. This can give you a sense of how regularization is affecting the types of features learned. For instance, too much L1/L2 regularization might result in overly simplistic feature maps, while too little might result in feature maps that are overly complex or noisy.
 
 #### Uncertainty Estimates
 For regularization methods that affect the model's confidence, like Confidence Penalty and Label Smoothing, you can plot the model's predicted probabilities. A well-regularized model should show less overconfidence and better-calibrated probabilities.
+
+#### T-SNE or PCA of Activations
+You can use dimensionality reduction techniques like t-SNE or PCA to visualize the activations of your network, which can be insightful especially for dropout and noise injection techniques. This involves taking the activation values of a particular layer and reducing them to 2 or 3 dimensions for plotting. Different classes should ideally form distinct clusters, and overfitting may manifest as overly complex boundaries between classes.
+
+#### Saliency Maps
+A saliency map is a simple, yet effective method for understanding which parts of the image contribute most significantly to a neural network's decision. It is created by calculating the gradient of the output category with respect to the input image. This gradient is then visualized as a heatmap overlaying the original image, with high-gradient regions indicating important areas for the model's decision. The intuition behind this is that the gradient measures how much a small change in each pixel's intensity would affect the final prediction. So, large gradient values suggest important pixels.
+
+#### Occlusion Sensitivity 
+Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.
+
+
+### Not implemented
+#### Gradient and Hessian Matrices
+For gradient and Hessian based regularizations, you can visualize these matrices or their norms. Changes in these matrices can provide insights into how these regularization methods affect the model's sensitivity to changes in the input features.
 
 #### Model Complexity Graphs
 You can also plot graphs showing model complexity (like the number of non-zero weights or the norm of the weights) against model performance (like accuracy or AUC-ROC). This can show how the regularization method is affecting the model's complexity and performance.
 
 #### Parameter Trajectory Plots
 Parameter trajectory plots visualize the path that the parameters of the model take during training. This is especially useful for understanding the effect of regularization techniques that impact the optimization process directly such as L1, L2, Elastic Net, and noise injection to weights. For each weight in the model, plot its value on the y-axis and the training iteration number (or epoch number) on the x-axis. Note that this could be difficult to interpret for models with a high number of parameters, so it might be best to select a subset of weights or aggregate the weights in some way (e.g., their mean or median).
-
-#### T-SNE or PCA of Activations
-You can use dimensionality reduction techniques like t-SNE or PCA to visualize the activations of your network, which can be insightful especially for dropout and noise injection techniques. This involves taking the activation values of a particular layer and reducing them to 2 or 3 dimensions for plotting. Different classes should ideally form distinct clusters, and overfitting may manifest as overly complex boundaries between classes.
-
-#### Feature Map Visualizations
-Especially in the context of convolutional neural networks (CNNs), visualizing the feature maps - the activations of the convolutional layers - can provide insight into what features the network is learning. This can give you a sense of how regularization is affecting the types of features learned. For instance, too much L1/L2 regularization might result in overly simplistic feature maps, while too little might result in feature maps that are overly complex or noisy.
 
 #### Sensitivity and Robustness Analysis
 Another way to visualize the impact of regularization is through sensitivity and robustness analysis. This involves slightly perturbing the input data and measuring how much the model's predictions change. A well-regularized model should be more robust to these perturbations. You can visualize this by plotting the magnitude of the perturbation (x-axis) against the change in model output (y-axis) for different regularization techniques.
@@ -90,11 +95,5 @@ Regularization methods like L1, L2, and Elastic Net affect the learning dynamics
 #### Loss Landscape Visualization
 This is an advanced visualization technique that plots the loss function as a landscape or surface plot. Regularization can significantly impact the shape of this landscape, potentially making it smoother and more convex, which can make optimization easier. However, these visualizations can be computationally intensive to create and may require sophisticated techniques to interpret.
 
-#### Saliency Maps
-A saliency map is a simple, yet effective method for understanding which parts of the image contribute most significantly to a neural network's decision. It is created by calculating the gradient of the output category with respect to the input image. This gradient is then visualized as a heatmap overlaying the original image, with high-gradient regions indicating important areas for the model's decision. The intuition behind this is that the gradient measures how much a small change in each pixel's intensity would affect the final prediction. So, large gradient values suggest important pixels.
-
 #### Grad-CAM (Gradient-weighted Class Activation Mapping)
 Grad-CAM is an extension of the CAM technique, which allows us to visualize the important regions in the image for a specific prediction. Grad-CAM uses the gradient information flowing into the last convolutional layer of the CNN to understand each neuron’s importance. The gradients are global-average-pooled to obtain the neuron importance weights, and a weighted combination of activation maps is used to compute the Grad-CAM heatmap. This heatmap indicates important regions in the image for a given target class.
-
-#### Occlusion Sensitivity 
-Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.
