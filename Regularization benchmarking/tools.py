@@ -1,6 +1,4 @@
-import matplotlib.pyplot as plt
 import torch
-import numpy as np
 from tqdm import tqdm
 
 
@@ -78,58 +76,6 @@ def train(
             % (100 * accuracy(model, test_loader))
         )
     return losses, reg_losses, epochs, weights, train_accuracies, test_accuracies
-
-
-def plot_results(epochs, losses, train_accuracies, test_accuracies, title=None):
-    """Plot results after training a model."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
-    ax1.plot(epochs, losses, "o--")
-    ax1.set_xlabel("Epoch Number")
-    ax1.set_ylabel("Cross Entropy")
-    ax1.set_title("Cross Entropy")
-
-    ax2.plot(
-        range(len(train_accuracies)), train_accuracies, "o--", label="Training Accuracy"
-    )
-    ax2.plot(range(len(test_accuracies)), test_accuracies, "o--", label="Test Accuracy")
-    ax2.set_xlabel("Epoch number")
-    ax2.set_ylabel("Accuracy, in %")
-    ax2.set_title("Accuracy")
-
-    plt.legend()
-    plt.suptitle(f"{title}", fontsize=28)
-    plt.show()
-
-
-def plot_reg_results(
-    epochs, losses, reg_losses, train_accuracies, test_accuracies, title=None
-):
-    """Plot results after training a model with regularization."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
-    ax1.plot(epochs, losses, "o--", label="Total Loss")
-    ax1.plot(epochs, reg_losses, "o--", label="Regularization Loss")
-    ax1.plot(
-        epochs,
-        np.asarray(losses) - np.asarray(reg_losses),
-        "o--",
-        label="Cross Entropy Loss",
-    )
-    ax1.set_xlabel("Epoch Number")
-    ax1.set_ylabel("Loss")
-    ax1.set_title("Losses")
-
-    ax2.plot(
-        range(len(train_accuracies)), train_accuracies, "o--", label="Training Accuracy"
-    )
-    ax2.plot(range(len(test_accuracies)), test_accuracies, "o--", label="Test Accuracy")
-    ax2.set_xlabel("Epoch number")
-    ax2.set_ylabel("Accuracy, in %")
-    ax2.set_title("Accuracy")
-
-    ax1.legend()
-    ax2.legend()
-    plt.suptitle(f"{title}", fontsize=28)
-    plt.show()
 
 
 def accuracy(model, loader):
