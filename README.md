@@ -69,12 +69,6 @@ For gradient and Hessian based regularizations, you can visualize these matrices
 #### Uncertainty Estimates
 For regularization methods that affect the model's confidence, like Confidence Penalty and Label Smoothing, you can plot the model's predicted probabilities. A well-regularized model should show less overconfidence and better-calibrated probabilities.
 
-#### Learning Rate Schedules
-Regularization methods like dropout and weight decay can interact with the learning rate. Visualizing the learning rate over time, alongside the training and validation loss, can help to understand these interactions.
-
-#### Feature Importance
-Regularization methods can affect which features the model considers important. Techniques like permutation importance or SHAP values can be used to visualize the importance of different features with and without regularization.
-
 #### Model Complexity Graphs
 You can also plot graphs showing model complexity (like the number of non-zero weights or the norm of the weights) against model performance (like accuracy or AUC-ROC). This can show how the regularization method is affecting the model's complexity and performance.
 
@@ -96,3 +90,11 @@ Regularization methods like L1, L2, and Elastic Net affect the learning dynamics
 #### Loss Landscape Visualization
 This is an advanced visualization technique that plots the loss function as a landscape or surface plot. Regularization can significantly impact the shape of this landscape, potentially making it smoother and more convex, which can make optimization easier. However, these visualizations can be computationally intensive to create and may require sophisticated techniques to interpret.
 
+#### Saliency Maps
+A saliency map is a simple, yet effective method for understanding which parts of the image contribute most significantly to a neural network's decision. It is created by calculating the gradient of the output category with respect to the input image. This gradient is then visualized as a heatmap overlaying the original image, with high-gradient regions indicating important areas for the model's decision. The intuition behind this is that the gradient measures how much a small change in each pixel's intensity would affect the final prediction. So, large gradient values suggest important pixels.
+
+#### Grad-CAM (Gradient-weighted Class Activation Mapping)
+Grad-CAM is an extension of the CAM technique, which allows us to visualize the important regions in the image for a specific prediction. Grad-CAM uses the gradient information flowing into the last convolutional layer of the CNN to understand each neuron’s importance. The gradients are global-average-pooled to obtain the neuron importance weights, and a weighted combination of activation maps is used to compute the Grad-CAM heatmap. This heatmap indicates important regions in the image for a given target class.
+
+#### Occlusion Sensitivity 
+Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.
