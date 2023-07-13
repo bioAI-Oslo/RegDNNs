@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from sklearn.decomposition import PCA
+from matplotlib.patches import Patch
+from matplotlib.colors import ListedColormap
+import scipy.ndimage as ndi
 
 from tools import register_hooks
 
@@ -129,24 +132,18 @@ def plot_activations_pca(model, data_loader, device):
     save_output.clear()
 
 
-def plot_decision_boundary(model, img, device, resolution=100):
+def plot_decision_boundary(model, img, v1, v2, device, resolution=300, zoom=0.01):
     # Make sure the model is in evaluation mode
     model.eval()
 
     # Flatten the image if necessary and convert to a single precision float
+    img = img.view(-1)
     if img.dim() > 2:
         img = img.view(-1)
     img = img.to(device).float()
 
-    # Generate random vectors
-    v1 = torch.randn_like(img)
-    v2 = torch.randn_like(img)
-    v1 /= v1.norm()
-    v2 -= v1 * (v1.dot(v2))  # make orthogonal to v1
-    v2 /= v2.norm()
-
     # Generate grid
-    scale = 3  # to define the size of the plane in the image space
+    scale = 1 / zoom  # to define the size of the plane in the image space
     x = torch.linspace(-scale, scale, resolution)
     y = torch.linspace(-scale, scale, resolution)
     xv, yv = torch.meshgrid(x, y)
@@ -164,12 +161,89 @@ def plot_decision_boundary(model, img, device, resolution=100):
         output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
     probs = torch.nn.functional.softmax(output, dim=-1)
 
+    # Get the class with the highest probability
+    _, predictions = torch.max(probs, dim=-1)
+
+    # Calculate the distance to the closest decision boundary
+    decision_boundary = ndi.morphology.distance_transform_edt(
+        predictions.cpu().numpy()
+        == predictions.cpu().numpy()[resolution // 2, resolution // 2]
+    )
+    distance_to_boundary = (
+        decision_boundary[resolution // 2, resolution // 2] / resolution * 2 * scale
+    )
+
     # Draw the figure
     plt.figure(figsize=(8, 8))
-    for i in range(10):  # 10 is the number of classes
-        # Choose a color map
-        cmap = plt.cm.get_cmap("viridis", 10)
-        plt.contourf(
-            xv.cpu(), yv.cpu(), probs[..., i].cpu(), levels=20, alpha=0.1, cmap=cmap
-        )
+
+    # Create a colormap where each index i corresponds to the color for digit i
+    colors = plt.get_cmap("tab10").colors  # get the colors used in the 'tab10' colormap
+    cmap = ListedColormap([colors[i] for i in range(10)])  # create a new colormap
+
+    # Use 'imshow' instead of 'contourf'; note the 'origin' argument
+    plt.imshow(
+        predictions.cpu(),
+        origin="lower",
+        extent=(-scale, scale, -scale, scale),
+        cmap=cmap,
+        alpha=1,
+    )
+
+    # Also, let's add the original image as a dot in the middle of our plot
+    plt.plot(0, 0, "ro")
+
+    # Draw a circle around the original image with a radius equal to the distance to the closest decision boundary
+    circle = plt.Circle((0, 0), distance_to_boundary, color="black", fill=False)
+    plt.gca().add_patch(circle)
+
+    # Set legend
+    legend_elements = [
+        Patch(facecolor=cmap(i), edgecolor=cmap(i), label=str(i)) for i in range(10)
+    ]
+    plt.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc="upper left")
+
+    plt.show()
+
+
+def generate_random_vectors(img):
+    # Generate random vectors
+    img = img.view(-1)
+    v1 = torch.randn_like(img)
+    v2 = torch.randn_like(img)
+    v1 /= v1.norm()
+    v2 -= v1 * (v1.dot(v2))  # make orthogonal to v1
+    v2 /= v2.norm()
+    return v1, v2
+
+
+def get_random_img(dataloader):
+    # Get a batch of data from the dataloader
+    images, labels = next(iter(dataloader))
+    random_index = np.random.randint(len(labels))
+    # Get random image of the batch
+    image = images[random_index]
+
+    # If image has a channel dimension (as it should in the case of the MNIST dataset), remove it
+    if image.dim() > 2:
+        image = image.squeeze(0)
+
+    return image
+
+
+def plot_and_print_img(image, model, device, regularization_title="no regularization"):
+    # Print the prediction of the model
+    model.eval()
+
+    with torch.no_grad():
+        output = model(image.view(1, 1, 28, 28).to(device))
+
+    # Get the predicted classes
+    _, predicted = torch.max(output, 1)
+
+    print(f"Prediction with {regularization_title}: {predicted.item()}")
+
+    # Plot the image
+    plt.figure(figsize=(5, 5))
+    plt.imshow(image.numpy(), cmap="gray")
+    plt.title("Input image")
     plt.show()
