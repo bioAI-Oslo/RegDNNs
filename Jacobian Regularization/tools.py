@@ -41,10 +41,10 @@ def train(
             losses.append(loss_data)
             reg_losses.append(reg_loss_data)
 
-        train_accuracies.append(accuracy(model, test_loader, device))
-        test_accuracies.append(accuracy(model, train_loader, device))
+        train_accuracies.append(accuracy(model, train_loader, device))
+        test_accuracies.append(accuracy(model, test_loader, device))
         model.counter = 0
-        print(f"Epoch: {epoch}")
+        print(f"Epoch: {epoch+1}")
         print(
             "Accuracy of the network on the test images: %d %%"
             % (100 * accuracy(model, test_loader, device))
