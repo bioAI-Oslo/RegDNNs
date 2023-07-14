@@ -63,7 +63,7 @@ class LeNet_MNIST(nn.Module):
     def jacobian_regularizer(self, x):
         C = x.shape[1]  # number of classes
         JF = 0
-        nproj = 1  # number of random projections
+        nproj = 2  # number of random projections
 
         for _ in range(nproj):
             v = torch.randn(x.shape[0], C).to(x.device)  # random vector
