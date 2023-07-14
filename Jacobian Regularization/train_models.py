@@ -31,7 +31,7 @@ losses, reg_losses, epochs, weights, train_accuracies, test_accuracies = train_r
     train_loader, test_loader, model_no_reg, device, n_epochs
 )
 
-torch.save(model_no_reg.state_dict(), "./trained_models/model_no_reg.pt")
+torch.save(model_no_reg.state_dict(), "/trained_models/model_no_reg.pt")
 
 # Save losses, reg_losses, epochs, weights, train_accuracies, test_accuracies using pickle
 data = {
