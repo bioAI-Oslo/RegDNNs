@@ -116,7 +116,11 @@ def train_remote(
 
             # Learning rate decay
             if iterations % (n_epochs * 200) == 0 and iterations > 0:
-                for g in model.opt.param_groups:
+                if torch.cuda.device_count() > 1:
+                    opt = model.module.opt
+                else:
+                    opt = model.opt
+                for g in opt.param_groups:
                     g["lr"] = g["lr"] / 10
                     print(f"Decayed lr from {g['lr'] * 10} to {g['lr']}")
 
