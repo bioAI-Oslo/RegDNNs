@@ -65,6 +65,7 @@ def accuracy(model, loader, device):
     """Calculate the accuracy of a model. Uses a data loader."""
     correct = 0
     total = 0
+    model.eval()  # switch to evaluation mode
     with torch.no_grad():
         for data in loader:
             inputs, labels = data
@@ -74,6 +75,7 @@ def accuracy(model, loader, device):
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+    model.train()  # switch back to training mode
     return correct / total
 
 
