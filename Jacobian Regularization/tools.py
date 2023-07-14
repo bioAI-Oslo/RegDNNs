@@ -68,9 +68,8 @@ def accuracy(model, loader, device):
     with torch.no_grad():
         for data in loader:
             inputs, labels = data
-            if device == "cuda":
-                inputs = inputs.to(device)
-                labels = labels.to(device)
+            inputs = inputs.to(device)
+            labels = labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
