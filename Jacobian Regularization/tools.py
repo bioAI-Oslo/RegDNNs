@@ -1,6 +1,10 @@
+import pickle
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from collections import OrderedDict
+
+from model_classes import LeNet_MNIST
 
 
 def train(
@@ -163,3 +167,36 @@ def register_hooks(model):
             layer_names.append(name)
 
     return save_output, hook_handles, layer_names
+
+
+def load_model(model_name):
+    model = LeNet_MNIST()
+    # Load state dict
+    state_dict = torch.load(
+        f"./Jacobian Regularization/trained_models/{model_name}.pt",
+        map_location=torch.device("cpu"),
+    )
+
+    # Create new state dict
+    new_state_dict = OrderedDict()
+
+    # Modify key names to remove `module.`
+    for k, v in state_dict.items():
+        name = k[7:]  # remove `module.`
+        new_state_dict[name] = v
+
+    # Load parameters
+    model.load_state_dict(new_state_dict)
+
+    with open(
+        f"./Jacobian Regularization/trained_models/{model_name}_data.pkl", "rb"
+    ) as f:
+        data = pickle.load(f)
+
+    losses = data["losses"]
+    reg_losses = data["reg_losses"]
+    epochs = data["epochs"]
+    weights = data["weights"]
+    train_accuracies = data["train_accuracies"]
+    test_accuracies = data["test_accuracies"]
+    return model, losses, reg_losses, epochs, weights, train_accuracies, test_accuracies
