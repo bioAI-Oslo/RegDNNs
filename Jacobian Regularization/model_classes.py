@@ -7,90 +7,56 @@ from torch.autograd import grad
 
 
 class LeNet_MNIST(nn.Module):
+    """Class implemented as in Hoffman 2019 for Jacobian regularization."""
+
     def __init__(
         self,
-        lr,
-        momentum,
-        in_channels=1,
-        dropout_rate=0.0,
-        orthogonal=False,
-        noise_inject_input=False,
-        noise_inject_weights=False,
-        noise_stddev=0.05,
-        N_images=10,
-        l1=False,
-        l1_lmbd=0.00001,
-        l2=False,
-        l2_lmbd=0.0001,
+        lr=0.1,
+        momentum=0.9,
+        dropout_rate=0.5,
+        l2_lmbd=0.0005,
         jacobi_reg=False,
-        jacobi_reg_lmbd=0.001,
+        jacobi_reg_lmbd=0.01,
     ):
         super(LeNet_MNIST, self).__init__()
         self.conv1 = nn.Conv2d(
-            in_channels=in_channels, out_channels=6, kernel_size=(5, 5)
+            in_channels=1,
+            out_channels=6,
+            kernel_size=(5, 5),
+            stride=1,
+            padding=2,
         )
-        self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
-        self.conv2 = nn.Conv2d(in_channels=6, out_channels=16, kernel_size=(5, 5))
-        self.fc1 = nn.Linear(in_features=16 * 4 * 4, out_features=120)
-        self.dropout1 = nn.Dropout(dropout_rate)
+        self.conv2 = nn.Conv2d(
+            in_channels=6, out_channels=16, kernel_size=(5, 5), stride=1, padding=0
+        )
+        self.fc1 = nn.Linear(in_features=400, out_features=120)
         self.fc2 = nn.Linear(in_features=120, out_features=84)
-        self.dropout2 = nn.Dropout(dropout_rate)
-        self.fc3 = nn.Linear(in_features=84, out_features=N_images)
+        self.fc3 = nn.Linear(in_features=84, out_features=10)
+        self.dropout = nn.Dropout(dropout_rate)
+        self.pool = nn.MaxPool2d(kernel_size=(2, 2))
 
-        if orthogonal:
-            # Orthogonal initialization of weight matrices
-            nn.init.orthogonal_(self.conv1.weight)
-            nn.init.orthogonal_(self.conv2.weight)
-            nn.init.orthogonal_(self.fc1.weight)
-            nn.init.orthogonal_(self.fc2.weight)
-            nn.init.orthogonal_(self.fc3.weight)
-
-        self.noise_stddev = noise_stddev
-        self.noise_inject_input = noise_inject_input
-        self.noise_inject_weights = noise_inject_weights
+        # Xavier initialization
+        nn.init.xavier_uniform_(self.conv1.weight)
+        nn.init.xavier_uniform_(self.conv2.weight)
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.xavier_uniform_(self.fc3.weight)
 
         self.L = nn.CrossEntropyLoss()
-        self.opt = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum)
+        self.opt = torch.optim.SGD(
+            self.parameters(), lr=lr, momentum=momentum, weight_decay=l2_lmbd
+        )
 
         # Regularization parameters
-        self.l1 = l1
-        self.l1_lmbd = l1_lmbd
-        self.l2 = l2
-        self.l2_lmbd = l2_lmbd
         self.jacobi_reg = jacobi_reg
         self.jacobi_reg_lmbd = jacobi_reg_lmbd
 
     def forward(self, x):
-        if self.training and self.noise_inject_input:
-            noise = torch.randn_like(x) * self.noise_stddev
-            x = x + noise
-
-        if self.training and self.noise_inject_weights:
-            conv1_weight = (
-                self.conv1.weight.detach()
-                + torch.randn_like(self.conv1.weight) * self.noise_stddev
-            )
-            x = F.conv2d(
-                x,
-                conv1_weight,
-                self.conv1.bias,
-                self.conv1.stride,
-                self.conv1.padding,
-                self.conv1.dilation,
-                self.conv1.groups,
-            )
-        else:
-            conv1_weight = self.conv1.weight
-
-        if not self.noise_inject_weights:
-            x = self.conv1(x)
-
-        x = self.pool(F.relu(x))
-        x = self.conv2(x)
-        x = self.pool(F.relu(x))
-        x = x.view(-1, 16 * 4 * 4)
-        x = self.dropout1(F.relu(self.fc1(x)))
-        x = self.dropout2(F.relu(self.fc2(x)))
+        x = self.pool(torch.tanh(self.conv1(x)))
+        x = self.pool(torch.tanh(self.conv2(x)))
+        x = x.view(-1, 400)
+        x = self.dropout(torch.tanh(self.fc1(x)))
+        x = self.dropout(torch.tanh(self.fc2(x)))
         x = self.fc3(x)  # No softmax as CrossEntropyLoss does it implicitly
         return x
 
@@ -121,22 +87,6 @@ class LeNet_MNIST(nn.Module):
     ):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
-
-        # L1 regularization
-        if self.l1:
-            l1_loss = 0
-            for param in self.parameters():
-                l1_loss += self.l1_lmbd * torch.norm(param, 1)
-            loss += l1_loss
-            return loss, l1_loss
-
-        # L2 regularization
-        if self.l2:
-            l2_loss = 0
-            for param in self.parameters():
-                l2_loss += self.l2_lmbd * torch.norm(param, 2) ** 2
-            loss += l2_loss
-            return loss, l2_loss
 
         # Jacobi regularization
         if self.jacobi_reg:
