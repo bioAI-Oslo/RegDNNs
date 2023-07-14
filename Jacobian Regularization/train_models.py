@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # Move the model to the device (CPU or GPU)
     model_no_reg.to(device)
 
-    n_epochs = 1
+    n_epochs = 10
     (
         losses,
         reg_losses,
