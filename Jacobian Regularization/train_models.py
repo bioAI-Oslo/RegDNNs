@@ -18,15 +18,15 @@ if __name__ == "__main__":
     momentum = 0.9
 
     # Initialize model
-    model_no_reg = LeNet_MNIST()
+    model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=0.01)
 
     # Check if there are multiple GPUs, and if so, use DataParallel
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
-        model_no_reg = DataParallel(model_no_reg)
+        model = DataParallel(model)
 
     # Move the model to the device (CPU or GPU)
-    model_no_reg.to(device)
+    model.to(device)
 
     n_epochs = 25
     (
@@ -36,14 +36,14 @@ if __name__ == "__main__":
         weights,
         train_accuracies,
         test_accuracies,
-    ) = train_remote(train_loader, test_loader, model_no_reg, device, n_epochs)
+    ) = train_remote(train_loader, test_loader, model, device, n_epochs)
 
     if not os.path.exists("./Jacobian Regularization/trained_models"):
         os.makedirs("./Jacobian Regularization/trained_models")
 
     torch.save(
-        model_no_reg.state_dict(),
-        "./Jacobian Regularization/trained_models/model_no_reg.pt",
+        model.state_dict(),
+        "./Jacobian Regularization/trained_models/model_jacobi.pt",
     )
 
     # Save losses, reg_losses, epochs, weights, train_accuracies, test_accuracies using pickle
@@ -57,6 +57,6 @@ if __name__ == "__main__":
     }
 
     with open(
-        "./Jacobian Regularization/trained_models/model_no_reg_data.pkl", "wb"
+        "./Jacobian Regularization/trained_models/model_jacobi_data.pkl", "wb"
     ) as f:
         pickle.dump(data, f)
