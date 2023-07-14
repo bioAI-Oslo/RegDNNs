@@ -16,9 +16,11 @@ if __name__ == "__main__":
     # Hyperparameters
     lr = 0.1
     momentum = 0.9
+    l2_lmbd = 0.0005
+    jacobi_reg_lmbd = 0.01
 
     # Initialize model
-    model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=0.01)
+    model = LeNet_MNIST(l2_lmbd=l2_lmbd)
 
     # Check if there are multiple GPUs, and if so, use DataParallel
     if torch.cuda.device_count() > 1:
@@ -38,12 +40,12 @@ if __name__ == "__main__":
         test_accuracies,
     ) = train_remote(train_loader, test_loader, model, device, n_epochs)
 
-    if not os.path.exists("./Jacobian Regularization/trained_models"):
-        os.makedirs("./Jacobian Regularization/trained_models")
+    if not os.path.exists("./trained_models"):
+        os.makedirs("./trained_models")
 
     torch.save(
         model.state_dict(),
-        "./Jacobian Regularization/trained_models/model_jacobi.pt",
+        "./trained_models/model_l2.pt",
     )
 
     # Save losses, reg_losses, epochs, weights, train_accuracies, test_accuracies using pickle
@@ -56,7 +58,5 @@ if __name__ == "__main__":
         "test_accuracies": test_accuracies,
     }
 
-    with open(
-        "./Jacobian Regularization/trained_models/model_jacobi_data.pkl", "wb"
-    ) as f:
+    with open("./trained_models/model_l2_data.pkl", "wb") as f:
         pickle.dump(data, f)

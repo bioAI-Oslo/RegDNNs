@@ -173,7 +173,7 @@ def load_model(model_name):
     model = LeNet_MNIST()
     # Load state dict
     state_dict = torch.load(
-        f"./Jacobian Regularization/trained_models/{model_name}.pt",
+        f"./trained_models/{model_name}.pt",
         map_location=torch.device("cpu"),
     )
 
@@ -188,9 +188,7 @@ def load_model(model_name):
     # Load parameters
     model.load_state_dict(new_state_dict)
 
-    with open(
-        f"./Jacobian Regularization/trained_models/{model_name}_data.pkl", "rb"
-    ) as f:
+    with open(f"./trained_models/{model_name}_data.pkl", "rb") as f:
         data = pickle.load(f)
 
     losses = data["losses"]
