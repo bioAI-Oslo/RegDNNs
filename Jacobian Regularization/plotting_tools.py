@@ -133,7 +133,7 @@ def plot_activations_pca(model, data_loader, device):
 
 
 def plot_decision_boundary(
-    model, img, v1, v2, device, resolution=300, zoom=[0.025, 0.01, 0.005, 0.001]
+    model, img, v1, v2, device, resolution=300, zoom=[0.025, 0.01, 0.001]
 ):
     # Make sure the model is in evaluation mode
     model.eval()
@@ -215,74 +215,15 @@ def plot_decision_boundary(
     legend_elements = [
         Patch(facecolor=cmap(i), edgecolor=cmap(i), label=str(i)) for i in range(10)
     ]
-    fig.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc="upper left")
+    fig.legend(
+        handles=legend_elements,
+        bbox_to_anchor=(0.97, 1),
+        loc="upper left",
+        fontsize="large",
+        handlelength=2,
+    )
 
     plt.show()
-
-    """
-
-    # Generate grid
-    scale = 1 / zoom  # to define the size of the plane in the image space
-    x = torch.linspace(-scale, scale, resolution)
-    y = torch.linspace(-scale, scale, resolution)
-    xv, yv = torch.meshgrid(x, y)
-
-    # Create the 2D plane passing through the image
-    plane = (
-        img[None, None, :]
-        + xv[..., None] * v1[None, None, :]
-        + yv[..., None] * v2[None, None, :]
-    )
-
-    # Compute the model prediction
-    plane = plane.to(device)
-    with torch.no_grad():
-        output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
-    probs = torch.nn.functional.softmax(output, dim=-1)
-
-    # Get the class with the highest probability
-    _, predictions = torch.max(probs, dim=-1)
-
-    # Calculate the distance to the closest decision boundary
-    decision_boundary = ndi.morphology.distance_transform_edt(
-        predictions.cpu().numpy()
-        == predictions.cpu().numpy()[resolution // 2, resolution // 2]
-    )
-    distance_to_boundary = (
-        decision_boundary[resolution // 2, resolution // 2] / resolution * 2 * scale
-    )
-
-    # Draw the figure
-    plt.figure(figsize=(8, 8))
-
-    # Create a colormap where each index i corresponds to the color for digit i
-    colors = plt.get_cmap("tab10").colors  # get the colors used in the 'tab10' colormap
-    cmap = ListedColormap([colors[i] for i in range(10)])  # create a new colormap
-
-    # Use 'imshow' instead of 'contourf'; note the 'origin' argument
-    plt.imshow(
-        predictions.cpu(),
-        origin="lower",
-        extent=(-scale, scale, -scale, scale),
-        cmap=cmap,
-        alpha=1,
-    )
-
-    # Also, let's add the original image as a dot in the middle of our plot
-    plt.plot(0, 0, "ro")
-
-    # Draw a circle around the original image with a radius equal to the distance to the closest decision boundary
-    circle = plt.Circle((0, 0), distance_to_boundary, color="black", fill=False)
-    plt.gca().add_patch(circle)
-
-    # Set legend
-    legend_elements = [
-        Patch(facecolor=cmap(i), edgecolor=cmap(i), label=str(i)) for i in range(10)
-    ]
-    plt.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc="upper left")
-
-    plt.show()
-"""
 
 
 def generate_random_vectors(img):
