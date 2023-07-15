@@ -39,6 +39,9 @@ if __name__ == "__main__":
         test_accuracies,
     ) = train_remote(train_loader, test_loader, model, device, n_epochs)
 
+    # Switch to evaluation mode
+    model.eval()
+
     if not os.path.exists("./trained_models"):
         os.makedirs("./trained_models")
 
