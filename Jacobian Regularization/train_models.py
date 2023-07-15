@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # Move the model to the device (CPU or GPU)
     model.to(device)
 
-    n_epochs = 10  # 250 in Hoffman 2019
+    n_epochs = 50  # 250 in Hoffman 2019
     (
         losses,
         reg_losses,
