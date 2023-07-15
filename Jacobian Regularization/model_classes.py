@@ -53,30 +53,13 @@ class LeNet_MNIST(nn.Module):
         self.jacobi_reg_lmbd = jacobi_reg_lmbd
 
     def forward(self, x):
-        x = checkpoint(self.conv1, x)
-        x = torch.tanh(x)
-        x = self.pool(x)
-        x = checkpoint(self.conv2, x)
-        x = torch.tanh(x)
-        x = self.pool(x)
+        x = self.pool(torch.tanh(self.conv1(x)))
+        x = self.pool(torch.tanh(self.conv2(x)))
         x = x.view(-1, 400)
-        x = checkpoint(self.fc1, x)
-        x = torch.tanh(x)
-        x = self.dropout(x)
-        x = checkpoint(self.fc2, x)
-        x = torch.tanh(x)
-        x = self.dropout(x)
-        x = checkpoint(self.fc3, x)  # No softmax as CrossEntropyLoss does it implicitly
+        x = self.dropout(torch.tanh(self.fc1(x)))
+        x = self.dropout(torch.tanh(self.fc2(x)))
+        x = self.fc3(x)  # No softmax as CrossEntropyLoss does it implicitly
         return x
-
-    # def forward(self, x):
-    #     x = self.pool(torch.tanh(self.conv1(x)))
-    #     x = self.pool(torch.tanh(self.conv2(x)))
-    #     x = x.view(-1, 400)
-    #     x = self.dropout(torch.tanh(self.fc1(x)))
-    #     x = self.dropout(torch.tanh(self.fc2(x)))
-    #     x = self.fc3(x)  # No softmax as CrossEntropyLoss does it implicitly
-    #     return x
 
     def jacobian_regularizer(self, x):
         C = x.shape[1]  # number of classes
