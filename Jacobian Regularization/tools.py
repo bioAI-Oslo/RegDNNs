@@ -180,9 +180,9 @@ def load_model(model_name):
     # Create new state dict
     new_state_dict = OrderedDict()
 
-    # Modify key names to remove `module.`
+    # Modify key names to remove `module.` if present
     for k, v in state_dict.items():
-        name = k[7:]  # remove `module.`
+        name = k[7:] if k.startswith("module.") else k  # remove `module.`
         new_state_dict[name] = v
 
     # Load parameters

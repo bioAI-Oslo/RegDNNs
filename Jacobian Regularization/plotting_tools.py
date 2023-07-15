@@ -132,8 +132,22 @@ def plot_activations_pca(model, data_loader, device):
     save_output.clear()
 
 
+def total_variation(image):
+    """Compute the total variation of an image"""
+    return np.sum(np.abs(image[:-1, :-1] - image[1:, :-1])) + np.sum(
+        np.abs(image[:-1, :-1] - image[:-1, 1:])
+    )
+
+
 def plot_decision_boundary(
-    model, img, v1, v2, device, resolution=300, zoom=[0.025, 0.01, 0.001]
+    model,
+    img,
+    v1,
+    v2,
+    device,
+    resolution=250,
+    zoom=[0.025, 0.01, 0.001],
+    title="No regularization",
 ):
     # Make sure the model is in evaluation mode
     model.eval()
@@ -208,8 +222,11 @@ def plot_decision_boundary(
         circle = plt.Circle((0, 0), distance_to_boundary, color="black", fill=False)
         ax.add_patch(circle)
 
+        # Compute and print the total variation of the decision boundaries
+        tv = total_variation(predictions.cpu().numpy())
+
         # Set title
-        ax.set_title(f"Zoom level: {zoom_level}")
+        ax.set_title(f"Zoom level: {zoom_level}.  Total Variation: {tv}")
 
     # Set legend for the whole figure
     legend_elements = [
@@ -222,6 +239,9 @@ def plot_decision_boundary(
         fontsize="large",
         handlelength=2,
     )
+
+    # Add a title to the overall plot
+    plt.suptitle(title, fontsize=20)
 
     plt.show()
 

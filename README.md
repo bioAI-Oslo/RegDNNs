@@ -1,9 +1,12 @@
 # Regularization of Neural Networks
 Project: Exploring soft and hard constraints in artificial neural networks.
+Overarching goal: Reaching better generalization in DNNs.
 
 The folders *Start training*, *UMI*, *UMI RNN* and *JAX* contains testing of regularization on a simple toy problem, and learning how to use pytorch and build/train NNs.
 
 The folder *Regularization benchmarking* contains the actual project with comparison of regularization techniques. I use the network LeNet, and the datasets MNIST, CIFAR10 and CIFAR100 to do the testing. I test how the regularization techniques perform on test data, and visualize parts of the NN to investigate the effect of regularization.
+
+The folder *Jacobian Regularization* contains functionality for plotting decision boundaries. These boundaries take a random subsample of the 784-dimensional input space and plots a 2D plane of decision boundaries. Because of this it is quite limited, and will often show the wrong prediction even though the model actually makes the right prediction. It is useful to study the decision boundaries because we can observe how the different regularizers behave.
 
 ## Overview of Regularization Methods
 (With help from ChatGPT)

@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # Move the model to the device (CPU or GPU)
     model.to(device)
 
-    n_epochs = 25
+    n_epochs = 75
     (
         losses,
         reg_losses,
