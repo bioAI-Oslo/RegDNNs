@@ -20,7 +20,7 @@ if __name__ == "__main__":
     jacobi_reg_lmbd = 0.01
 
     # Initialize model
-    model = LeNet_MNIST(l2_lmbd=l2_lmbd)
+    model = LeNet_MNIST(l2_lmbd=0, jacobi_reg=True, jacobi_reg_lmbd=jacobi_reg_lmbd)
 
     # Check if there are multiple GPUs, and if so, use DataParallel
     if torch.cuda.device_count() > 1:
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     torch.save(
         model.state_dict(),
-        "./trained_models/model_l2.pt",
+        "./trained_models/model_jacobi.pt",
     )
 
     # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
@@ -56,5 +56,5 @@ if __name__ == "__main__":
         "test_accuracies": test_accuracies,
     }
 
-    with open("./trained_models/model_l2_data.pkl", "wb") as f:
+    with open("./trained_models/model_jacobi_data.pkl", "wb") as f:
         pickle.dump(data, f)
