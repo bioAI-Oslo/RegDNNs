@@ -184,12 +184,15 @@ def plot_decision_boundary(
 
         # Compute the model prediction
         plane = plane.to(device)
-        with torch.no_grad():
-            output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
-        probs = torch.nn.functional.softmax(output, dim=-1)
+        output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
+        _, predictions = torch.max(output, dim=-1)
+
+        # with torch.no_grad():
+        #     output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
+        # probs = torch.nn.functional.softmax(output, dim=-1)
 
         # Get the class with the highest probability
-        _, predictions = torch.max(probs, dim=-1)
+        # _, predictions = torch.max(probs, dim=-1)
 
         # Calculate the distance to the closest decision boundary
         decision_boundary = ndi.morphology.distance_transform_edt(
