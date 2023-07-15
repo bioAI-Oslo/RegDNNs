@@ -30,7 +30,7 @@ if __name__ == "__main__":
     # Move the model to the device (CPU or GPU)
     model.to(device)
 
-    n_epochs = 50  # 250 in Hoffman 2019
+    n_epochs = 10  # 250 in Hoffman 2019
     (
         losses,
         reg_losses,
@@ -42,10 +42,12 @@ if __name__ == "__main__":
     if not os.path.exists("./trained_models"):
         os.makedirs("./trained_models")
 
-    torch.save(
-        model.state_dict(),
-        "./trained_models/model_jacobi.pt",
-    )
+    # If the model was trained with DataParallel, save model.module.state_dict().
+    # Otherwise, just save model.state_dict()
+    if isinstance(model, torch.nn.DataParallel):
+        torch.save(model.module.state_dict(), "./trained_models/model_jacobi.pt")
+    else:
+        torch.save(model.state_dict(), "./trained_models/model_jacobi.pt")
 
     # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
     data = {
