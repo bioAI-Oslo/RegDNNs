@@ -49,11 +49,11 @@ if __name__ == "__main__":
 
     # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
     data = {
-        "losses": [loss.cpu().numpy() for loss in losses],
-        "reg_losses": [reg_loss.cpu().numpy() for reg_loss in reg_losses],
+        "losses": losses,
+        "reg_losses": reg_losses,
         "epochs": epochs,
-        "train_accuracies": [acc.cpu().numpy() for acc in train_accuracies],
-        "test_accuracies": [acc.cpu().numpy() for acc in test_accuracies],
+        "train_accuracies": train_accuracies,
+        "test_accuracies": test_accuracies,
     }
 
     with open("./trained_models/model_jacobi_data.pkl", "wb") as f:
