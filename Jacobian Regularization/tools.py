@@ -1,6 +1,7 @@
 import pickle
 import torch
 import torch.nn as nn
+import io
 from tqdm import tqdm
 from collections import OrderedDict
 
@@ -167,23 +168,25 @@ def register_hooks(model):
 
 
 def load_model(model_name):
-    model = LeNet_MNIST()
+    device = torch.device("cpu")
+
+    model = (
+        LeNet_MNIST()
+    )  # Initialize your model here. Make sure it matches the architecture of the saved model.
+
     # Load state dict
-    state_dict = torch.load(
-        f"./trained_models/{model_name}.pt",
-        map_location=torch.device("cpu"),
-    )
+    state_dict = torch.load(f"./trained_models/{model_name}.pt", map_location=device)
 
-    # Create new state dict
+    # Create new OrderedDict that does not contain `module.` prefix
     new_state_dict = OrderedDict()
-
-    # Modify key names to remove `module.` if present
     for k, v in state_dict.items():
-        name = k[7:] if k.startswith("module.") else k  # remove `module.`
+        name = k[7:] if k.startswith("module.") else k
         new_state_dict[name] = v
 
     # Load parameters
     model.load_state_dict(new_state_dict)
+    model.to(device)
+    model.eval()
 
     with open(f"./trained_models/{model_name}_data.pkl", "rb") as f:
         data = pickle.load(f)
@@ -193,4 +196,5 @@ def load_model(model_name):
     epochs = data["epochs"]
     train_accuracies = data["train_accuracies"]
     test_accuracies = data["test_accuracies"]
+
     return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
