@@ -132,8 +132,7 @@ def train_remote(
 
         train_accuracies.append(accuracy(model, test_loader, device))
         test_accuracies.append(accuracy(model, train_loader, device))
-        model.counter = 0
-        print(f"Epoch: {epoch}")
+        print(f"Epoch: {epoch+1}")
         print(
             "Accuracy of the network on the test images: %.2f %%"
             % (100 * accuracy(model, test_loader, device))
