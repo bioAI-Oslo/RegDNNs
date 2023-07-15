@@ -14,7 +14,7 @@ if __name__ == "__main__":
     train_loader, test_loader = data_loader_MNIST()
 
     # Hyperparameters
-    lr = 0.01
+    lr = 0.1
     momentum = 0.9
     l2_lmbd = 0.0005
     jacobi_reg_lmbd = 0.01
