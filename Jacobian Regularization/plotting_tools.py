@@ -145,7 +145,7 @@ def plot_decision_boundary(
     v1,
     v2,
     device,
-    resolution=250,
+    resolution=300,
     zoom=[0.025, 0.01, 0.001],
     title="No regularization",
 ):
