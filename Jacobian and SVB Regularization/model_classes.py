@@ -122,13 +122,18 @@ class LeNet_MNIST(nn.Module):
         )
         loss.backward()
         self.opt.step()
-        self.training_steps += 1
 
         if self.svb_reg and self.training_steps % self.svb_freq == 0:
             with torch.no_grad():
                 for m in self.modules():
                     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                        U, S, V = torch.svd(m.weight)
+                        weight_orig_shape = m.weight.shape
+                        weight_matrix = m.weight.view(weight_orig_shape[0], -1)
+                        U, S, V = torch.svd(weight_matrix)
                         S = torch.clamp(S, 1 / (1 + self.svb_eps), 1 + self.svb_eps)
-                        m.weight.data = torch.matmul(U, torch.matmul(S.diag(), V.t()))
+                        m.weight.data = torch.matmul(
+                            U, torch.matmul(S.diag(), V.t())
+                        ).view(weight_orig_shape)
+
+        self.training_steps += 1
         return loss.item(), reg_loss.item() if reg_loss != 0 else reg_loss

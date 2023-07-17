@@ -18,9 +18,11 @@ if __name__ == "__main__":
     momentum = 0.9
     l2_lmbd = 0.0005
     jacobi_reg_lmbd = 0.01
+    svb_freq = 100
+    svb_eps = 0.01
 
     # Initialize model
-    model = LeNet_MNIST(l2_lmbd=0, jacobi_reg=True, jacobi_reg_lmbd=jacobi_reg_lmbd)
+    model = LeNet_MNIST(l2_lmbd=0, svb_reg=True, svb_freq=svb_freq, svb_eps=svb_eps)
 
     # Check if there are multiple GPUs, and if so, use DataParallel
     if torch.cuda.device_count() > 1:
@@ -30,7 +32,7 @@ if __name__ == "__main__":
     # Move the model to the device (CPU or GPU)
     model.to(device)
 
-    n_epochs = 250  # 250 in Hoffman 2019
+    n_epochs = 25  # 250 in Hoffman 2019
     (
         losses,
         reg_losses,
@@ -48,9 +50,9 @@ if __name__ == "__main__":
     # If the model was trained with DataParallel, save model.module.state_dict().
     # Otherwise, just save model.state_dict()
     if isinstance(model, torch.nn.DataParallel):
-        torch.save(model.module.state_dict(), "./trained_models/model_jacobi.pt")
+        torch.save(model.module.state_dict(), "./trained_models/model_svb.pt")
     else:
-        torch.save(model.state_dict(), "./trained_models/model_jacobi.pt")
+        torch.save(model.state_dict(), "./trained_models/model_svb.pt")
 
     # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
     data = {
@@ -61,5 +63,5 @@ if __name__ == "__main__":
         "test_accuracies": test_accuracies,
     }
 
-    with open("./trained_models/model_jacobi_data.pkl", "wb") as f:
+    with open("./trained_models/model_svb_data.pkl", "wb") as f:
         pickle.dump(data, f)
