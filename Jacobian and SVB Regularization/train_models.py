@@ -1,8 +1,5 @@
 import torch
 import os
-
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb=10"
-
 import pickle
 from data_generators import data_loader_MNIST
 from model_classes import LeNet_MNIST
