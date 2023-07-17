@@ -42,7 +42,7 @@ class LeNet_MNIST(nn.Module):
         # Orthogonal initialization if svb_reg is True
         if svb_reg:
             for m in self.modules():
-                if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                if isinstance(m, nn.Conv2d):
                     weight_mat = m.weight.data.view(
                         m.out_channels, -1
                     )  # Reshape to 2D matrix
