@@ -15,9 +15,12 @@ class LeNet_MNIST(nn.Module):
         lr=0.1,
         momentum=0.9,
         dropout_rate=0.5,
-        l2_lmbd=0.0005,
+        l2_lmbd=0.0,
         jacobi_reg=False,
         jacobi_reg_lmbd=0.01,
+        svb_reg=False,
+        svb_freq=100,
+        svb_eps=0.01,
     ):
         super(LeNet_MNIST, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -36,12 +39,17 @@ class LeNet_MNIST(nn.Module):
         self.dropout = nn.Dropout(dropout_rate)
         self.pool = nn.MaxPool2d(kernel_size=(2, 2))
 
-        # Xavier initialization
-        nn.init.xavier_uniform_(self.conv1.weight)
-        nn.init.xavier_uniform_(self.conv2.weight)
-        nn.init.xavier_uniform_(self.fc1.weight)
-        nn.init.xavier_uniform_(self.fc2.weight)
-        nn.init.xavier_uniform_(self.fc3.weight)
+        # Orthogonal initialization if svb_reg is True
+        if svb_reg:
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                    nn.init.orthogonal_(m.weight)
+        else:
+            nn.init.xavier_uniform_(self.conv1.weight)
+            nn.init.xavier_uniform_(self.conv2.weight)
+            nn.init.xavier_uniform_(self.fc1.weight)
+            nn.init.xavier_uniform_(self.fc2.weight)
+            nn.init.xavier_uniform_(self.fc3.weight)
 
         self.L = nn.CrossEntropyLoss()
         self.opt = torch.optim.SGD(
@@ -51,6 +59,10 @@ class LeNet_MNIST(nn.Module):
         # Regularization parameters
         self.jacobi_reg = jacobi_reg
         self.jacobi_reg_lmbd = jacobi_reg_lmbd
+        self.svb_reg = svb_reg
+        self.svb_freq = svb_freq
+        self.svb_eps = svb_eps
+        self.training_steps = 0  # Track training steps
 
     def forward(self, x):
         x = self.pool(torch.tanh(self.conv1(x)))
@@ -110,4 +122,13 @@ class LeNet_MNIST(nn.Module):
         )
         loss.backward()
         self.opt.step()
+        self.training_steps += 1
+
+        if self.svb_reg and self.training_steps % self.svb_freq == 0:
+            with torch.no_grad():
+                for m in self.modules():
+                    if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                        U, S, V = torch.svd(m.weight)
+                        S = torch.clamp(S, 1 / (1 + self.svb_eps), 1 + self.svb_eps)
+                        m.weight.data = torch.matmul(U, torch.matmul(S.diag(), V.t()))
         return loss.item(), reg_loss.item() if reg_loss != 0 else reg_loss
