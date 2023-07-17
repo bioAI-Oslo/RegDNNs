@@ -208,35 +208,47 @@ def load_model(model_name):
 
 
 def fgsm_attack(image, epsilon, data_grad):
+    # Collect the element-wise sign of the data gradient
     sign_data_grad = data_grad.sign()
+    # Create the perturbed image by adjusting each pixel of the input image
     perturbed_image = image + epsilon * sign_data_grad
+    # Adding clipping to maintain [0,1] range
     perturbed_image = torch.clamp(perturbed_image, 0, 1)
+    # Return the perturbed image
     return perturbed_image
 
 
 def fgsm_attack_test(model, device, test_loader, epsilon):
+    # Accuracy counter
     correct = 0
-    total = 0
-
+    adv_examples = []
+    # Loop over all examples in test set
     for data, target in test_loader:
+        # Send the data and label to the device
         data, target = data.to(device), target.to(device)
+        # Set requires_grad attribute of tensor. Important for Attack
         data.requires_grad = True
-
+        # Forward pass the data through the model
         output = model(data)
-        init_pred = output.max(1, keepdim=True)[1]
-
-        loss = F.nll_loss(output, target)
+        # Calculate the loss
+        loss = F.nll_loss(F.log_softmax(output, dim=1), target)
+        # Zero all existing gradients
         model.zero_grad()
+        # Calculate gradients of model in backward pass
         loss.backward()
-
+        # Collect datagrad
         data_grad = data.grad.data
+        # Call FGSM Attack
         perturbed_data = fgsm_attack(data, epsilon, data_grad)
-
+        # Re-classify the perturbed image
         output = model(perturbed_data)
-        final_pred = output.max(1, keepdim=True)[1]
+        final_pred = output.max(1, keepdim=True)[
+            1
+        ]  # get the index of the max log-probability
+        correct += (
+            (final_pred.view(target.shape) == target).sum().item()
+        )  # update the correct predictions count
 
-        correct += (final_pred == target.view_as(final_pred)).sum().item()
-        total += target.shape[0]
-
-    accuracy = correct / float(total)
-    return accuracy
+    # Calculate final accuracy for this epsilon
+    final_acc = correct / float(len(test_loader.dataset))
+    return final_acc
