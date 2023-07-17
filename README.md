@@ -2,6 +2,15 @@
 Project: Exploring soft and hard constraints in artificial neural networks.
 Overarching goal: Reaching better generalization in DNNs.
 
+What I have done:
+1. Initial testing, learning how to use pytorch and build NNs.
+2. Wide Regularization Benchmarking testing. Implemented manu regularization methods and visualization techniques. Tested them on MNIST, CIFAR10 (and CIFAR100?)?
+3. Picked some regularization techniques to continue with: Jacobian Regularization from Hoffman 2019, SVB regularization from Jia 2019. Picked some visualization techniques to continue with: accuracy curves, plots of decision boundaries and activation plots through dimensionality reduction (PCA). Tested against no regularization, L2 regularization and dropout (?) regularization.
+
+Learned:
+To use research rabbit to look for papers and try to get an overview of field.
+To use bioai's data cluster - train networks on gpu, ssh connection etc.
+
 The folders *Start training*, *UMI*, *UMI RNN* and *JAX* contains testing of regularization on a simple toy problem, and learning how to use pytorch and build/train NNs.
 
 The folder *Regularization benchmarking* contains the actual project with comparison of regularization techniques. I use the network LeNet, and the datasets MNIST, CIFAR10 and CIFAR100 to do the testing. I test how the regularization techniques perform on test data, and visualize parts of the NN to investigate the effect of regularization.

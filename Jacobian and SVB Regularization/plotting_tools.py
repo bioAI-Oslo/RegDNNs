@@ -18,15 +18,13 @@ def plot_results(
 ):
     """Plot results after training a model."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
-    ax1.plot(epochs, losses, "o--")
+    ax1.plot(epochs, losses)
     ax1.set_xlabel("Epoch Number")
     ax1.set_ylabel("Cross Entropy")
     ax1.set_title("Cross Entropy")
 
-    ax2.plot(
-        range(len(train_accuracies)), train_accuracies, "o--", label="Training Accuracy"
-    )
-    ax2.plot(range(len(test_accuracies)), test_accuracies, "o--", label="Test Accuracy")
+    ax2.plot(range(len(train_accuracies)), train_accuracies, label="Training Accuracy")
+    ax2.plot(range(len(test_accuracies)), test_accuracies, label="Test Accuracy")
     ax2.set_xlabel("Epoch number")
     ax2.set_ylabel("Accuracy, in %")
     ax2.set_title("Accuracy")
@@ -46,8 +44,8 @@ def plot_reg_results(
 ):
     """Plot results after training a model with regularization."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
-    ax1.plot(epochs, losses, "o--", label="Total Loss")
-    ax1.plot(epochs, reg_losses, "o--", label="Regularization Loss")
+    ax1.plot(epochs, losses, label="Total Loss")
+    ax1.plot(epochs, reg_losses, label="Regularization Loss")
     ax1.plot(
         epochs,
         np.asarray(losses) - np.asarray(reg_losses),
@@ -58,10 +56,8 @@ def plot_reg_results(
     ax1.set_ylabel("Loss")
     ax1.set_title("Losses")
 
-    ax2.plot(
-        range(len(train_accuracies)), train_accuracies, "o--", label="Training Accuracy"
-    )
-    ax2.plot(range(len(test_accuracies)), test_accuracies, "o--", label="Test Accuracy")
+    ax2.plot(range(len(train_accuracies)), train_accuracies, label="Training Accuracy")
+    ax2.plot(range(len(test_accuracies)), test_accuracies, label="Test Accuracy")
     ax2.set_xlabel("Epoch number")
     ax2.set_ylabel("Accuracy, in %")
     ax2.set_title("Accuracy")
