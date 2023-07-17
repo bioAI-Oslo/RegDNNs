@@ -43,6 +43,14 @@ class LeNet_MNIST(nn.Module):
         if svb_reg:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                    weight_mat = m.weight.data.view(
+                        m.out_channels, -1
+                    )  # Reshape to 2D matrix
+                    nn.init.orthogonal_(weight_mat)  # Apply orthogonal initialization
+                    m.weight.data = weight_mat.view_as(
+                        m.weight.data
+                    )  # Reshape back to original dimensions
+                elif isinstance(m, nn.Linear):
                     nn.init.orthogonal_(m.weight)
         else:
             nn.init.xavier_uniform_(self.conv1.weight)
