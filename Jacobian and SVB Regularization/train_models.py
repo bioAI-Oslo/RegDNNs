@@ -18,8 +18,8 @@ if __name__ == "__main__":
     momentum = 0.9
     l2_lmbd = 0.0005
     jacobi_reg_lmbd = 0.01
-    svb_freq = 100
-    svb_eps = 0.01
+    svb_freq = 600
+    svb_eps = 0.05
 
     # Initialize model
     model = LeNet_MNIST(l2_lmbd=0, svb_reg=True, svb_freq=svb_freq, svb_eps=svb_eps)

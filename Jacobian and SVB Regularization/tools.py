@@ -170,13 +170,15 @@ def load_model(model_name):
     device = torch.device("cpu")
 
     if model_name == "model_no_reg":
-        model = LeNet_MNIST(
-            l2_lmbd=0
+        model = (
+            LeNet_MNIST()
         )  # Initialize your model here. Make sure it matches the architecture of the saved model.
     elif model_name == "model_l2":
         model = LeNet_MNIST(l2_lmbd=0.0005)
     elif model_name == "model_jacobi":
-        model = LeNet_MNIST(l2_lmbd=0, jacobi_reg=True, jacobi_reg_lmbd=0.01)
+        model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=0.01)
+    elif model_name == "model_svb":
+        model = LeNet_MNIST(svb_reg=True, svb_freq=100, svb_eps=0.01)
 
     # Load state dict
     state_dict = torch.load(f"./trained_models/{model_name}.pt", map_location=device)
