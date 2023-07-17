@@ -5,7 +5,7 @@ Overarching goal: Reaching better generalization in DNNs.
 What I have done:
 1. Initial testing, learning how to use pytorch and build NNs.
 2. Wide Regularization Benchmarking testing. Implemented manu regularization methods and visualization techniques. Tested them on MNIST, CIFAR10 (and CIFAR100?)?
-3. Picked some regularization techniques to continue with: Jacobian Regularization from Hoffman 2019, SVB regularization from Jia 2019. Picked some visualization techniques to continue with: accuracy curves, plots of decision boundaries and activation plots through dimensionality reduction (PCA). Tested against no regularization, L2 regularization and dropout (?) regularization.
+3. Picked some regularization techniques to continue with: Jacobian Regularization from Hoffman 2019, SVB regularization from Jia 2019. Picked some visualization techniques to continue with: accuracy curves, plots of decision boundaries and activation plots through dimensionality reduction (PCA). Tested against no regularization and L2 regularization.
 
 Learned:
 To use research rabbit to look for papers and try to get an overview of field.
