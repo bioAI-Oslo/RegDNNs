@@ -1,6 +1,7 @@
 import pickle
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import io
 from tqdm import tqdm
 from collections import OrderedDict
@@ -204,3 +205,38 @@ def load_model(model_name):
     test_accuracies = data["test_accuracies"]
 
     return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
+
+
+def fgsm_attack(image, epsilon, data_grad):
+    sign_data_grad = data_grad.sign()
+    perturbed_image = image + epsilon * sign_data_grad
+    perturbed_image = torch.clamp(perturbed_image, 0, 1)
+    return perturbed_image
+
+
+def fgsm_attack_test(model, device, test_loader, epsilon):
+    correct = 0
+    total = 0
+
+    for data, target in test_loader:
+        data, target = data.to(device), target.to(device)
+        data.requires_grad = True
+
+        output = model(data)
+        init_pred = output.max(1, keepdim=True)[1]
+
+        loss = F.nll_loss(output, target)
+        model.zero_grad()
+        loss.backward()
+
+        data_grad = data.grad.data
+        perturbed_data = fgsm_attack(data, epsilon, data_grad)
+
+        output = model(perturbed_data)
+        final_pred = output.max(1, keepdim=True)[1]
+
+        correct += (final_pred == target.view_as(final_pred)).sum().item()
+        total += target.shape[0]
+
+    accuracy = correct / float(total)
+    return accuracy

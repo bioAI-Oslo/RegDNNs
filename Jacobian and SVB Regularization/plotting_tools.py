@@ -6,7 +6,7 @@ from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
 
-from tools import register_hooks
+from tools import register_hooks, fgsm_attack_test
 
 
 def plot_results(
@@ -284,4 +284,22 @@ def plot_and_print_img(image, model, device, regularization_title="no regulariza
     plt.figure(figsize=(5, 5))
     plt.imshow(image.numpy(), cmap="gray")
     plt.title("Input image")
+    plt.show()
+
+
+def plot_fgsm(model, device, test_loader):
+    epsilons = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+    accuracies = []
+
+    for eps in epsilons:
+        acc = fgsm_attack_test(model, device, test_loader, eps)
+        accuracies.append(acc)
+
+    plt.figure(figsize=(5, 5))
+    plt.plot(epsilons, accuracies, "*-")
+    plt.yticks(np.arange(0, 1.1, step=0.1))
+    plt.xticks(np.arange(0, 0.35, step=0.05))
+    plt.title("Accuracy vs Epsilon")
+    plt.xlabel("Epsilon")
+    plt.ylabel("Accuracy")
     plt.show()
