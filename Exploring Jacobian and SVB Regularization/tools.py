@@ -9,64 +9,6 @@ from collections import OrderedDict
 from model_classes import LeNet_MNIST
 
 
-def train(
-    train_loader,
-    test_loader,
-    model,
-    device,
-    n_epochs=2,
-):
-    losses = []
-    epochs = []
-    weights = []
-    train_accuracies = []
-    test_accuracies = []
-    reg_losses = []
-
-    iterations = 0
-
-    for epoch in tqdm(range(n_epochs)):
-        N = len(train_loader)
-        for param in model.parameters():
-            weights.append(param.detach().cpu().numpy().copy())
-        for i, (data, labels) in enumerate(train_loader):
-            epochs.append(epoch + i / N)
-
-            if device == "cuda":
-                data = data.to(device)
-                labels = labels.to(device)
-
-            if torch.cuda.device_count() > 1:
-                loss_data, reg_loss_data = model.module.train_step(
-                    data,
-                    labels,
-                )
-            else:
-                loss_data, reg_loss_data = model.train_step(
-                    data,
-                    labels,
-                )
-            losses.append(loss_data)
-            reg_losses.append(reg_loss_data)
-
-            # Learning rate decay
-            if iterations % (n_epochs * 200) == 0 and iterations > 0:
-                for g in model.opt.param_groups:
-                    g["lr"] = g["lr"] / 10
-                    print(f"Decayed lr from {g['lr'] * 10} to {g['lr']}")
-
-            iterations += 1
-
-        train_accuracies.append(accuracy(model, train_loader, device))
-        test_accuracies.append(accuracy(model, test_loader, device))
-        print(f"Epoch: {epoch+1}")
-        print(
-            "Accuracy of the network on the test images: %.2f %%"
-            % (100 * accuracy(model, test_loader, device))
-        )
-    return losses, reg_losses, epochs, weights, train_accuracies, test_accuracies
-
-
 def accuracy(model, loader, device):
     """Calculate the accuracy of a model. Uses a data loader."""
     correct = 0
@@ -85,7 +27,7 @@ def accuracy(model, loader, device):
     return correct / total
 
 
-def train_remote(
+def train(
     train_loader,
     test_loader,
     model,
@@ -103,8 +45,10 @@ def train_remote(
         N = len(train_loader)
         for i, (data, labels) in enumerate(train_loader):
             epochs.append(epoch + i / N)
-            data = data.to(device)
-            labels = labels.to(device)
+
+            if device == "cuda":
+                data = data.to(device)
+                labels = labels.to(device)
 
             if torch.cuda.device_count() > 1:
                 loss_data, reg_loss_data = model.module.train_step(
@@ -131,8 +75,8 @@ def train_remote(
 
             iterations += 1
 
-        train_accuracies.append(accuracy(model, test_loader, device))
-        test_accuracies.append(accuracy(model, train_loader, device))
+        train_accuracies.append(accuracy(model, train_loader, device))
+        test_accuracies.append(accuracy(model, test_loader, device))
         print(f"Epoch: {epoch+1}")
         print(
             "Accuracy of the network on the test images: %.2f %%"
