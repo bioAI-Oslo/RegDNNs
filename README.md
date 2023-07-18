@@ -2,14 +2,30 @@
 Project: Exploring soft and hard constraints in artificial neural networks.
 Overarching goal: Better generalization in DNNs.
 
-### Content
+## Content
 
-This project developed over time, and has four parts. Part one was a collaboration between me and @Dalsaetra. All parts were done under supervision by @Vemundss.
+This project developed over time, and has four parts. Part one was a collaboration between me and [@Dalsaetra] (https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss] (https://www.github.com/Vemundss).
 
-[Part One: Initial Testing, Learning and Toy-Problem](#part-one-initial-testing-learning-and-toy-problem)
-[Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking)
-[Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)
 
+[Setup: Packages and Software](#setup-packages-and-software)  
+[Part One: Initial Testing, Learning and Toy-Problem](#part-one-initial-testing-learning-and-toy-problem)  
+[Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking)  
+[Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)  
+
+
+## Setup: Packages and Software
+I used two conda environments for the project. One for running the files under the folder *JAX* in part one of the project, and another for running all other files. This was due to some packages breaking when combined with the jax packages. For both conda environments I installed jupyter via *conda install jupyter*. Afterwards I installed the packages in the requirement files using pip. The requirements for jax is in the *JAX* folder, while the requirements for everything else is in the main project. For the main project I also installed **ffmpeg** using *conda install -c conda-forge ffmpeg*, to make animations during my initial exploration of a toy problem in part one.  
+
+
+## Part One: Initial Testing, Learning and Toy-Problem
+The folder *Initial testing and learning* contains *Start training*, *UMI*, *UMI RNN* and *JAX*. Here I tested regularization on a simple toy problem, learnt how to use pytorch, how to build/train NNs and RNNs, and started learning how to use jax.
+
+UMI-problem: generate four clusters of points with some variation. Train networks to classify points to the correct class (cluster). Motivation: simple toy problem which shows how regularization makes networks generalize better. For Jacobian regularization it is interesting to look at how it preserves areas between I/O, which we get a good intuition for with such a simple problem as we can visualize it. Result: Tested No regularization, L1, L2, SVB and Jacobian regularization. Results in Animations -
+
+
+## Part Two: Regularization Benchmarking
+
+## Part Three: Exploring Jacobian and SVB Regularization
 
 
 
@@ -24,16 +40,12 @@ To use bioai's data cluster - train networks on gpu, ssh connection etc.
 
 ### Overview of Folders
 
-The folder *Initial testing and learning* contains *Start training*, *UMI*, *UMI RNN* and *JAX*. Here I tested regularization on a simple toy problem, learnt how to use pytorch, how to build/train NNs and RNNs, and started learning how to use jax.
-
-UMI-problem: generate four clusters of points with some variation. Train networks to classify points to the correct class (cluster). Motivation: simple toy problem which shows how regularization makes networks generalize better. For Jacobian regularization it is interesting to look at how it preserves areas between I/O, which we get a good intuition for with such a simple problem as we can visualize it. Result: Tested No regularization, L1, L2, SVB and Jacobian regularization. Results in Animations - 
+ 
 
 The folder *Regularization benchmarking* contains the actual project with comparison of regularization techniques. I use the network LeNet, and the datasets MNIST, CIFAR10 and CIFAR100 to do the testing. I test how the regularization techniques perform on test data, and visualize parts of the NN to investigate the effect of regularization.
 
 The folder *Jacobian Regularization* contains functionality for plotting decision boundaries. These boundaries take a random subsample of the 784-dimensional input space and plots a 2D plane of decision boundaries. Because of this it is quite limited, and will often show the wrong prediction even though the model actually makes the right prediction. It is useful to study the decision boundaries because we can observe how the different regularizers behave.
 
-### Packages and environments:
-I used two conda environments for the project. One for running the files under *JAX*, and another for running all other files. This was due to some packages breaking together with the jax packages. For both conda environments i installed jupyter via *conda install jupyter*. Afterwards I installed the packages in the requirement files using pip. The requirements for jax is in the *JAX* folder, while the requirements for the rest is in the main project. For the main project I also installed **ffmpeg** using *conda install -c conda-forge ffmpeg*, to make animations during my initial exploration of a toy problem.
 
 ## Overview of Regularization Methods
 (With help from ChatGPT)
@@ -105,8 +117,3 @@ A saliency map is a simple, yet effective method for understanding which parts o
 #### Occlusion Sensitivity 
 Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.
 
-## Part One: Initial Testing, Learning and Toy-Problem
-
-## Part Two: Broad Regularization Benchmarking
-
-## Part Three: Exploring Jacobian and SVB Regularization
