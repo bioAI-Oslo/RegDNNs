@@ -14,7 +14,7 @@ This project developed over time, and has four parts. Part one was a collaborati
 
 
 ## Setup: Packages and Software
-I used two conda environments for the project. One for running the files under the folder *JAX* in part one of the project, and another for running all other files. This was due to some packages breaking when combined with the jax packages. For both conda environments I installed jupyter via *conda install jupyter*. Afterwards I installed the packages in the requirement files using pip. The requirements for jax is in the *JAX* folder, while the requirements for everything else is in the main project. For the main project I also installed **ffmpeg** using *conda install -c conda-forge ffmpeg*, to make animations during my initial exploration of a toy problem in part one.  
+I used two conda environments for the project. One for running the files under the folder *JAX* in part one of the project, and another for running all other files. This was due to some packages breaking when combined with the jax packages. For both conda environments I installed jupyter via "conda install jupyter". Afterwards I installed the packages in the requirement files using pip. The requirements for jax is in the *JAX* folder, while the requirements for everything else is in the main project. For the main project I also installed **ffmpeg** using '#conda install -c conda-forge ffmpeg', to make animations during my initial exploration of a toy problem in part one.  
 
 
 ## Part One: Initial Testing, Learning and Toy-Problem
