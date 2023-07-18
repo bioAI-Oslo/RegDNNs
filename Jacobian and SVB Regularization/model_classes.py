@@ -95,7 +95,7 @@ class LeNet_MNIST(nn.Module):
 
             Jv = grad(v_hat_dot_z.sum(), x, create_graph=True)[
                 0
-            ]  # Jacobian-vector product
+            ].detach()  # Jacobian-vector product
 
             JF += C * (Jv**2).sum() / (nproj * len(x))
 
