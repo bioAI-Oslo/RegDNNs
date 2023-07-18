@@ -4,12 +4,14 @@
   
 This project developed over time, and has four parts. Part one was a collaboration between me and [@Dalsaetra](https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss](https://www.github.com/Vemundss).
   
+  
 ## Content
 [Setup: Packages and Software](#setup-packages-and-software)  
 [Part One: Initial Testing, Learning and Toy-Problem](#part-one-initial-testing-learning-and-toy-problem)  
 [Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking)  
 [Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)  
   
+
 ## Setup: Packages and Software
 I used two conda environments for the project. One for running the files under the folder *JAX* in part one of the project, and another for running all other files. This was due to some packages breaking when combined with the jax packages. For both conda environments I installed jupyter via:
 ```
@@ -21,6 +23,7 @@ conda install -c conda-forge ffmpeg
 ```
 Which I used to make animations during my initial exploration of a toy problem in part one.  
   
+
 ## Part One: Initial Testing, Learning and Toy-Problem
 The folder *Initial Testing, Learning and Toy-Problem*  contains *JAX*, *Start training*, *UMI* and *UMI RNN*. Here I learnt how to build/train NNs and RNNs using pytorch, and started learning how to use jax.  
 
@@ -34,6 +37,7 @@ I tested regularization on a simple toy problem (called UMI). The testing consis
 **Result**: Tested without regularization, and with L1, L2, SVB and different Jacobian regularizations. Results are stored in the folder *Animations* under *UMI*.  
    
 The code in this part is quite unstructured and contains multiple errors as it was made for learning/testing.
+  
   
 ## Part Two: Regularization Benchmarking
 
