@@ -6,9 +6,9 @@ Overarching goal: Better generalization in DNNs.
 
 This project developed over time, and has four parts. Part one was a collaboration between me and @Dalsaetra. All parts were done under supervision by @Vemundss.
 
-## part-one---initial-testing,-learning-and-toy-problem
+# part-one:-initial-testing,-learning-and-toy-problem
 
-## Part one - Initial testing, learning and toy-problem
+## Part one: Initial testing, learning and toy-problem
 
 
 
