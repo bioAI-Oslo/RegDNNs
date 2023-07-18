@@ -18,7 +18,11 @@ I used two conda environments for the project. One for running the files under t
 ```
 conda install jupyter
 ```
-Afterwards I installed the packages in the requirement files using pip. The requirements for jax is in the *JAX* folder, while the requirements for everything else is in the main project. For the main project I also installed **ffmpeg** using *conda install -c conda-forge ffmpeg*, to make animations during my initial exploration of a toy problem in part one.  
+Afterwards I installed the packages in the requirement files using pip. The requirements for jax is in the *JAX* folder, while the requirements for everything else is in the main project. For the main project I also installed **ffmpeg** with:
+```
+conda install -c conda-forge ffmpeg
+```
+Which I used to make animations during my initial exploration of a toy problem in part one.  
 
 
 ## Part One: Initial Testing, Learning and Toy-Problem
