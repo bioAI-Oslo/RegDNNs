@@ -4,7 +4,7 @@ Overarching goal: Better generalization in DNNs.
 
 ## Content
 
-This project developed over time, and has four parts. Part one was a collaboration between me and [@Dalsaetra] (https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss] (https://www.github.com/Vemundss).
+This project developed over time, and has four parts. Part one was a collaboration between me and [@Dalsaetra](https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss](https://www.github.com/Vemundss).
 
 
 [Setup: Packages and Software](#setup-packages-and-software)  
