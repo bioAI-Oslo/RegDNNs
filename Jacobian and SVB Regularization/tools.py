@@ -46,8 +46,8 @@ def train(
                     data,
                     labels,
                 )
-            losses.append(loss_data)
-            reg_losses.append(reg_loss_data)
+            losses.append(loss_data.detach())
+            reg_losses.append(reg_loss_data.detach())
 
             # Learning rate decay
             if iterations % (n_epochs * 200) == 0 and iterations > 0:
@@ -116,8 +116,8 @@ def train_remote(
                     data,
                     labels,
                 )
-            losses.append(loss_data)
-            reg_losses.append(reg_loss_data)
+            losses.append(loss_data.detach())
+            reg_losses.append(reg_loss_data.detach())
 
             # Learning rate decay
             if iterations % (n_epochs * 200) == 0 and iterations > 0:
