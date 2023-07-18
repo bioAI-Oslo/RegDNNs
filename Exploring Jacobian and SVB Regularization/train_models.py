@@ -3,7 +3,7 @@ import os
 import pickle
 from data_generators import data_loader_MNIST
 from model_classes import LeNet_MNIST
-from tools import train_remote
+from tools import train
 from torch.nn import DataParallel
 
 if __name__ == "__main__":
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         epochs,
         train_accuracies,
         test_accuracies,
-    ) = train_remote(train_loader, test_loader, model, device, n_epochs)
+    ) = train(train_loader, test_loader, model, device, n_epochs)
 
     # Switch to evaluation mode
     model.eval()
