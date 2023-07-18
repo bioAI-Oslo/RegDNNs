@@ -29,7 +29,8 @@ I tested regularization on a simple toy problem (called UMI). The testing consis
 2. Training networks to classify points to the correct class (cluster)  
 3. Learning how to implement different regularization techniques, and test them on the problem  
 
-**Motivation**: The simple toy problem easily shows how regularization makes networks generalize better, which makes it good for learning how to implement neural networks with regularization in pytorch. For Jacobian regularization it is interesting to look at how it preserves areas between I/O, which we get a good intuition for with the toy problem as we can visualize it easily.    
+**Motivation**: The simple toy problem easily shows how regularization makes networks generalize better, which makes it good for learning how to implement neural networks with regularization in pytorch. For Jacobian regularization it is interesting to look at how it preserves areas between I/O, which we get a good intuition for with the toy problem as we can visualize it easily.   
+   
 **Result**: Tested without regularization, and with L1, L2, SVB and different Jacobian regularizations. Results are stored in the folder *Animations* under *UMI*.  
    
 The code in this part is quite unstructured and contains multiple errors as it was made for learning/testing.
