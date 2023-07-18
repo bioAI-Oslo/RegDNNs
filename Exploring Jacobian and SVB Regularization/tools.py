@@ -117,6 +117,8 @@ def load_model(model_name):
         )  # Initialize your model here. Make sure it matches the architecture of the saved model.
     elif model_name == "model_l2":
         model = LeNet_MNIST(l2_lmbd=0.0005)
+    elif model_name == "model_l2_no_dropout":
+        model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=0.0005)
     elif model_name == "model_jacobi":
         model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=0.01)
     elif model_name == "model_svb":
