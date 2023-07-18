@@ -13,7 +13,7 @@ This project developed over time, and has four parts. Part one was a collaborati
     2. [Overview of Visualization Techniques](#overview-of-visualization-techniques)  
 4. [Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)  
   
-
+  
 ## Setup: Packages and Software
 I used two conda environments for the project. One for running the files under the folder *JAX* in part one of the project, and another for running all other files. This was due to some packages breaking when combined with the jax packages. For both conda environments I installed jupyter via:
 ```
@@ -25,7 +25,7 @@ conda install -c conda-forge ffmpeg
 ```
 Which I used to make animations during my initial exploration of a toy problem in part one.  
   
-
+  
 ## Part One: Initial Testing, Learning and Toy-Problem
 The folder *Initial Testing, Learning and Toy-Problem*  contains *JAX*, *Start training*, *UMI* and *UMI RNN*. Here I learned how to build/train NNs and RNNs using pytorch, and started learning how to use jax.  
 
@@ -44,72 +44,73 @@ The code in this part is quite unstructured and contains multiple errors as it w
 ## Part Two: Regularization Benchmarking
 The goal of this part of the project was investigate deep convolutional neural networks trained with different regularization techniques and build intuition for how the techniques work and how they influence the network. To do this I implemented many different regularization techniques and visualization techniques for DNNs. I tested the implementations on three datasets: MNIST, CIFAR10 and CIFAR100, using the LeNet model (See Lecun et al, 1998). For this part I also learned how to use ssh to connect to and use a data cluster, and how to use parallell computing to train on multiple GPUs using pytorch. See notebooks for results. Following is a list of the regularization and visualization techniques I implemented, with a short description explaining how they work.  
   
-### Overview of Regularization Techniques
 
+### Overview of Regularization Techniques
+  
 #### Comparison - No Regularization
 In the absence of any regularization, a model simply minimizes the loss function on the training data. This can lead to overfitting, especially in high-dimensional models with many parameters, because the model becomes too complex and learns to fit the training data too closely, including its noise. As a result, it often performs poorly on unseen data. Regularization methods are therefore used to prevent overfitting by adding constraints to the learning process.  
-
+  
 #### L1 Regularization
 L1 regularization, also known as Lasso regularization, involves adding a term to the loss function that penalizes the absolute value of the weights. This encourages the model to have sparse weights, meaning that many weights are zero. This can lead to a model that is easier to interpret, because it effectively performs feature selection, choosing a subset of the input features to focus on.  
-
+  
 #### L2 Regularization
 L2 regularization, also known as Ridge regularization, involves adding a term to the loss function that penalizes the square of the weights. This encourages the model to have small weights but does not encourage sparsity. L2 regularization can help prevent overfitting by discouraging the model from relying too much on any single input feature.  
-
+  
 #### Elastic Net Regularization
 Elastic Net regularization is a compromise between L1 and L2 regularization. It involves adding a term to the loss function that is a mix of an L1 penalty and an L2 penalty. This allows the model to have some level of sparsity, like L1 regularization, while also encouraging small weights, like L2 regularization.  
-
+  
 #### Soft SVB Regularization
 Soft SVB regularization, introduced by Jia et al. 2019, penalizes the model based on the Frobenius norm of the difference between the weights' Gram matrix and the identity matrix. This encourages the model's weights to be orthogonal, which can improve generalization. Soft SVB regularization might introduce additional computational cost due to the need to compute matrix multiplications and norms.  
-
+  
 #### Hard SVB Regularization
 Hard SVB regularization, similar to Soft SVB, also encourages the model's weights to be orthogonal, but it does so in a more strict manner. It uses a hard constraint instead of a soft penalty, meaning that the model's weights are forced to be orthogonal.  
-
+  
 #### Jacobi Regularization
 Jacobi regularization introduces a penalty on the norm of the Jacobian matrix of the model's outputs with respect to its inputs. The Jacobian matrix represents the first-order derivatives of the model. By penalizing the norm of the Jacobian, we encourage the model to have outputs that change linearly or sub-linearly with respect to small changes in the inputs. It can help in achieving more stable models with smoother decision boundaries. However, calculating the Jacobian matrix can be computationally expensive for complex models and large inputs.  
-
+  
 #### Jacobi Determinant Regularization
 Jacobi Determinant regularization involves adding a term to the loss function that penalizes the squared difference between the determinant of the Jacobian of the model's outputs with respect to its inputs and one. This regularization approach encourages the model to maintain volume preservation in the input space to the output space. This approach can help the model to learn more balanced and well-distributed representations, which can be beneficial for tasks that involve transformations. However, the computation of the determinant of the Jacobian can be highly computationally expensive, especially for high-dimensional inputs.  
-
+  
 #### Dropout Regularization
 Dropout is a popular regularization technique for neural networks. During training, dropout randomly sets a fraction of input units to 0 at each update, which helps to prevent overfitting. This introduces noise into the training process that forces the learning algorithm to learn more robust features that are useful in conjunction with many different random subsets of the other neurons. Dropout can provide a significant improvement in performance, especially for larger neural networks and datasets. However, it may increase the time needed for convergence during training, and it's less interpretable compared to L1 and L2 regularization methods.    
-
+  
 #### Confidence Penalty Regularization
 Confidence penalty regularization adds a penalty to the loss function based on the confidence of the model's predictions. If the model is too confident, it is penalized more heavily. This can encourage the model to be more cautious in its predictions, potentially leading to better calibration and more reliable uncertainty estimates. However, this approach may be inappropriate for certain tasks where high confidence is desirable, and it can also make the optimization problem more challenging.   
-
+  
 #### Label Smoothing Regularization
 Label Smoothing is a form of regularization where the target labels for a classification problem are replaced with smoothed versions. Instead of having a hard one-hot encoded target, each target will have a small value for each incorrect class and the rest of the value for the correct class. This encourages the model to be less confident, reducing the risk of overfitting and improving generalization.  
-
-
+  
 #### Noise Injection to Inputs
 Noise injection to inputs is a regularization technique where random noise is added to the inputs during training. This encourages the model to be robust to small changes in the inputs. This form of regularization can help prevent overfitting by discouraging the model from fitting the noise in the training data, instead focusing on the underlying patterns that are consistent even when noise is added. However, care must be taken to ensure that the noise does not overpower the signal in the data, as this could lead to the model learning less useful representations.  
-
+  
 #### Noise Injection to Weights
 Similar to noise injection to inputs, noise injection to weights involves adding random noise to the weights during training. This can be seen as a form of stochastic regularization, as it adds a source of randomness that the model needs to be robust to. By preventing the weights from settling into a fixed value, it encourages the model to explore different parts of the weight space, which can help it avoid overfitting to the training data. However, like with injecting noise to inputs, care must be taken to ensure that the noise does not overpower the learning signal. Moreover, this method can make the optimization process more challenging and may increase the time required for training.   
-
-
+  
+  
 ### Overview of Visualization Techniques
+  
 #### Training and Test Loss Curves
 The most straightforward way to visualize the effect of regularization is by plotting the training and validation loss over time. If regularization is working correctly, you should observe a decrease in the gap between training and validation loss, indicating a reduction in overfitting.
-
+  
 #### Weight Distributions
 For L1, L2, and Elastic Net regularization, you can visualize the distribution of the weights in the model. L1 regularization should result in many weights being exactly zero, while L2 regularization will typically result in a distribution with smaller magnitudes.
-
+  
 #### Feature Map Visualizations
 Especially in the context of convolutional neural networks (CNNs), visualizing the feature maps - the activations of the convolutional layers - can provide insight into what features the network is learning. This can give you a sense of how regularization is affecting the types of features learned. For instance, too much L1/L2 regularization might result in overly simplistic feature maps, while too little might result in feature maps that are overly complex or noisy.
-
+  
 #### Uncertainty Estimates
 For regularization methods that affect the model's confidence, like Confidence Penalty and Label Smoothing, you can plot the model's predicted probabilities. A well-regularized model should show less overconfidence and better-calibrated probabilities.
-
+  
 #### T-SNE or PCA of Activations
 You can use dimensionality reduction techniques like t-SNE or PCA to visualize the activations of your network, which can be insightful especially for dropout and noise injection techniques. This involves taking the activation values of a particular layer and reducing them to 2 or 3 dimensions for plotting. Different classes should ideally form distinct clusters, and overfitting may manifest as overly complex boundaries between classes.
-
+  
 #### Saliency Maps
 A saliency map is a simple, yet effective method for understanding which parts of the image contribute most significantly to a neural network's decision. It is created by calculating the gradient of the output category with respect to the input image. This gradient is then visualized as a heatmap overlaying the original image, with high-gradient regions indicating important areas for the model's decision. The intuition behind this is that the gradient measures how much a small change in each pixel's intensity would affect the final prediction. So, large gradient values suggest important pixels.
-
+  
 #### Occlusion Sensitivity 
 Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.  
   
-
+  
 ## Part Three: Exploring Jacobian and SVB Regularization
 For this part I chose to continue with the regularization techniques of the Jacobian Regularization from Hoffman 2019 and the SVB regularization from Jia 2019. I wanted to investigate these techniques further, also using models trained with L2 regularization and no regularization for comparison. I also chose to continue with the following visualization techniques for the investigation: accuracy curves, plots of decision boundaries and activation plots through dimensionality reduction (PCA).
 
