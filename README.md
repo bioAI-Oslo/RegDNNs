@@ -11,7 +11,9 @@ Learned:
 To use research rabbit to look for papers and try to get an overview of field.
 To use bioai's data cluster - train networks on gpu, ssh connection etc.
 
-The folders *Start training*, *UMI*, *UMI RNN* and *JAX* contains testing of regularization on a simple toy problem, and learning how to use pytorch and build/train NNs.
+### Overview of Folders
+
+The folder *Initial testing and learning* contains *Start training*, *UMI*, *UMI RNN* and *JAX*. Here I tested regularization on a simple toy problem, learnt how to use pytorch, how to build/train NNs and RNNs, and started learning how to use jax.
 
 The folder *Regularization benchmarking* contains the actual project with comparison of regularization techniques. I use the network LeNet, and the datasets MNIST, CIFAR10 and CIFAR100 to do the testing. I test how the regularization techniques perform on test data, and visualize parts of the NN to investigate the effect of regularization.
 
