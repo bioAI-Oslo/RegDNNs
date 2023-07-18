@@ -6,9 +6,10 @@ Overarching goal: Better generalization in DNNs.
 
 This project developed over time, and has four parts. Part one was a collaboration between me and @Dalsaetra. All parts were done under supervision by @Vemundss.
 
-[Part One: Initial Testing, Learning and Toy-Problem](#part-one:-initial-testing,-learning-and-toy-problem)
+[Part One: Initial Testing, Learning and Toy-Problem](#part-one-initial-testing-learning-and-toy-problem)
+[Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking)
+[Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)
 
-## Part One: Initial Testing, Learning and Toy-Problem
 
 
 
@@ -104,3 +105,8 @@ A saliency map is a simple, yet effective method for understanding which parts o
 #### Occlusion Sensitivity 
 Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.
 
+## Part One: Initial Testing, Learning and Toy-Problem
+
+## Part Two: Broad Regularization Benchmarking
+
+## Part Three: Exploring Jacobian and SVB Regularization
