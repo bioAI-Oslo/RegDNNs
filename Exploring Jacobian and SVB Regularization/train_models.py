@@ -30,7 +30,7 @@ if __name__ == "__main__":
         model = DataParallel(model)
 
     # Move the model to the device (CPU or GPU)
-    model.to(device)
+    model = model.to(device)
 
     n_epochs = 250  # 250 in Hoffman 2019
     (
