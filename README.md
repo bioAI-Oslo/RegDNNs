@@ -8,7 +8,9 @@ This project developed over time, and has four parts. Part one was a collaborati
 ## Content
 [Setup: Packages and Software](#setup-packages-and-software)  
 [Part One: Initial Testing, Learning and Toy-Problem](#part-one-initial-testing-learning-and-toy-problem)  
-[Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking)  
+[Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking) 
+    [Overview of Regularization Techniques](#overview-of-regularization-techniques)  
+    [Overview of Visualization Techniques](#overview-of-visualization-techniques)  
 [Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)  
   
 
@@ -25,7 +27,7 @@ Which I used to make animations during my initial exploration of a toy problem i
   
 
 ## Part One: Initial Testing, Learning and Toy-Problem
-The folder *Initial Testing, Learning and Toy-Problem*  contains *JAX*, *Start training*, *UMI* and *UMI RNN*. Here I learnt how to build/train NNs and RNNs using pytorch, and started learning how to use jax.  
+The folder *Initial Testing, Learning and Toy-Problem*  contains *JAX*, *Start training*, *UMI* and *UMI RNN*. Here I learned how to build/train NNs and RNNs using pytorch, and started learning how to use jax.  
 
 I tested regularization on a simple toy problem (called UMI). The testing consisted of the following:  
 1. Generating four clusters of points with some Gaussian noise  
@@ -38,33 +40,11 @@ I tested regularization on a simple toy problem (called UMI). The testing consis
    
 The code in this part is quite unstructured and contains multiple errors as it was made for learning/testing.
   
-  
+
 ## Part Two: Regularization Benchmarking
-
-## Part Three: Exploring Jacobian and SVB Regularization
-
-
-
-What I have done:
-1. Initial testing, learning how to use pytorch and build NNs.
-2. Wide Regularization Benchmarking testing. Implemented manu regularization methods and visualization techniques. Tested them on MNIST, CIFAR10 (and CIFAR100?)?
-3. Picked some regularization techniques to continue with: Jacobian Regularization from Hoffman 2019, SVB regularization from Jia 2019. Picked some visualization techniques to continue with: accuracy curves, plots of decision boundaries and activation plots through dimensionality reduction (PCA). Tested against no regularization and L2 regularization.
-
-Learned:
-To use research rabbit to look for papers and try to get an overview of field.
-To use bioai's data cluster - train networks on gpu, ssh connection etc.
-
-### Overview of Folders
-
- 
-
-The folder *Regularization benchmarking* contains the actual project with comparison of regularization techniques. I use the network LeNet, and the datasets MNIST, CIFAR10 and CIFAR100 to do the testing. I test how the regularization techniques perform on test data, and visualize parts of the NN to investigate the effect of regularization.
-
-The folder *Jacobian Regularization* contains functionality for plotting decision boundaries. These boundaries take a random subsample of the 784-dimensional input space and plots a 2D plane of decision boundaries. Because of this it is quite limited, and will often show the wrong prediction even though the model actually makes the right prediction. It is useful to study the decision boundaries because we can observe how the different regularizers behave.
-
-
-## Overview of Regularization Methods
-(With help from ChatGPT)
+The goal of this part of the project was investigate deep convolutional neural networks trained with different regularization techniques and build intuition for how the techniques work and how they influence the network. To do this I implemented many different regularization techniques and visualization techniques for DNNs. I tested the implementations on three datasets: MNIST, CIFAR10 and CIFAR100, using the LeNet model (See Lecun et al, 1998). For this part I also learned how to use ssh to connect to and use a data cluster, and how to use parallell computing to train on multiple GPUs using pytorch. See notebooks for results. Following is a list of the regularization and visualization techniques I implemented, with a short description explaining how they work.  
+  
+### Overview of Regularization Techniques
 
 #### Comparison - No Regularization
 In the absence of any regularization, a model simply minimizes the loss function on the training data. This can lead to overfitting, especially in high-dimensional models with many parameters, because the model becomes too complex and learns to fit the training data too closely, including its noise. As a result, it often performs poorly on unseen data. Regularization methods are therefore used to prevent overfitting by adding constraints to the learning process.  
@@ -99,8 +79,6 @@ Confidence penalty regularization adds a penalty to the loss function based on t
 #### Label Smoothing Regularization
 Label Smoothing is a form of regularization where the target labels for a classification problem are replaced with smoothed versions. Instead of having a hard one-hot encoded target, each target will have a small value for each incorrect class and the rest of the value for the correct class. This encourages the model to be less confident, reducing the risk of overfitting and improving generalization.  
 
-#### Hessian Regularization (Not working)
-Hessian regularization involves adding a term to the loss function that penalizes the Frobenius norm of the Hessian of the model's outputs with respect to its inputs. The Hessian is a matrix that describes the second-order derivatives of the model. Penalizing the norm of the Hessian encourages the model to have outputs that change linearly or sub-linearly with respect to small changes in the inputs. This can help prevent overfitting by discouraging the model from fitting the training data too closely. However, like with Jacobi regularization, calculating the Hessian matrix can be computationally expensive for complex models.  
 
 #### Noise Injection to Inputs
 Noise injection to inputs is a regularization technique where random noise is added to the inputs during training. This encourages the model to be robust to small changes in the inputs. This form of regularization can help prevent overfitting by discouraging the model from fitting the noise in the training data, instead focusing on the underlying patterns that are consistent even when noise is added. However, care must be taken to ensure that the noise does not overpower the signal in the data, as this could lead to the model learning less useful representations.  
@@ -109,9 +87,7 @@ Noise injection to inputs is a regularization technique where random noise is ad
 Similar to noise injection to inputs, noise injection to weights involves adding random noise to the weights during training. This can be seen as a form of stochastic regularization, as it adds a source of randomness that the model needs to be robust to. By preventing the weights from settling into a fixed value, it encourages the model to explore different parts of the weight space, which can help it avoid overfitting to the training data. However, like with injecting noise to inputs, care must be taken to ensure that the noise does not overpower the learning signal. Moreover, this method can make the optimization process more challenging and may increase the time required for training.   
 
 
-## Overview of Visualization Techniques
-(With help from ChatGPT)
-
+### Overview of Visualization Techniques
 #### Training and Test Loss Curves
 The most straightforward way to visualize the effect of regularization is by plotting the training and validation loss over time. If regularization is working correctly, you should observe a decrease in the gap between training and validation loss, indicating a reduction in overfitting.
 
@@ -131,5 +107,15 @@ You can use dimensionality reduction techniques like t-SNE or PCA to visualize t
 A saliency map is a simple, yet effective method for understanding which parts of the image contribute most significantly to a neural network's decision. It is created by calculating the gradient of the output category with respect to the input image. This gradient is then visualized as a heatmap overlaying the original image, with high-gradient regions indicating important areas for the model's decision. The intuition behind this is that the gradient measures how much a small change in each pixel's intensity would affect the final prediction. So, large gradient values suggest important pixels.
 
 #### Occlusion Sensitivity 
-Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.
+Occlusion sensitivity is a method that involves systematically occluding different parts of the input image with a grey square (or other "occluder"), and monitoring the effect on the classifier's output. The output is then visualized as a heatmap showing how much the classifier's confidence decreased when each region was occluded, highlighting important regions in the input image for the model's decision.  
+  
+
+## Part Three: Exploring Jacobian and SVB Regularization
+For this part I chose to continue with the regularization techniques of the Jacobian Regularization from Hoffman 2019 and the SVB regularization from Jia 2019. I wanted to investigate these techniques further, also using models trained with L2 regularization and no regularization for comparison. I also chose to continue with the following visualization techniques for the investigation: accuracy curves, plots of decision boundaries and activation plots through dimensionality reduction (PCA).
+
+Learned:
+To use research rabbit to look for papers and try to get an overview of field.
+
+The folder *Jacobian Regularization* contains functionality for plotting decision boundaries. These boundaries take a random subsample of the 784-dimensional input space and plots a 2D plane of decision boundaries. Because of this it is quite limited, and will often show the wrong prediction even though the model actually makes the right prediction. It is useful to study the decision boundaries because we can observe how the different regularizers behave.
+
 

@@ -2,25 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-### MLP
-
-
-class MLP(nn.Module):
-    def __init__(self):
-        super(MLP, self).__init__()
-        self.fc1 = nn.Linear(in_features=32 * 32 * 3, out_features=64)
-        self.fc2 = nn.Linear(in_features=64, out_features=64)
-        self.fc3 = nn.Linear(in_features=64, out_features=64)
-        self.fc4 = nn.Linear(in_features=64, out_features=10)
-
-    def forward(self, x):
-        x = x.view(-1, 32 * 32 * 3)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.softmax(self.fc4(x), dim=1)
-        return x
-
 
 ### LENET
 
@@ -117,8 +98,6 @@ class LeNet(nn.Module):
         jacobi_det_reg_lmbd=0.001,
         conf_penalty=False,
         conf_penalty_lmbd=0.1,
-        hessian_reg=False,
-        hessian_reg_lmbd=0.001,
     ):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
@@ -202,29 +181,6 @@ class LeNet(nn.Module):
             loss += conf_penalty_loss
             return loss, conf_penalty_loss
 
-        # Hessian regularization
-        if hessian_reg:
-            grad_outputs = torch.ones_like(y_pred)
-            grads = torch.autograd.grad(
-                y_pred,
-                x,
-                grad_outputs=grad_outputs,
-                create_graph=True,
-                retain_graph=True,
-                only_inputs=True,
-            )[0]
-            grad_norm = grads.norm(2, dim=1)
-            grad_norm = grad_norm.unsqueeze(1)
-            hessian = torch.autograd.grad(
-                grad_norm,
-                x,
-                grad_outputs=grad_outputs,
-                create_graph=True,
-                retain_graph=True,
-                only_inputs=True,
-            )[0]
-            hessian_loss = hessian_reg_lmbd * torch.norm(hessian, p=2)
-            return loss, hessian_loss
         return loss, loss
 
     def train_step(
@@ -246,8 +202,6 @@ class LeNet(nn.Module):
         conf_penalty_lmbd=0.1,
         label_smoothing=False,
         label_smoothing_lmbd=0.1,
-        hessian_reg=False,
-        hessian_reg_lmbd=0.001,
     ):
         if label_smoothing:
             num_classes = 10
@@ -273,8 +227,6 @@ class LeNet(nn.Module):
             jacobi_det_reg_lmbd=jacobi_det_reg_lmbd,
             conf_penalty=conf_penalty,
             conf_penalty_lmbd=conf_penalty_lmbd,
-            hessian_reg=hessian_reg,
-            hessian_reg_lmbd=hessian_reg_lmbd,
         )
         loss.backward()
         self.opt.step()
@@ -282,82 +234,3 @@ class LeNet(nn.Module):
             return loss.item(), reg_loss.item()
         else:
             return loss.item(), reg_loss
-
-
-### RESNET
-
-
-class ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
-        super(ResidualBlock, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(
-                in_channels, out_channels, kernel_size=3, stride=stride, padding=1
-            ),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
-        )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(out_channels),
-        )
-        self.downsample = downsample
-        self.relu = nn.ReLU()
-        self.out_channels = out_channels
-
-    def forward(self, x):
-        residual = x
-        out = self.conv1(x)
-        out = self.conv2(out)
-        if self.downsample:
-            residual = self.downsample(x)
-        out += residual
-        out = self.relu(out)
-        return out
-
-
-class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=10):
-        super(ResNet, self).__init__()
-        self.inplanes = 64
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-        )
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer0 = self._make_layer(block, 64, layers[0], stride=1)
-        self.layer1 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer2 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer3 = self._make_layer(block, 512, layers[3], stride=2)
-        self.avgpool = nn.AvgPool2d(7, stride=1)
-        self.fc = nn.Linear(512, num_classes)
-
-    def _make_layer(self, block, planes, blocks, stride=1):
-        downsample = None
-        if stride != 1 or self.inplanes != planes:
-            downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes, kernel_size=1, stride=stride),
-                nn.BatchNorm2d(planes),
-            )
-        layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample))
-        self.inplanes = planes
-        for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
-
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.maxpool(x)
-        x = self.layer0(x)
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-
-        return x

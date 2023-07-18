@@ -26,8 +26,6 @@ def train(
     conf_penalty_lmbd=0.1,
     label_smoothing=False,
     label_smoothing_lmbd=0.1,
-    hessian_reg=False,
-    hessian_reg_lmbd=0.001,
 ):
     losses = []
     epochs = []
@@ -64,8 +62,6 @@ def train(
                     conf_penalty_lmbd=conf_penalty_lmbd,
                     label_smoothing=label_smoothing,
                     label_smoothing_lmbd=label_smoothing_lmbd,
-                    hessian_reg=hessian_reg,
-                    hessian_reg_lmbd=hessian_reg_lmbd,
                 )
             else:
                 loss_data, reg_loss_data = model.train_step(
@@ -86,8 +82,6 @@ def train(
                     conf_penalty_lmbd=conf_penalty_lmbd,
                     label_smoothing=label_smoothing,
                     label_smoothing_lmbd=label_smoothing_lmbd,
-                    hessian_reg=hessian_reg,
-                    hessian_reg_lmbd=hessian_reg_lmbd,
                 )
                 losses.append(loss_data)
                 reg_losses.append(reg_loss_data)
