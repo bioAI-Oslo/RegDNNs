@@ -1,25 +1,25 @@
 import torch
 import torch.nn as nn
-import numpy as np
 import torch.nn.functional as F
 from torch.optim import Adam
 
+
 class UMINN(nn.Module):
-    def __init__(self, in_size = 2, out_size = 4, lr = 0.01, bias = False):
+    def __init__(self, in_size=2, out_size=4, lr=0.01, bias=False):
         super().__init__()
-        self.L1 = nn.Linear(in_size, out_size, bias = bias)
+        self.L1 = nn.Linear(in_size, out_size, bias=bias)
         self.L = nn.CrossEntropyLoss()
-        self.opt = Adam(self.parameters(), lr = lr)
-    
+        self.opt = Adam(self.parameters(), lr=lr)
+
     def forward(self, x):
         x = self.L1(x)
-        return F.softmax(x, dim = -1)
-    
+        return F.softmax(x, dim=-1)
+
     def loss_fn(self, x, y):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
         return loss
-    
+
     def train_step(self, data, labels):
         self.opt.zero_grad()
         loss = self.loss_fn(data, labels.long())
@@ -27,50 +27,53 @@ class UMINN(nn.Module):
         self.opt.step()
         return loss.item()
 
-    
+
 class UMINN_L1(UMINN):
-    def __init__(self, in_size = 2, out_size = 4, lmbd = 0.01, lr = 0.01, bias = False):
-        super().__init__(in_size = in_size, out_size = out_size, lr = lr, bias = bias)
+    def __init__(self, in_size=2, out_size=4, lmbd=0.01, lr=0.01, bias=False):
+        super().__init__(in_size=in_size, out_size=out_size, lr=lr, bias=bias)
         self.lmbd = lmbd
 
     def loss_fn(self, x, y):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
-        loss += self.lmbd * self.L1.weight.abs().sum() # L1 reg.
+        loss += self.lmbd * self.L1.weight.abs().sum()  # L1 reg.
         return loss
 
-    
+
 class UMINN_L2(UMINN):
-    def __init__(self, in_size = 2, out_size = 4,  lmbd = 0.01, lr = 0.01, bias = False):
-        super().__init__(in_size = in_size, out_size = out_size, lr = lr, bias = bias)
+    def __init__(self, in_size=2, out_size=4, lmbd=0.01, lr=0.01, bias=False):
+        super().__init__(in_size=in_size, out_size=out_size, lr=lr, bias=bias)
         self.lmbd = lmbd
 
     def loss_fn(self, x, y):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
-        loss += (self.lmbd * self.L1.weight**2).sum() # L2 reg.
+        loss += (self.lmbd * self.L1.weight**2).sum()  # L2 reg.
         return loss
+
 
 class UMINN_L1_L2(UMINN):
-    def __init__(self, in_size = 2, out_size = 4,  lmbd1 = 0.01, lmbd2 = 0.01, lr = 0.01, bias = False):
-        super().__init__(in_size = in_size, out_size = out_size, lr = lr, bias = bias)
+    def __init__(
+        self, in_size=2, out_size=4, lmbd1=0.01, lmbd2=0.01, lr=0.01, bias=False
+    ):
+        super().__init__(in_size=in_size, out_size=out_size, lr=lr, bias=bias)
         self.lmbd1 = lmbd1
         self.lmbd2 = lmbd2
 
     def loss_fn(self, x, y):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
-        loss += self.lmbd1 * self.L1.weight.abs().sum() # L1 reg.
-        loss += (self.lmbd2 * self.L1.weight**2).sum() # L2 reg.
+        loss += self.lmbd1 * self.L1.weight.abs().sum()  # L1 reg.
+        loss += (self.lmbd2 * self.L1.weight**2).sum()  # L2 reg.
         return loss
 
-    
+
 class UMINN_SVB(UMINN):
-    def __init__(self, in_size = 2, out_size = 4, lr = 0.01, bias = False):
-        super().__init__(in_size = in_size, out_size = out_size, lr = lr, bias = bias)
-        nn.init.orthogonal_(self.L1.weight, gain = 1.0)
-    
-    def svb(self, eps = 0.001):
+    def __init__(self, in_size=2, out_size=4, lr=0.01, bias=False):
+        super().__init__(in_size=in_size, out_size=out_size, lr=lr, bias=bias)
+        nn.init.orthogonal_(self.L1.weight, gain=1.0)
+
+    def svb(self, eps=0.001):
         """Implements hard singular value bounding as described in Jia et al. 2019.
         Keyword Arguments:
             eps -- Small constant that sets the weights a small interval around 1 (default: {0.001})
@@ -81,27 +84,29 @@ class UMINN_SVB(UMINN):
         for i in range(len(sigma)):
             if sigma[i] > 1 + eps:
                 sigma[i] = 1 + eps
-            elif sigma[i] < 1/(1 + eps):
-                sigma[i] = 1/(1 + eps)
+            elif sigma[i] < 1 / (1 + eps):
+                sigma[i] = 1 / (1 + eps)
             else:
                 pass
         new_weights = U @ torch.diag(sigma) @ V
         self.L1.weight.data = new_weights
 
+
 class UMINN_SVB_Soft(UMINN):
-    def __init__(self, in_size = 2, out_size = 4, lr = 0.01, bias = False, lmbd = 0.01):
-        super().__init__(in_size = in_size, out_size = out_size, lr = lr, bias = bias)
-        torch.nn.init.orthogonal_(self.L1.weight, gain = 1.0)
+    def __init__(self, in_size=2, out_size=4, lr=0.01, bias=False, lmbd=0.01):
+        super().__init__(in_size=in_size, out_size=out_size, lr=lr, bias=bias)
+        torch.nn.init.orthogonal_(self.L1.weight, gain=1.0)
         self.lmbd = lmbd
-    
+
     def loss_fn(self, x, y):
         y_pred = self(x.float())
         loss = self.L(y_pred, y)
         w = self.L1.weight
-        
+
         # Main loss function term for soft SVB from Jia et al. 2019:
-        w_orth = w.transpose(0,1) @ w # W^T * W
-        w_orth = w_orth - torch.eye(w_orth.shape[0]) # W^T * W - I
-        loss += self.lmbd * torch.linalg.norm(w_orth, ord = "fro")**2 # Note that since we only have one layer we need not do this over weights from more layers
+        w_orth = w.transpose(0, 1) @ w  # W^T * W
+        w_orth = w_orth - torch.eye(w_orth.shape[0])  # W^T * W - I
+        loss += (
+            self.lmbd * torch.linalg.norm(w_orth, ord="fro") ** 2
+        )  # Note that since we only have one layer we need not do this over weights from more layers
         return loss
-    

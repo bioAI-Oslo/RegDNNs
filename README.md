@@ -1,6 +1,9 @@
 # Regularization of Neural Networks
 Project: Exploring soft and hard constraints in artificial neural networks.
-Overarching goal: Reaching better generalization in DNNs.
+Overarching goal: Better generalization in DNNs.
+
+### Content
+
 
 What I have done:
 1. Initial testing, learning how to use pytorch and build NNs.
@@ -15,9 +18,14 @@ To use bioai's data cluster - train networks on gpu, ssh connection etc.
 
 The folder *Initial testing and learning* contains *Start training*, *UMI*, *UMI RNN* and *JAX*. Here I tested regularization on a simple toy problem, learnt how to use pytorch, how to build/train NNs and RNNs, and started learning how to use jax.
 
+UMI-problem: generate four clusters of points with some variation. Train networks to classify points to the correct class (cluster). Motivation: simple toy problem which shows how regularization makes networks generalize better. For Jacobian regularization it is interesting to look at how it preserves areas between I/O, which we get a good intuition for with such a simple problem as we can visualize it. Result: Tested No regularization, L1, L2, SVB and Jacobian regularization. Results in Animations - 
+
 The folder *Regularization benchmarking* contains the actual project with comparison of regularization techniques. I use the network LeNet, and the datasets MNIST, CIFAR10 and CIFAR100 to do the testing. I test how the regularization techniques perform on test data, and visualize parts of the NN to investigate the effect of regularization.
 
 The folder *Jacobian Regularization* contains functionality for plotting decision boundaries. These boundaries take a random subsample of the 784-dimensional input space and plots a 2D plane of decision boundaries. Because of this it is quite limited, and will often show the wrong prediction even though the model actually makes the right prediction. It is useful to study the decision boundaries because we can observe how the different regularizers behave.
+
+### Packages and environments:
+I used two conda environments for the project. One for running the files under *JAX*, and another for running all other files. This was due to some packages breaking together with the jax packages. For both conda environments i installed jupyter via *conda install jupyter*. Afterwards I installed the packages in the requirement files using pip. The requirements for jax is in the *JAX* folder, while the requirements for the rest is in the main project. For the main project I also installed **ffmpeg** using *conda install -c conda-forge ffmpeg*, to make animations during my initial exploration of a toy problem.
 
 ## Overview of Regularization Methods
 (With help from ChatGPT)

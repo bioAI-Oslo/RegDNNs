@@ -1,5 +1,5 @@
 """
-Code taken from:
+Parts of the code taken from:
 https://github.com/Vemundss/unitary_memory_indexing/blob/main/src/AnimatedScatter.py
 """
 
@@ -7,13 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.cm as cm
 import numpy as np
-import torch
-import torch.nn as nn
-import torchvision
-import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
-from torch.optim import Adam
-from IPython.display import HTML
+from torch.utils.data import Dataset
 
 
 def projection_rejection(u, v):

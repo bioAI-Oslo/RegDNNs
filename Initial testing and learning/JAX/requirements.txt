@@ -1,0 +1,9 @@
+jax
+jaxlib
+jupyter-black
+matplotlib
+numpy
+optax
+torch
+torchvision
+tqdm

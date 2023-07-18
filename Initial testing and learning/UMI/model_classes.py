@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
-import numpy as np
 import torch.nn.functional as F
 from torch.optim import Adam
-from torch.autograd import Variable, functional
+from torch.autograd import functional
 import functorch as ft
 
 class UMINN(nn.Module):
