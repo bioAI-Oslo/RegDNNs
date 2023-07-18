@@ -18,9 +18,16 @@ I used two conda environments for the project. One for running the files under t
 
 
 ## Part One: Initial Testing, Learning and Toy-Problem
-The folder *Initial testing and learning* contains *Start training*, *UMI*, *UMI RNN* and *JAX*. Here I tested regularization on a simple toy problem, learnt how to use pytorch, how to build/train NNs and RNNs, and started learning how to use jax.
+The folder *Initial Testing, Learning and Toy-Problem*  contains *JAX*, *Start training*, *UMI* and *UMI RNN*. Here I learnt how to build/train NNs and RNNs using pytorch, and started learning how to use jax.  
 
-UMI-problem: generate four clusters of points with some variation. Train networks to classify points to the correct class (cluster). Motivation: simple toy problem which shows how regularization makes networks generalize better. For Jacobian regularization it is interesting to look at how it preserves areas between I/O, which we get a good intuition for with such a simple problem as we can visualize it. Result: Tested No regularization, L1, L2, SVB and Jacobian regularization. Results in Animations -
+I tested regularization on a simple toy problem (called UMI). The testing consisted of the following:  
+1. Generate four clusters of points with some Gaussian noise  
+2. Train networks to classify points to the correct class (cluster)  
+3. Learn how to implement different regularization techniques, and test them on the problem  
+
+Motivation: Simple toy problem which shows how regularization makes networks generalize better. For Jacobian regularization it is interesting to look at how it preserves areas between I/O, which we get a good intuition for with such a simple problem as we can visualize it.  
+Result: Tested without regularization, and with L1, L2, SVB and different Jacobian regularizations. Results are stored in the folder *Animations* under *UMI*.  
+The code in this part is quite unstructured and contains multiple errors as it was made for learning/testing.
 
 
 ## Part Two: Regularization Benchmarking
