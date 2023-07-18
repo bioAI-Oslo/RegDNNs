@@ -8,9 +8,9 @@ This project developed over time, and has four parts. Part one was a collaborati
 ## Content
 [Setup: Packages and Software](#setup-packages-and-software)  
 [Part One: Initial Testing, Learning and Toy-Problem](#part-one-initial-testing-learning-and-toy-problem)  
-[Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking)   
-    [Overview of Regularization Techniques](#overview-of-regularization-techniques)   
-    [Overview of Visualization Techniques](#overview-of-visualization-techniques)   
+[Part Two: Broad Regularization Benchmarking](#part-two-broad-regularization-benchmarking)  
+&nbsp;&nbsp;&nbsp;&nbsp;[Overview of Regularization Techniques](#overview-of-regularization-techniques)  
+&nbsp;&nbsp;&nbsp;&nbsp;[Overview of Visualization Techniques](#overview-of-visualization-techniques)  
 [Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)  
   
 
