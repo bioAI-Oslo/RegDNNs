@@ -2,29 +2,10 @@ import pickle
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import io
 from tqdm import tqdm
 from collections import OrderedDict
 
 from model_classes import LeNet_MNIST
-
-
-def accuracy(model, loader, device):
-    """Calculate the accuracy of a model. Uses a data loader."""
-    correct = 0
-    total = 0
-    model.eval()  # switch to evaluation mode
-    with torch.no_grad():
-        for data in loader:
-            inputs, labels = data
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-            outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-    model.train()  # switch back to training mode
-    return correct / total
 
 
 def train(
@@ -81,6 +62,24 @@ def train(
             % (100 * accuracy(model, test_loader, device))
         )
     return losses, reg_losses, epochs, train_accuracies, test_accuracies
+
+
+def accuracy(model, loader, device):
+    """Calculate the accuracy of a model. Uses a data loader."""
+    correct = 0
+    total = 0
+    model.eval()  # switch to evaluation mode
+    with torch.no_grad():
+        for data in loader:
+            inputs, labels = data
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    model.train()  # Switch back to training mode
+    return correct / total
 
 
 class SaveOutput:

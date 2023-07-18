@@ -16,6 +16,7 @@ def train(
     train_accuracies = []
     test_accuracies = []
     reg_losses = []
+    iterations = 0
 
     for epoch in tqdm(range(n_epochs)):
         N = len(train_loader)
@@ -37,18 +38,31 @@ def train(
                     labels,
                     
                 )
-                losses.append(loss_data)
-                reg_losses.append(reg_loss_data)
+            losses.append(loss_data)
+            reg_losses.append(reg_loss_data)
+
+            # Learning rate decay
+            if iterations % (n_epochs * 200) == 0 and iterations > 0:
+                if torch.cuda.device_count() > 1:
+                    opt = model.module.opt
+                else:
+                    opt = model.opt
+                for g in opt.param_groups:
+                    g["lr"] = g["lr"] / 10
+                    print(f"Decayed lr from {g['lr'] * 10} to {g['lr']}")
+
+            iterations += 1
 
         if model.hard_svb:
             svb(model, eps=model.hard_svb_lmbd)
 
-        train_accuracies.append(accuracy(model, test_loader, device))
-        test_accuracies.append(accuracy(model, train_loader, device))
+
+        train_accuracies.append(accuracy(model, train_loader, device))
+        test_accuracies.append(accuracy(model, test_loader, device))
         model.counter = 0
-        print(f"Epoch: {epoch}")
+        print(f"Epoch: {epoch+1}")
         print(
-            "Accuracy of the network on the test images: %d %%"
+            "Accuracy of the network on the test images: %.2f %%"
             % (100 * accuracy(model, test_loader, device))
         )
     return losses, reg_losses, epochs, weights, train_accuracies, test_accuracies
@@ -58,6 +72,7 @@ def accuracy(model, loader, device):
     """Calculate the accuracy of a model. Uses a data loader."""
     correct = 0
     total = 0
+    model.eval() # Switch to evaluation mode
     with torch.no_grad():
         for data in loader:
             inputs, labels = data
@@ -67,6 +82,7 @@ def accuracy(model, loader, device):
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+    model.train()  # Switch back to training mode
     return correct / total
 
 
