@@ -1,7 +1,7 @@
 # Regularization of Neural Networks
-Project: Exploring soft and hard constraints in artificial neural networks.
-Overarching goal: Better generalization in DNNs.
-
+**Project**: Exploring soft and hard constraints in artificial neural networks  
+**Goal**: Understand how different regularization techniques promotes better generalization in ANNs  
+  
 This project developed over time, and has four parts. Part one was a collaboration between me and [@Dalsaetra](https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss](https://www.github.com/Vemundss).
   
 ## Content
