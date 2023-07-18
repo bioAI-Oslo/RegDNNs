@@ -45,10 +45,8 @@ def train(
         N = len(train_loader)
         for i, (data, labels) in enumerate(train_loader):
             epochs.append(epoch + i / N)
-
-            if device == "cuda":
-                data = data.to(device)
-                labels = labels.to(device)
+            data = data.to(device)
+            labels = labels.to(device)
 
             if torch.cuda.device_count() > 1:
                 loss_data, reg_loss_data = model.module.train_step(
