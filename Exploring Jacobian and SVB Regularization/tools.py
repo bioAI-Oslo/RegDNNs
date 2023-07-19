@@ -168,7 +168,7 @@ def register_hooks(model):
     return save_output, hook_handles, layer_names
 
 
-def load_model(model_name):
+def load_trained_model(model_name):
     """
     Loads a pre-trained PyTorch model and associated training data.
 
@@ -271,7 +271,7 @@ def fgsm_attack_test(model, device, test_loader, epsilon):
     
     # Accuracy counter
     correct = 0
-    
+
     # Loop over all examples in test set
     for data, target in test_loader:
         # Send the data and label to the device
@@ -302,3 +302,48 @@ def fgsm_attack_test(model, device, test_loader, epsilon):
     # Calculate final accuracy for this epsilon
     final_acc = correct / float(len(test_loader.dataset))
     return final_acc
+
+
+class ModelInfo:
+    """
+    This class is used to store information about a trained model.
+
+    Attributes:
+    name (str): The name of the model.
+    model (nn.Module): The PyTorch model.
+    losses (list): The list of loss values during training.
+    reg_losses (list): The list of regularization loss values during training.
+    epochs (int): The number of training epochs.
+    train_accuracies (list): The list of training accuracies.
+    test_accuracies (list): The list of test accuracies.
+    """
+
+    def __init__(self, name):
+        """
+        The constructor for ModelInfo class.
+
+        Parameters:
+        name (str): The name of the model.
+        """
+
+        self.name = name
+        self.model, self.losses, self.reg_losses, self.epochs, self.train_accuracies, self.test_accuracies = self.load_model(name)
+
+    @staticmethod
+    def load_model(name):
+        """
+        This static method is used to load the model and related information from a file using load_trained_model.
+
+        Parameters:
+        name (str): The name of the model.
+
+        Returns:
+        model (nn.Module): The loaded PyTorch model.
+        losses (list): The loaded list of loss values during training.
+        reg_losses (list): The loaded list of regularization loss values during training.
+        epochs (int): The loaded number of training epochs.
+        train_accuracies (list): The loaded list of training accuracies.
+        test_accuracies (list): The loaded list of test accuracies.
+        """
+        model, losses, reg_losses, epochs, train_accuracies, test_accuracies = load_trained_model(name)
+        return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
