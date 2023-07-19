@@ -1,15 +1,37 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.autograd import grad
-from torch.utils.checkpoint import checkpoint
-
-### LENET
 
 
 class LeNet_MNIST(nn.Module):
-    """Class implemented as in Hoffman 2019 for Jacobian regularization."""
+    """
+    LeNet model architecture for MNIST digit classification with optional 
+    Jacobian, SVB, Dropout and L2 regularization, following the design used in Hoffman 2019. 
 
+    This model is a deep neural network with two convolutional layers and 
+    three fully connected layers.
+
+    Parameters
+    ----------
+    lr : float
+        The learning rate for the SGD optimizer.
+    momentum : float
+        The momentum for the SGD optimizer.
+    dropout_rate : float
+        The dropout rate applied after each fully connected layer.
+    l2_lmbd : float
+        The weight decay coefficient for L2 regularization.
+    jacobi_reg : bool
+        If True, applies Jacobian regularization.
+    jacobi_reg_lmbd : float
+        The regularization coefficient for Jacobian regularization.
+    svb_reg : bool
+        If True, applies singular value bounding (SVB) regularization.
+    svb_freq : int
+        The frequency for computing SVB.
+    svb_eps : float
+        The epsilon for computing SVB.
+    """
     def __init__(
         self,
         lr=0.1,
@@ -53,6 +75,7 @@ class LeNet_MNIST(nn.Module):
                 elif isinstance(m, nn.Linear):
                     nn.init.orthogonal_(m.weight)
         else:
+            # Initialize using Glorot initialization (as described in Glorot & Bengio 2010)
             nn.init.xavier_uniform_(self.conv1.weight)
             nn.init.xavier_uniform_(self.conv2.weight)
             nn.init.xavier_uniform_(self.fc1.weight)
@@ -70,9 +93,24 @@ class LeNet_MNIST(nn.Module):
         self.svb_reg = svb_reg
         self.svb_freq = svb_freq
         self.svb_eps = svb_eps
-        self.training_steps = 0  # Track training steps
+
+        # Track training steps
+        self.training_steps = 0  
 
     def forward(self, x):
+        """
+        Forward pass of the LeNet model.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+
+        Returns
+        -------
+        x : torch.Tensor
+            The output tensor (predictions of the model).
+        """
         x = self.pool(torch.tanh(self.conv1(x)))
         x = self.pool(torch.tanh(self.conv2(x)))
         x = x.view(-1, 400)
@@ -82,36 +120,68 @@ class LeNet_MNIST(nn.Module):
         return x
 
     def jacobian_regularizer(self, x):
-        C = x.shape[1]  # number of classes
-        JF = 0
-        nproj = 1  # number of random projections
+        """
+        Calculates the Jacobian regularization term for an input batch.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+
+        Returns
+        -------
+        JF : torch.Tensor
+            The Jacobian regularization term.
+        """
+        C = x.shape[1]  # Number of classes in dataset
+        JF = 0 # Initialize Jacobian Frobenius norm
+        nproj = 1  # Number of random projections
 
         for _ in range(nproj):
-            v = torch.randn(x.shape[0], C).to(x.device)  # random vector
-            v_hat = v / torch.norm(v, dim=1, keepdim=True)  # normalize
+            v = torch.randn(x.shape[0], C).to(x.device)  # Generate random vector
+            v_hat = v / torch.norm(v, dim=1, keepdim=True)  # Normalize
 
-            z = self(x)  # forward pass
-            v_hat_dot_z = torch.einsum("bi,bi->b", v_hat, z)  # dot product
+            z = self(x)  # Forward pass to get predictions
+            v_hat_dot_z = torch.einsum("bi, bi->b", v_hat, z)  # Calculate dot product
 
             Jv = grad(v_hat_dot_z.sum(), x, create_graph=True)[
                 0
-            ].detach()  # Jacobian-vector product
+            ].detach()  # Compute Jacobian-vector product
 
-            JF += C * (Jv**2).sum() / (nproj * len(x))
+            JF += C * (Jv**2).sum() / (nproj * len(x)) # Add square of Jv to Frobenius norm
 
-        return JF
+        return JF 
 
     def loss_fn(
         self,
         x,
         y,
     ):
-        y_pred = self(x.float())
-        loss = self.L(y_pred, y)
+        """
+        Calculates the loss function (cross-entropy) with an optional 
+        Jacobian regularization term.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+        y : torch.Tensor
+            The true labels.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            The calculated loss.
+        jacobi_loss : torch.Tensor
+            The calculated Jacobian regularization loss (if applicable).
+        """
+        y_pred = self(x.float()) # Forward pass to get predictions
+        loss = self.L(y_pred, y) # Compute loss using cross-entropy
 
         # Jacobi regularization
         if self.jacobi_reg:
             x.requires_grad_(True)
+            # Compute and add Jacobian regularization term
             jacobi_loss = self.jacobi_reg_lmbd * self.jacobian_regularizer(x)
             loss += jacobi_loss
             return loss, jacobi_loss
@@ -123,6 +193,24 @@ class LeNet_MNIST(nn.Module):
         data,
         labels,
     ):
+        """
+        Performs one step of training: forward pass, loss calculation, 
+        backward pass and parameters update.
+
+        Parameters
+        ----------
+        data : torch.Tensor
+            The input tensor.
+        labels : torch.Tensor
+            The true labels.
+
+        Returns
+        -------
+        loss : float
+            The calculated loss.
+        reg_loss : float
+            The calculated regularization loss (if applicable).
+        """
         self.opt.zero_grad()
         loss, reg_loss = self.loss_fn(
             data,
