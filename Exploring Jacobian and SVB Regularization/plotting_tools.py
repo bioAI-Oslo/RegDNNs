@@ -6,7 +6,7 @@ from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
 
-from tools import register_hooks, fgsm_attack_test
+from tools import register_hooks, fgsm_attack_test, total_variation
 
 
 def plot_results(
@@ -188,27 +188,6 @@ def plot_activations_pca(model, data_loader, device):
         handle.remove()
 
     save_output.clear()
-
-
-def total_variation(image):
-    """
-    Function to compute the total variation of an image. Total variation
-    is the sum of the absolute differences for neighboring pixel-values
-    in the input images. This measures how much noise is in the images.
-
-    Parameters
-    ----------
-    image : numpy.ndarray
-        2D numpy array representing the grayscale image.
-
-    Returns
-    -------
-    total_variation : float
-        Total variation of the image.
-    """
-    return np.sum(np.abs(image[:-1, :-1] - image[1:, :-1])) + np.sum(
-        np.abs(image[:-1, :-1] - image[:-1, 1:])
-    )
 
 
 def plot_decision_boundary(

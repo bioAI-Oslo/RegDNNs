@@ -1,3 +1,4 @@
+import numpy as np
 import pickle
 import torch
 import torch.nn as nn
@@ -6,7 +7,6 @@ from tqdm import tqdm
 from collections import OrderedDict
 
 from model_classes import LeNet_MNIST
-from plotting_tools import total_variation
 
 
 def train(
@@ -367,6 +367,27 @@ class ModelInfo:
             test_accuracies,
         ) = load_trained_model(name)
         return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
+
+
+def total_variation(image):
+    """
+    Function to compute the total variation of an image. Total variation
+    is the sum of the absolute differences for neighboring pixel-values
+    in the input images. This measures how much noise is in the images.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        2D numpy array representing the grayscale image.
+
+    Returns
+    -------
+    total_variation : float
+        Total variation of the image.
+    """
+    return np.sum(np.abs(image[:-1, :-1] - image[1:, :-1])) + np.sum(
+        np.abs(image[:-1, :-1] - image[:-1, 1:])
+    )
 
 
 def compute_total_variation(
