@@ -6,6 +6,7 @@ from tqdm import tqdm
 from collections import OrderedDict
 
 from model_classes import LeNet_MNIST
+from plotting_tools import total_variation
 
 
 def train(
@@ -366,3 +367,67 @@ class ModelInfo:
             test_accuracies,
         ) = load_trained_model(name)
         return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
+
+
+def compute_total_variation(
+    model,
+    img,
+    v1,
+    v2,
+    device,
+    resolution=300,
+    zoom=[0.025, 0.01, 0.001],
+):
+    """
+    Function to calculate the total variation of decision boundaries of a model in a 2D plane for different zoom levels.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The trained model.
+    img : torch.Tensor
+        The input image to construct the 2D plane.
+    v1 : torch.Tensor
+        First vector to construct the 2D plane.
+    v2 : torch.Tensor
+        Second vector to construct the 2D plane.
+    device : str
+        The device to run the model ('cpu' or 'cuda').
+    resolution : int, optional
+        The resolution of the grid to be used, by default 300.
+    zoom : list, optional
+        The zoom levels to calculate total variation of, by default [0.025, 0.01, 0.001].
+    """
+    # Enter evaluation mode
+    model.eval()
+
+    # Flatten the image if necessary and convert to a single precision float
+    img = img.view(-1).to(device).float()
+
+    tv_list = []
+    for zoom_level in zoom:
+        # Generate grid of points in plane defined by img, v1 and v2
+        scale = 1 / zoom_level  # Scale decided by zoom_level
+        x = torch.linspace(-scale, scale, resolution)
+        y = torch.linspace(-scale, scale, resolution)
+        xv, yv = torch.meshgrid(x, y)
+
+        # Create the 2D plane passing through the image
+        plane = (
+            img[None, None, :]
+            + xv[..., None] * v1[None, None, :]
+            + yv[..., None] * v2[None, None, :]
+        ).to(device)
+
+        # Compute the model's predictions over the grid
+        with torch.no_grad():
+            output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
+        probs = torch.nn.functional.softmax(output, dim=-1)
+
+        # Get the class with the highest probability
+        _, predictions = torch.max(probs, dim=-1)
+
+        # Compute and return the total variation of the decision boundaries for each zoom level
+        tv = total_variation(predictions.cpu().numpy())
+        tv_list.append(tv)
+    return tv_list
