@@ -41,8 +41,8 @@ class LeNet_MNIST(nn.Module):
         jacobi_reg=False,
         jacobi_reg_lmbd=0.01,
         svb_reg=False,
-        svb_freq=100,
-        svb_eps=0.01,
+        svb_freq=600,
+        svb_eps = 0.05,
     ):
         super(LeNet_MNIST, self).__init__()
         self.conv1 = nn.Conv2d(

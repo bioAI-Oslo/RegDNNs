@@ -334,24 +334,55 @@ def plot_decision_boundary(
 
 
 def generate_random_vectors(img):
-    # Generate random vectors
+    """
+    Generate two random orthogonal vectors with the same shape as the input image.
+
+    Parameters
+    ----------
+    img : torch.Tensor
+        The input image.
+
+    Returns
+    -------
+    v1 : torch.Tensor
+        The first random vector, normalized.
+    v2 : torch.Tensor
+        The second random vector, orthogonal to v1 and normalized.
+    """
+    # Reshape image to 1D tensor
     img = img.view(-1)
+
+    # Generate and normalize random orthogonal vectors
     v1 = torch.randn_like(img)
     v2 = torch.randn_like(img)
     v1 /= v1.norm()
-    v2 -= v1 * (v1.dot(v2))  # make orthogonal to v1
+    v2 -= v1 * (v1.dot(v2)) # Make orthogonal
     v2 /= v2.norm()
     return v1, v2
 
 
 def get_random_img(dataloader):
+    """
+    Retrieve a random image from a DataLoader.
+
+    Parameters
+    ----------
+    dataloader : torch.utils.data.DataLoader
+        The DataLoader to retrieve the image from.
+
+    Returns
+    -------
+    image : torch.Tensor
+        The randomly selected image.
+    """
     # Get a batch of data from the dataloader
     images, labels = next(iter(dataloader))
+    
+    # Get random image from the batch
     random_index = np.random.randint(len(labels))
-    # Get random image of the batch
     image = images[random_index]
 
-    # If image has a channel dimension (as it should in the case of the MNIST dataset), remove it
+    # If image has a channel dimension, remove it
     if image.dim() > 2:
         image = image.squeeze(0)
 
@@ -359,15 +390,27 @@ def get_random_img(dataloader):
 
 
 def plot_and_print_img(image, model, device, regularization_title="no regularization"):
-    # Print the prediction of the model
+    """
+    Plot an image and print the model's prediction for this image.
+
+    Parameters
+    ----------
+    image : torch.Tensor
+        The image to plot and predict.
+    model : torch.nn.Module
+        The trained model.
+    device : str
+        The device to run the model ('cpu' or 'cuda').
+    regularization_title : str, optional
+        The regularization method used in the model training, by default "no regularization".
+    """
+    # Ensure model is in evaluation mode
     model.eval()
 
+    # Get and print model's prediction for the image
     with torch.no_grad():
         output = model(image.view(1, 1, 28, 28).to(device))
-
-    # Get the predicted classes
     _, predicted = torch.max(output, 1)
-
     print(f"Prediction with {regularization_title}: {predicted.item()}")
 
     # Plot the image
@@ -378,13 +421,28 @@ def plot_and_print_img(image, model, device, regularization_title="no regulariza
 
 
 def plot_fgsm(model, device, test_loader):
+    """
+    Test the model's accuracy under FGSM attacks with different epsilon values, and plot the results.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The trained model.
+    device : str
+        The device to run the model ('cpu' or 'cuda').
+    test_loader : torch.utils.data.DataLoader
+        The DataLoader to test the model.
+    """
+    # Define the epsilon values to use for the FGSM attacks
     epsilons = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
     accuracies = []
 
+    # Test the model's accuracy under FGSM attacks with each epsilon value
     for eps in epsilons:
         acc = fgsm_attack_test(model, device, test_loader, eps)
         accuracies.append(acc)
 
+    # Plot the accuracy results
     plt.figure(figsize=(5, 5))
     plt.plot(epsilons, accuracies, "*-")
     plt.yticks(np.arange(0, 1.1, step=0.1))
