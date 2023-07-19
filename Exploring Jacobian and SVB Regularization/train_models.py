@@ -22,7 +22,7 @@ if __name__ == "__main__":
     svb_eps = 0.05
 
     # Initialize model
-    model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=0.0)
+    model = LeNet_MNIST(dropout_rate=0.0, svb_reg=True, svb_freq=svb_freq, svb_eps=svb_eps)
 
     # Check if there are multiple GPUs, and if so, use DataParallel
     if torch.cuda.device_count() > 1:
@@ -44,15 +44,15 @@ if __name__ == "__main__":
     # Switch to evaluation mode
     model.eval()
 
-    if not os.path.exists("./trained_models"):
-        os.makedirs("./trained_models")
+    if not os.path.exists("./trained_mnist_models"):
+        os.makedirs("./trained_mnist_models")
 
     # If the model was trained with DataParallel, save model.module.state_dict().
     # Otherwise, just save model.state_dict()
     if isinstance(model, torch.nn.DataParallel):
-        torch.save(model.module.state_dict(), "./trained_models/model_no_reg_no_dropout.pt")
+        torch.save(model.module.state_dict(), "./trained_mnist_models/model_svb_no_dropout.pt")
     else:
-        torch.save(model.state_dict(), "./trained_models/model_no_reg_no_dropout.pt")
+        torch.save(model.state_dict(), "./trained_mnist_models/model_svb_no_dropout.pt")
 
     # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
     data = {
@@ -63,5 +63,5 @@ if __name__ == "__main__":
         "test_accuracies": test_accuracies,
     }
 
-    with open("./trained_models/model_no_reg_no_dropout_data.pkl", "wb") as f:
+    with open("./trained_mnist_models/model_svb_no_dropout_data.pkl", "wb") as f:
         pickle.dump(data, f)
