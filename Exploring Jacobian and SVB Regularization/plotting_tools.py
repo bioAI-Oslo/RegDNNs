@@ -417,7 +417,10 @@ def plot_and_print_img(image, model, device, regularization_title="no regulariza
 
 
 def plot_fgsm(
-    model, device, test_loader, epsilons=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+    model,
+    device,
+    test_loader,
+    epsilons=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
 ):
     """
     Test the model's accuracy under FGSM (Fast Gradient Sign Method) attacks with different epsilon values,
@@ -448,14 +451,13 @@ def plot_fgsm(
         acc = fgsm_attack_test(model, device, test_loader, eps)
         accuracies.append(acc)
 
-    # Calculate suitable step sizes for xticks and yticks
+    # Calculate suitable step sizes for xticks
     xstep = (max(epsilons) - min(epsilons)) / 10
-    ystep = (max(accuracies) - min(accuracies)) / 10
 
     # Plot the accuracy results
     plt.figure(figsize=(5, 5))
     plt.plot(epsilons, accuracies, "*-")
-    plt.yticks(np.arange(min(accuracies), max(accuracies) + ystep, step=ystep))
+    plt.yticks(np.arange(0, 1.1, step=0.1))
     plt.xticks(np.arange(min(epsilons), max(epsilons) + xstep, step=xstep))
     plt.title("Accuracy vs Epsilon")
     plt.xlabel("Epsilon")

@@ -32,7 +32,9 @@ if __name__ == "__main__":
     n = 4
     for i in range(1, n + 1):
         # Initialize model with regularization of choice
-        model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=jacobi_reg_lmbd)
+        model = LeNet_MNIST(
+            dropout_rate=0.0, jacobi_reg=True, jacobi_reg_lmbd=jacobi_reg_lmbd
+        )
 
         # Check if there are multiple GPUs, and if so, use DataParallel
         if torch.cuda.device_count() > 1:
@@ -57,11 +59,13 @@ if __name__ == "__main__":
         # Save state of trained model based on training
         if isinstance(model, torch.nn.DataParallel):
             torch.save(
-                model.module.state_dict(), f"./trained_mnist_models/model_jacobi_{i}.pt"
+                model.module.state_dict(),
+                f"./trained_mnist_models/model_jacobi_no_dropout_{i}.pt",
             )
         else:
             torch.save(
-                model.state_dict(), f"./trained_mnist_models/model_jacobi_{i}.pt"
+                model.state_dict(),
+                f"./trained_mnist_models/model_jacobi_no_dropout_{i}.pt",
             )
 
         # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
@@ -73,5 +77,7 @@ if __name__ == "__main__":
             "test_accuracies": test_accuracies,
         }
 
-        with open(f"./trained_mnist_models/model_jacobi_{i}_data.pkl", "wb") as f:
+        with open(
+            f"./trained_mnist_models/model_jacobi_no_dropout_{i}_data.pkl", "wb"
+        ) as f:
             pickle.dump(data, f)

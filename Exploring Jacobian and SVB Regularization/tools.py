@@ -26,7 +26,7 @@ def train(
     n_epochs (int): The number of epochs to train the model for.
 
     Returns:
-    Tuple of lists: Tracking of losses, regularization losses, epochs, 
+    Tuple of lists: Tracking of losses, regularization losses, epochs,
     training accuracies, and testing accuracies over training process.
     """
     losses = []
@@ -66,7 +66,7 @@ def train(
                     opt = model.module.opt
                 else:
                     opt = model.opt
-                
+
                 # Update lr for each parameter group
                 for g in opt.param_groups:
                     g["lr"] = g["lr"] / 10
@@ -85,8 +85,8 @@ def train(
 
 
 def accuracy(model, loader, device):
-    """Calculate the accuracy of a model. 
-    
+    """Calculate the accuracy of a model.
+
     Parameters:
     model (nn.Module): The PyTorch model to evaluate.
     loader (DataLoader): DataLoader for the dataset to evaluate on.
@@ -99,7 +99,7 @@ def accuracy(model, loader, device):
     total = 0
 
     # Switch to evaluation mode
-    model.eval() 
+    model.eval()
 
     # Do not track gradients
     with torch.no_grad():
@@ -113,7 +113,7 @@ def accuracy(model, loader, device):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
     # Switch back to training mode
-    model.train()  
+    model.train()
     return correct / total
 
 
@@ -121,6 +121,7 @@ class SaveOutput:
     """
     Class to save outputs from specified layers in a model.
     """
+
     def __init__(self):
         self.outputs = []
 
@@ -150,8 +151,8 @@ def register_hooks(model):
     model (nn.Module): The PyTorch model to register hooks on.
 
     Returns:
-    tuple: A tuple containing an instance of SaveOutput (to access saved outputs), 
-    a list of handles to the hooks (for removing the hooks later), and a list of 
+    tuple: A tuple containing an instance of SaveOutput (to access saved outputs),
+    a list of handles to the hooks (for removing the hooks later), and a list of
     the names of the layers hooks were registered on.
     """
     save_output = SaveOutput()
@@ -177,36 +178,40 @@ def load_trained_model(model_name):
                       and training data files.
 
     Returns:
-    tuple: A tuple containing the loaded model and lists of losses, regularization losses, 
+    tuple: A tuple containing the loaded model and lists of losses, regularization losses,
            epochs, and train/test accuracies from training.
     """
     # Set to cpu as we will be loading on a laptop
     device = torch.device("cpu")
 
     # Initialize model based on provided model_name to get a similar model to prevent errors
-    if model_name == "model_no_reg":
-        model = (
-            LeNet_MNIST()
-        )
-    elif model_name == "model_no_reg_no_dropout":
-        model = (
-            LeNet_MNIST(dropout_rate=0.0)
-        )
-    elif model_name == "model_l2":
-        model = LeNet_MNIST(l2_lmbd=0.0005)
-    elif model_name == "model_l2_no_dropout":
-        model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=0.0005)
-    elif model_name == "model_jacobi":
-        model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=0.01)
-    elif model_name == "model_jacobi_no_dropout":
-        model = LeNet_MNIST(dropout_rate=0.0, jacobi_reg=True, jacobi_reg_lmbd=0.01)
-    elif model_name == "model_svb":
-        model = LeNet_MNIST(svb_reg=True, svb_freq=100, svb_eps=0.01)
-    elif model_name == "model_svb_no_dropout":
-        model = LeNet_MNIST(dropout_rate=0.0, svb_reg=True, svb_freq=100, svb_eps=0.01)
+    if model_name.startswith("model_no_reg"):
+        if "no_dropout" in model_name:
+            model = LeNet_MNIST(dropout_rate=0.0)
+        else:
+            model = LeNet_MNIST()
+    elif model_name.startswith("model_l2"):
+        if "no_dropout" in model_name:
+            model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=0.0005)
+        else:
+            model = LeNet_MNIST(l2_lmbd=0.0005)
+    elif model_name.startswith("model_jacobi"):
+        if "no_dropout" in model_name:
+            model = LeNet_MNIST(dropout_rate=0.0, jacobi_reg=True, jacobi_reg_lmbd=0.01)
+        else:
+            model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=0.01)
+    elif model_name.startswith("model_svb"):
+        if "no_dropout" in model_name:
+            model = LeNet_MNIST(
+                dropout_rate=0.0, svb_reg=True, svb_freq=100, svb_eps=0.01
+            )
+        else:
+            model = LeNet_MNIST(svb_reg=True, svb_freq=100, svb_eps=0.01)
 
     # Load state dictionary
-    state_dict = torch.load(f"./trained_mnist_models/{model_name}.pt", map_location=device)
+    state_dict = torch.load(
+        f"./trained_mnist_models/{model_name}.pt", map_location=device
+    )
 
     # Create new OrderedDict that does not contain `module.` prefix
     new_state_dict = OrderedDict()
@@ -268,7 +273,7 @@ def fgsm_attack_test(model, device, test_loader, epsilon):
     Returns:
     float: The accuracy of the model on perturbed test data.
     """
-    
+
     # Accuracy counter
     correct = 0
 
@@ -327,7 +332,14 @@ class ModelInfo:
         """
 
         self.name = name
-        self.model, self.losses, self.reg_losses, self.epochs, self.train_accuracies, self.test_accuracies = self.load_model(name)
+        (
+            self.model,
+            self.losses,
+            self.reg_losses,
+            self.epochs,
+            self.train_accuracies,
+            self.test_accuracies,
+        ) = self.load_model(name)
 
     @staticmethod
     def load_model(name):
@@ -345,5 +357,12 @@ class ModelInfo:
         train_accuracies (list): The loaded list of training accuracies.
         test_accuracies (list): The loaded list of test accuracies.
         """
-        model, losses, reg_losses, epochs, train_accuracies, test_accuracies = load_trained_model(name)
+        (
+            model,
+            losses,
+            reg_losses,
+            epochs,
+            train_accuracies,
+            test_accuracies,
+        ) = load_trained_model(name)
         return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
