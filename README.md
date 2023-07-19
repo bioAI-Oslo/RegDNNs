@@ -23,7 +23,7 @@ Afterwards I installed the packages in the requirement files using pip. The requ
 ```
 conda install -c conda-forge ffmpeg
 ```
-Which I used to make animations during my initial exploration of a toy problem in part one.  
+Which I used to make animations during my initial exploration of a toy problem in part one. I also used ChatGPT to provide most of the code documentation, as well as to help in writing many parts of the code.
   
   
 ## Part One: Initial Testing, Learning and Toy-Problem

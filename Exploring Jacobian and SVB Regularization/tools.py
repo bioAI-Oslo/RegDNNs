@@ -205,8 +205,8 @@ def load_model(model_name):
     elif model_name == "model_svb_no_dropout":
         model = LeNet_MNIST(dropout_rate=0.0, svb_reg=True, svb_freq=100, svb_eps=0.01)
 
-    # Load state dict
-    state_dict = torch.load(f"./trained_models/{model_name}.pt", map_location=device)
+    # Load state dictionary
+    state_dict = torch.load(f"./trained_mnist_models/{model_name}.pt", map_location=device)
 
     # Create new OrderedDict that does not contain `module.` prefix
     new_state_dict = OrderedDict()
@@ -214,12 +214,14 @@ def load_model(model_name):
         name = k[7:] if k.startswith("module.") else k
         new_state_dict[name] = v
 
-    # Load parameters
+    # Load parameters into model
     model.load_state_dict(new_state_dict)
     model.to(device)
+
     model.eval()
 
-    with open(f"./trained_models/{model_name}_data.pkl", "rb") as f:
+    # Load training data
+    with open(f"./trained_mnist_models/{model_name}_data.pkl", "rb") as f:
         data = pickle.load(f)
 
     losses = data["losses"]
@@ -232,6 +234,17 @@ def load_model(model_name):
 
 
 def fgsm_attack(image, epsilon, data_grad):
+    """
+    Implements the Fast Gradient Sign Method (FGSM) attack.
+
+    Parameters:
+    image (torch.Tensor): The original, unperturbed image.
+    epsilon (float): The perturbation magnitude.
+    data_grad (torch.Tensor): The gradient of the loss with respect to the input image.
+
+    Returns:
+    torch.Tensor: The perturbed image.
+    """
     # Collect the element-wise sign of the data gradient
     sign_data_grad = data_grad.sign()
     # Create the perturbed image by adjusting each pixel of the input image
@@ -243,9 +256,22 @@ def fgsm_attack(image, epsilon, data_grad):
 
 
 def fgsm_attack_test(model, device, test_loader, epsilon):
+    """
+    Test a model under FGSM attack.
+
+    Parameters:
+    model (torch.nn.Module): The PyTorch model to evaluate.
+    device (torch.device): The device to perform computations on.
+    test_loader (torch.utils.data.DataLoader): The test data loader.
+    epsilon (float): The perturbation magnitude for FGSM attack.
+
+    Returns:
+    float: The accuracy of the model on perturbed test data.
+    """
+    
     # Accuracy counter
     correct = 0
-    adv_examples = []
+    
     # Loop over all examples in test set
     for data, target in test_loader:
         # Send the data and label to the device
