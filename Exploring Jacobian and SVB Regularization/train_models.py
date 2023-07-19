@@ -7,13 +7,13 @@ from tools import train
 from torch.nn import DataParallel
 
 if __name__ == "__main__":
-    # Device configuration
+    # Device configuration, use GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Loading MNIST dataset
     train_loader, test_loader = data_loader_MNIST()
 
-    # Hyperparameters
+    # Hyperparameters for the models
     lr = 0.1
     momentum = 0.9
     l2_lmbd = 0.0005
@@ -21,18 +21,20 @@ if __name__ == "__main__":
     svb_freq = 600
     svb_eps = 0.05
 
-    # Initialize model
-    model = LeNet_MNIST(dropout_rate=0.0)
+    # Initialize model with regularization of choice
+    model = LeNet_MNIST()
 
     # Check if there are multiple GPUs, and if so, use DataParallel
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         model = DataParallel(model)
 
-    # Move the model to the device (CPU or GPU)
+    # Move the model to the device
     model = model.to(device)
 
-    n_epochs = 250  # 250 in Hoffman 2019
+    # Number of epochs for training, 250 in Hoffman 2019
+    n_epochs = 250
+    # Train model and collect data
     (
         losses,
         reg_losses,
@@ -44,15 +46,15 @@ if __name__ == "__main__":
     # Switch to evaluation mode
     model.eval()
 
+    # Create a directory to save the trained models, if it does not exist
     if not os.path.exists("./trained_mnist_models"):
         os.makedirs("./trained_mnist_models")
 
-    # If the model was trained with DataParallel, save model.module.state_dict().
-    # Otherwise, just save model.state_dict()
+    # Save state of trained model based on training
     if isinstance(model, torch.nn.DataParallel):
-        torch.save(model.module.state_dict(), "./trained_mnist_models/model_no_reg_no_output.pt")
+        torch.save(model.module.state_dict(), "./trained_mnist_models/model_no_reg.pt")
     else:
-        torch.save(model.state_dict(), "./trained_mnist_models/model_no_reg_no_output.pt")
+        torch.save(model.state_dict(), "./trained_mnist_models/model_no_reg.pt")
 
     # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
     data = {
@@ -63,5 +65,5 @@ if __name__ == "__main__":
         "test_accuracies": test_accuracies,
     }
 
-    with open("./trained_mnist_models/model_no_reg_no_output_data.pkl", "wb") as f:
+    with open("./trained_mnist_models/model_no_reg_data.pkl", "wb") as f:
         pickle.dump(data, f)
