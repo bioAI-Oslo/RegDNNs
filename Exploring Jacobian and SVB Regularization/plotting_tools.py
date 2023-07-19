@@ -16,13 +16,32 @@ def plot_results(
     test_accuracies,
     title=None,
 ):
-    """Plot results after training a model."""
+    """
+    Function to plot the results after training a model.
+
+    Parameters
+    ----------
+    epochs : list
+        List containing epoch numbers.
+    losses : list
+        List containing loss values for each epoch.
+    train_accuracies : list
+        List containing accuracy values on training set for each epoch.
+    test_accuracies : list
+        List containing accuracy values on test set for each epoch.
+    title : str, optional
+        The title of the plot. Default is None.
+    """
+    # Initialize figure
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+
+    # Plot losses on ax1
     ax1.plot(epochs, losses)
     ax1.set_xlabel("Epoch Number")
     ax1.set_ylabel("Cross Entropy")
     ax1.set_title("Cross Entropy")
 
+    # Plot accuracies on ax2
     ax2.plot(range(len(train_accuracies)), train_accuracies, label="Training Accuracy")
     ax2.plot(range(len(test_accuracies)), test_accuracies, label="Test Accuracy")
     ax2.set_xlabel("Epoch number")
@@ -42,8 +61,28 @@ def plot_reg_results(
     test_accuracies,
     title=None,
 ):
-    """Plot results after training a model with regularization."""
+    """
+    Function to plot the results after training a model with regularization.
+
+    Parameters
+    ----------
+    epochs : list
+        List containing epoch numbers.
+    losses : list
+        List containing loss values for each epoch.
+    reg_losses : list
+        List containing regularization loss values for each epoch.
+    train_accuracies : list
+        List containing accuracy values on training set for each epoch.
+    test_accuracies : list
+        List containing accuracy values on test set for each epoch.
+    title : str, optional
+        The title of the plot. Default is None.
+    """
+    # Initialize figure
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+
+    # Plot losses on ax1
     ax1.plot(epochs, losses, label="Total Loss")
     ax1.plot(epochs, reg_losses, label="Regularization Loss")
     ax1.plot(
@@ -56,6 +95,7 @@ def plot_reg_results(
     ax1.set_ylabel("Loss")
     ax1.set_title("Losses")
 
+    # Plot accuracies on ax2
     ax2.plot(range(len(train_accuracies)), train_accuracies, label="Training Accuracy")
     ax2.plot(range(len(test_accuracies)), test_accuracies, label="Test Accuracy")
     ax2.set_xlabel("Epoch number")
@@ -69,9 +109,26 @@ def plot_reg_results(
 
 
 def plot_activations_pca(model, data_loader, device):
+    """
+    Function to plot the first two principal components of the activations
+    of the layers in the model using PCA. The function takes in a model,
+    a data loader to provide the data and the device where the model is 
+    placed (cpu or gpu).
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        PyTorch model whose layer's activations is to be plotted.
+    data_loader : torch.utils.data.DataLoader
+        DataLoader to provide data for running through the model.
+    device : str
+        Device on which the model is placed. Either 'cpu' or 'cuda'.
+    """
+    # Register hooks on model's layers to store their outputs
     save_output, hook_handles, layer_names = register_hooks(model)
     model.eval()
 
+    # Define list of colors for the different classes (for MNIST/CIFAR10)
     colors = [
         "#1f77b4",
         "#ff7f0e",
@@ -86,18 +143,23 @@ def plot_activations_pca(model, data_loader, device):
     ]
 
     with torch.no_grad():
+        # Run a batch of data through the model
         for images, batch_labels in data_loader:
             images = images.to(device)
             model(images)
             batch_labels = batch_labels.cpu().numpy()
             break
-
+        
+        # Plot PCA of each layer's outputs
         for i, output in enumerate(save_output.outputs):
+            # Flatten each output
             output = output.view(output.size(0), -1).cpu().numpy()
 
+            # Apply PCA
             pca = PCA(n_components=2)
             result = pca.fit_transform(output)
 
+            # Plot first two principal components
             plt.figure(figsize=(6, 6))
             added_labels = set()
             for j in range(len(result)):
@@ -113,6 +175,7 @@ def plot_activations_pca(model, data_loader, device):
                 else:
                     plt.scatter(result[j, 0], result[j, 1], color=colors[int(label)])
 
+            # Organize legend
             handles, legend_labels = plt.gca().get_legend_handles_labels()
             by_label = {label: handle for label, handle in zip(legend_labels, handles)}
             ordered_labels = sorted(by_label.keys(), key=int)
@@ -122,6 +185,7 @@ def plot_activations_pca(model, data_loader, device):
             plt.title(f"PCA of {layer_names[i]} Layer")
             plt.show()
 
+    # Remove handles for hooks
     for handle in hook_handles:
         handle.remove()
 
@@ -129,7 +193,21 @@ def plot_activations_pca(model, data_loader, device):
 
 
 def total_variation(image):
-    """Compute the total variation of an image"""
+    """
+    Function to compute the total variation of an image. Total variation 
+    is the sum of the absolute differences for neighboring pixel-values 
+    in the input images. This measures how much noise is in the images.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        2D numpy array representing the grayscale image.
+
+    Returns
+    -------
+    total_variation : float
+        Total variation of the image.
+    """
     return np.sum(np.abs(image[:-1, :-1] - image[1:, :-1])) + np.sum(
         np.abs(image[:-1, :-1] - image[:-1, 1:])
     )
@@ -145,28 +223,47 @@ def plot_decision_boundary(
     zoom=[0.025, 0.01, 0.001],
     title="No regularization",
 ):
-    # Make sure the model is in evaluation mode
+    """
+    Function to visualize the decision boundaries of a model in a 2D plane.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The trained model.
+    img : torch.Tensor
+        The input image to construct the 2D plane.
+    v1 : torch.Tensor
+        First vector to construct the 2D plane.
+    v2 : torch.Tensor
+        Second vector to construct the 2D plane.
+    device : str
+        The device to run the model ('cpu' or 'cuda').
+    resolution : int, optional
+        The resolution of the grid to be used, by default 300.
+    zoom : list, optional
+        The zoom levels to visualize, by default [0.025, 0.01, 0.001].
+    title : str, optional
+        The title for the plot, by default "No regularization".
+    """
+    # Enter evaluation mode
     model.eval()
 
     # Flatten the image if necessary and convert to a single precision float
-    img = img.view(-1)
-    if img.dim() > 2:
-        img = img.view(-1)
-    img = img.to(device).float()
+    img = img.view(-1).to(device).float()
 
-    # Create a figure with n subplots where n is the number of zoom levels
+    # Create a figure with subplots for each zoom level
     num_plots = len(zoom)
     fig, axes = plt.subplots(
         1, num_plots, figsize=(8 * num_plots, 8)
     )  # Adjust the figsize as needed
 
-    # If there's only one zoom level, axes will not be a list, so we need to adjust for that
+    # Ensure axes is always a list
     if num_plots == 1:
         axes = [axes]
 
     for ax, zoom_level in zip(axes, zoom):
-        # Generate grid
-        scale = 1 / zoom_level  # to define the size of the plane in the image space
+        # Generate grid of points in plane defined by img, v1 and v2
+        scale = 1 / zoom_level # Scale decided by zoom_level
         x = torch.linspace(-scale, scale, resolution)
         y = torch.linspace(-scale, scale, resolution)
         xv, yv = torch.meshgrid(x, y)
@@ -176,11 +273,9 @@ def plot_decision_boundary(
             img[None, None, :]
             + xv[..., None] * v1[None, None, :]
             + yv[..., None] * v2[None, None, :]
-        )
+        ).to(device)
 
-        # Compute the model prediction
-        plane = plane.to(device)
-
+        # Compute the model's predictions over the grid
         with torch.no_grad():
             output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
         probs = torch.nn.functional.softmax(output, dim=-1)
@@ -197,13 +292,11 @@ def plot_decision_boundary(
             decision_boundary[resolution // 2, resolution // 2] / resolution * 2 * scale
         )
 
-        # Create a colormap where each index i corresponds to the color for digit i
+        # Create a colormap and plot decision boundaries
         colors = plt.get_cmap(
             "tab10"
-        ).colors  # get the colors used in the 'tab10' colormap
-        cmap = ListedColormap([colors[i] for i in range(10)])  # create a new colormap
-
-        # Use 'imshow' instead of 'contourf'; note the 'origin' argument
+        ).colors
+        cmap = ListedColormap([colors[i] for i in range(10)])
         img_plot = ax.imshow(
             predictions.cpu(),
             origin="lower",
@@ -211,18 +304,15 @@ def plot_decision_boundary(
             cmap=cmap,
             alpha=1,
         )
+        ax.plot(0, 0, "ro") # Plot dot for original image
 
-        # Also, let's add the original image as a dot in the middle of our plot
-        ax.plot(0, 0, "ro")
-
-        # Draw a circle around the original image with a radius equal to the distance to the closest decision boundary
+        # Draw circle around the original image with a radius equal to the distance to the closest decision boundary
         circle = plt.Circle((0, 0), distance_to_boundary, color="black", fill=False)
         ax.add_patch(circle)
 
         # Compute and print the total variation of the decision boundaries
         tv = total_variation(predictions.cpu().numpy())
 
-        # Set title
         ax.set_title(f"Zoom level: {zoom_level}.  Total Variation: {tv}")
 
     # Set legend for the whole figure

@@ -211,25 +211,26 @@ class LeNet_MNIST(nn.Module):
         reg_loss : float
             The calculated regularization loss (if applicable).
         """
-        self.opt.zero_grad()
+        self.opt.zero_grad() # Zero out gradients
         loss, reg_loss = self.loss_fn(
             data,
             labels.long(),
-        )
-        loss.backward()
-        self.opt.step()
+        ) # Compute loss
+        loss.backward() # Backward pass to compute gradients
+        self.opt.step() # Update parameters
 
+        # If SVB regularization, apply every svb_freq steps
         if self.svb_reg and self.training_steps % self.svb_freq == 0:
-            with torch.no_grad():
-                for m in self.modules():
+            with torch.no_grad(): # Do not track gradients
+                for m in self.modules(): # Loop over modules
                     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                        weight_orig_shape = m.weight.shape
-                        weight_matrix = m.weight.view(weight_orig_shape[0], -1)
-                        U, S, V = torch.svd(weight_matrix)
-                        S = torch.clamp(S, 1 / (1 + self.svb_eps), 1 + self.svb_eps)
+                        weight_orig_shape = m.weight.shape # Get original shape of weights
+                        weight_matrix = m.weight.view(weight_orig_shape[0], -1) # Flatten weights
+                        U, S, V = torch.svd(weight_matrix) # Singular value decomposition on weights
+                        S = torch.clamp(S, 1 / (1 + self.svb_eps), 1 + self.svb_eps) # Clamp singular values within range decided by svb_eps
                         m.weight.data = torch.matmul(
                             U, torch.matmul(S.diag(), V.t())
-                        ).view(weight_orig_shape)
+                        ).view(weight_orig_shape) # Update weights using clamped singular values
 
         self.training_steps += 1
         return loss.item(), reg_loss.item() if reg_loss != 0 else reg_loss
