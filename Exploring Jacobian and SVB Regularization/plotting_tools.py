@@ -10,10 +10,8 @@ from tools import register_hooks, fgsm_attack_test
 
 
 def plot_results(
-    epochs,
-    losses,
-    train_accuracies,
-    test_accuracies,
+    models,
+    model_name,
     title=None,
 ):
     """
@@ -21,17 +19,19 @@ def plot_results(
 
     Parameters
     ----------
-    epochs : list
-        List containing epoch numbers.
-    losses : list
-        List containing loss values for each epoch.
-    train_accuracies : list
-        List containing accuracy values on training set for each epoch.
-    test_accuracies : list
-        List containing accuracy values on test set for each epoch.
+    models : dict
+        Dictionary containing instances of ModelInfo class.
+    model_name : str
+        The key of the model's instance in the models dictionary to be plotted.
     title : str, optional
         The title of the plot. Default is None.
     """
+
+    epochs = models[f"{model_name}"].epochs
+    losses = models[f"{model_name}"].losses
+    train_accuracies = models[f"{model_name}"].train_accuracies
+    test_accuracies = models[f"{model_name}"].test_accuracies
+
     # Initialize figure
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
 
@@ -54,31 +54,29 @@ def plot_results(
 
 
 def plot_reg_results(
-    epochs,
-    losses,
-    reg_losses,
-    train_accuracies,
-    test_accuracies,
+    models,
+    model_name,
     title=None,
 ):
     """
-    Function to plot the results after training a model with regularization.
+    Function to plot the results after training models with regularization.
 
     Parameters
     ----------
-    epochs : list
-        List containing epoch numbers.
-    losses : list
-        List containing loss values for each epoch.
-    reg_losses : list
-        List containing regularization loss values for each epoch.
-    train_accuracies : list
-        List containing accuracy values on training set for each epoch.
-    test_accuracies : list
-        List containing accuracy values on test set for each epoch.
+    models : dict
+        Dictionary containing instances of ModelInfo class.
+    model_name : str
+        The key of the model's instance in the models dictionary to be plotted.
     title : str, optional
         The title of the plot. Default is None.
     """
+
+    epochs = models[f"{model_name}"].epochs
+    losses = models[f"{model_name}"].losses
+    reg_losses = models[f"{model_name}"].reg_losses
+    train_accuracies = models[f"{model_name}"].train_accuracies
+    test_accuracies = models[f"{model_name}"].test_accuracies
+
     # Initialize figure
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
 
@@ -112,7 +110,7 @@ def plot_activations_pca(model, data_loader, device):
     """
     Function to plot the first two principal components of the activations
     of the layers in the model using PCA. The function takes in a model,
-    a data loader to provide the data and the device where the model is 
+    a data loader to provide the data and the device where the model is
     placed (cpu or gpu).
 
     Parameters
@@ -149,7 +147,7 @@ def plot_activations_pca(model, data_loader, device):
             model(images)
             batch_labels = batch_labels.cpu().numpy()
             break
-        
+
         # Plot PCA of each layer's outputs
         for i, output in enumerate(save_output.outputs):
             # Flatten each output
@@ -194,8 +192,8 @@ def plot_activations_pca(model, data_loader, device):
 
 def total_variation(image):
     """
-    Function to compute the total variation of an image. Total variation 
-    is the sum of the absolute differences for neighboring pixel-values 
+    Function to compute the total variation of an image. Total variation
+    is the sum of the absolute differences for neighboring pixel-values
     in the input images. This measures how much noise is in the images.
 
     Parameters
@@ -263,7 +261,7 @@ def plot_decision_boundary(
 
     for ax, zoom_level in zip(axes, zoom):
         # Generate grid of points in plane defined by img, v1 and v2
-        scale = 1 / zoom_level # Scale decided by zoom_level
+        scale = 1 / zoom_level  # Scale decided by zoom_level
         x = torch.linspace(-scale, scale, resolution)
         y = torch.linspace(-scale, scale, resolution)
         xv, yv = torch.meshgrid(x, y)
@@ -293,9 +291,7 @@ def plot_decision_boundary(
         )
 
         # Create a colormap and plot decision boundaries
-        colors = plt.get_cmap(
-            "tab10"
-        ).colors
+        colors = plt.get_cmap("tab10").colors
         cmap = ListedColormap([colors[i] for i in range(10)])
         img_plot = ax.imshow(
             predictions.cpu(),
@@ -304,7 +300,7 @@ def plot_decision_boundary(
             cmap=cmap,
             alpha=1,
         )
-        ax.plot(0, 0, "ro") # Plot dot for original image
+        ax.plot(0, 0, "ro")  # Plot dot for original image
 
         # Draw circle around the original image with a radius equal to the distance to the closest decision boundary
         circle = plt.Circle((0, 0), distance_to_boundary, color="black", fill=False)
@@ -356,7 +352,7 @@ def generate_random_vectors(img):
     v1 = torch.randn_like(img)
     v2 = torch.randn_like(img)
     v1 /= v1.norm()
-    v2 -= v1 * (v1.dot(v2)) # Make orthogonal
+    v2 -= v1 * (v1.dot(v2))  # Make orthogonal
     v2 /= v2.norm()
     return v1, v2
 
@@ -377,7 +373,7 @@ def get_random_img(dataloader):
     """
     # Get a batch of data from the dataloader
     images, labels = next(iter(dataloader))
-    
+
     # Get random image from the batch
     random_index = np.random.randint(len(labels))
     image = images[random_index]
@@ -420,21 +416,31 @@ def plot_and_print_img(image, model, device, regularization_title="no regulariza
     plt.show()
 
 
-def plot_fgsm(model, device, test_loader):
+def plot_fgsm(
+    model, device, test_loader, epsilons=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+):
     """
-    Test the model's accuracy under FGSM attacks with different epsilon values, and plot the results.
+    Test the model's accuracy under FGSM (Fast Gradient Sign Method) attacks with different epsilon values,
+    and plot the results.
 
     Parameters
     ----------
     model : torch.nn.Module
-        The trained model.
+        The trained PyTorch model.
     device : str
-        The device to run the model ('cpu' or 'cuda').
+        The device to run the model on ('cpu' or 'cuda').
     test_loader : torch.utils.data.DataLoader
-        The DataLoader to test the model.
+        The DataLoader for the test dataset.
+    epsilons : list, optional
+        A list of epsilon values for the FGSM attacks. Epsilon determines the step size of the perturbations
+        during the attack. Default is [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3].
+
+    This function will test the model's robustness against FGSM attacks by calculating its accuracy on the test
+    dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the epsilon
+    values. The xticks and yticks on the graph are dynamically determined based on the range of epsilon values
+    and accuracies, respectively.
     """
     # Define the epsilon values to use for the FGSM attacks
-    epsilons = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
     accuracies = []
 
     # Test the model's accuracy under FGSM attacks with each epsilon value
@@ -442,11 +448,15 @@ def plot_fgsm(model, device, test_loader):
         acc = fgsm_attack_test(model, device, test_loader, eps)
         accuracies.append(acc)
 
+    # Calculate suitable step sizes for xticks and yticks
+    xstep = (max(epsilons) - min(epsilons)) / 10
+    ystep = (max(accuracies) - min(accuracies)) / 10
+
     # Plot the accuracy results
     plt.figure(figsize=(5, 5))
     plt.plot(epsilons, accuracies, "*-")
-    plt.yticks(np.arange(0, 1.1, step=0.1))
-    plt.xticks(np.arange(0, 0.35, step=0.05))
+    plt.yticks(np.arange(min(accuracies), max(accuracies) + ystep, step=ystep))
+    plt.xticks(np.arange(min(epsilons), max(epsilons) + xstep, step=xstep))
     plt.title("Accuracy vs Epsilon")
     plt.xlabel("Epsilon")
     plt.ylabel("Accuracy")
