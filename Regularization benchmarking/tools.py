@@ -36,7 +36,6 @@ def train(
                 loss_data, reg_loss_data = model.train_step(
                     data,
                     labels,
-                    
                 )
             losses.append(loss_data)
             reg_losses.append(reg_loss_data)
@@ -56,7 +55,6 @@ def train(
         if model.hard_svb:
             svb(model, eps=model.hard_svb_lmbd)
 
-
         train_accuracies.append(accuracy(model, train_loader, device))
         test_accuracies.append(accuracy(model, test_loader, device))
         model.counter = 0
@@ -72,7 +70,7 @@ def accuracy(model, loader, device):
     """Calculate the accuracy of a model. Uses a data loader."""
     correct = 0
     total = 0
-    model.eval() # Switch to evaluation mode
+    model.eval()  # Switch to evaluation mode
     with torch.no_grad():
         for data in loader:
             inputs, labels = data
@@ -86,7 +84,7 @@ def accuracy(model, loader, device):
     return correct / total
 
 
-def svb(model, eps=0.001):
+def svb(model, eps=0.05):
     """Implements hard singular value bounding as described in Jia et al. 2019.
     Keyword Arguments:
         eps -- Small constant that sets the weights a small interval around 1 (default: {0.001})
