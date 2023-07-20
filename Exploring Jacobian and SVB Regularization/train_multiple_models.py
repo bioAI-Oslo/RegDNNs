@@ -32,7 +32,7 @@ if __name__ == "__main__":
     n = 4
     for i in range(1, n + 1):
         # Initialize model with regularization of choice
-        model = LeNet_MNIST(l2_lmbd=l2_lmbd)
+        model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=l2_lmbd)
 
         # Check if there are multiple GPUs, and if so, use DataParallel
         if torch.cuda.device_count() > 1:
@@ -58,12 +58,12 @@ if __name__ == "__main__":
         if isinstance(model, torch.nn.DataParallel):
             torch.save(
                 model.module.state_dict(),
-                f"./trained_mnist_models/model_l2_{i}.pt",
+                f"./trained_mnist_models/model_l2_no_dropout_{i}.pt",
             )
         else:
             torch.save(
                 model.state_dict(),
-                f"./trained_mnist_models/model_l2_{i}.pt",
+                f"./trained_mnist_models/model_l2_no_dropout_{i}.pt",
             )
 
         # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
@@ -75,5 +75,7 @@ if __name__ == "__main__":
             "test_accuracies": test_accuracies,
         }
 
-        with open(f"./trained_mnist_models/model_l2_{i}_data.pkl", "wb") as f:
+        with open(
+            f"./trained_mnist_models/model_l2_no_dropout_{i}_data.pkl", "wb"
+        ) as f:
             pickle.dump(data, f)
