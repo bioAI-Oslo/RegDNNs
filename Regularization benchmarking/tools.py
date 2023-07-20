@@ -150,9 +150,9 @@ def load_trained_model(model_name):
         model = LeNet(conf_penalty=True)
     elif model_name == "model_label_smoothing":
         model = LeNet(label_smoothing=True)
-    elif model_name == "model_noise_inj_inputs":
+    elif model_name == "model_noise_inject_inputs":
         model = LeNet(noise_inject_inputs=True)
-    elif model_name == "model_noise_inj_weights":
+    elif model_name == "model_noise_inject_weights":
         model = LeNet(noise_inject_weights=True)
 
     # Load state dictionary

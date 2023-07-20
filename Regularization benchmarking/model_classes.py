@@ -207,7 +207,9 @@ class LeNet(nn.Module):
             w = self.fc1.weight
             # Main loss function term for soft SVB from Jia et al. 2019:
             w_orth = w.transpose(0, 1) @ w  # W^T * W
-            w_orth = w_orth - torch.eye(w_orth.shape[0])  # W^T * W - I
+            w_orth = w_orth - torch.eye(w_orth.shape[0]).to(
+                w_orth.device
+            )  # W^T * W - I
             soft_svb_loss = (
                 self.soft_svb_lmbd * torch.linalg.norm(w_orth, ord="fro") ** 2
             )
