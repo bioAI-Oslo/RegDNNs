@@ -9,11 +9,11 @@ import torch.nn.functional as F
 class LeNet(nn.Module):
     def __init__(
         self,
-        lr,
-        momentum,
-        in_channels=3,
+        lr=0.1,
+        momentum=0.9,
+        in_channels=1,
         dropout_rate=0.0,
-        orthogonal=True,
+        orthogonal=False,
         noise_inject_input=False,
         noise_inject_weights=False,
         noise_stddev=0.05,
@@ -36,15 +36,20 @@ class LeNet(nn.Module):
     ):
         super(LeNet, self).__init__()
         self.conv1 = nn.Conv2d(
-            in_channels=in_channels, out_channels=6, kernel_size=(5, 5)
+            in_channels=in_channels,
+            out_channels=6,
+            kernel_size=(5, 5),
+            stride=1,
+            padding=2,
         )
-        self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
-        self.conv2 = nn.Conv2d(in_channels=6, out_channels=16, kernel_size=(5, 5))
-        self.fc1 = nn.Linear(in_features=16 * 5 * 5, out_features=120)
-        self.dropout1 = nn.Dropout(dropout_rate)
+        self.conv2 = nn.Conv2d(
+            in_channels=6, out_channels=16, kernel_size=(5, 5), stride=1, padding=0
+        )
+        self.fc1 = nn.Linear(in_features=400, out_features=120)
         self.fc2 = nn.Linear(in_features=120, out_features=84)
-        self.dropout2 = nn.Dropout(dropout_rate)
         self.fc3 = nn.Linear(in_features=84, out_features=N_images)
+        self.dropout = nn.Dropout(dropout_rate)
+        self.pool = nn.MaxPool2d(kernel_size=(2, 2))
 
         if orthogonal:
             # Orthogonal initialization of weight matrices
@@ -61,21 +66,21 @@ class LeNet(nn.Module):
             nn.init.xavier_uniform_(self.fc3.weight)
 
         # Parameters for regularization
-        self.l1=l1
-        self.l1_lmbd=l1_lmbd
-        self.l2=l2
-        self.l2_lmbd=l2_lmbd
-        self.l1_l2=l1_l2
-        self.soft_svb=soft_svb
-        self.soft_svb_lmbd=soft_svb_lmbd
-        self.jacobi_reg=jacobi_reg
-        self.jacobi_reg_lmbd=jacobi_reg_lmbd
-        self.jacobi_det_reg=jacobi_det_reg
-        self.jacobi_det_reg_lmbd=jacobi_det_reg_lmbd
-        self.conf_penalty=conf_penalty
-        self.conf_penalty_lmbd=conf_penalty_lmbd
-        self.label_smoothing=label_smoothing
-        self.label_smoothing_lmbd=label_smoothing_lmbd
+        self.l1 = l1
+        self.l1_lmbd = l1_lmbd
+        self.l2 = l2
+        self.l2_lmbd = l2_lmbd
+        self.l1_l2 = l1_l2
+        self.soft_svb = soft_svb
+        self.soft_svb_lmbd = soft_svb_lmbd
+        self.jacobi_reg = jacobi_reg
+        self.jacobi_reg_lmbd = jacobi_reg_lmbd
+        self.jacobi_det_reg = jacobi_det_reg
+        self.jacobi_det_reg_lmbd = jacobi_det_reg_lmbd
+        self.conf_penalty = conf_penalty
+        self.conf_penalty_lmbd = conf_penalty_lmbd
+        self.label_smoothing = label_smoothing
+        self.label_smoothing_lmbd = label_smoothing_lmbd
         self.counter = 0
         self.noise_stddev = noise_stddev
         self.noise_inject_input = noise_inject_input
@@ -113,8 +118,8 @@ class LeNet(nn.Module):
         x = self.conv2(x)
         x = self.pool(F.relu(x))
         x = x.view(-1, 16 * 5 * 5)
-        x = self.dropout1(F.relu(self.fc1(x)))
-        x = self.dropout2(F.relu(self.fc2(x)))
+        x = self.dropout(F.relu(self.fc1(x)))
+        x = self.dropout(F.relu(self.fc2(x)))
         x = F.softmax(self.fc3(x), dim=1)
         return x
 
@@ -160,7 +165,9 @@ class LeNet(nn.Module):
             # Main loss function term for soft SVB from Jia et al. 2019:
             w_orth = w.transpose(0, 1) @ w  # W^T * W
             w_orth = w_orth - torch.eye(w_orth.shape[0])  # W^T * W - I
-            soft_svb_loss = self.soft_svb_lmbd * torch.linalg.norm(w_orth, ord="fro") ** 2
+            soft_svb_loss = (
+                self.soft_svb_lmbd * torch.linalg.norm(w_orth, ord="fro") ** 2
+            )
             loss += soft_svb_loss
             return loss, soft_svb_loss
 
@@ -188,7 +195,8 @@ class LeNet(nn.Module):
                 jacobi = torch.autograd.functional.jacobian(self.forward, x)
                 jacobi = jacobi.transpose(-2, -1) @ jacobi
                 jacobi_loss = (
-                    self.jacobi_det_reg_lmbd * ((torch.linalg.det(jacobi) - 1) ** 2).sum()
+                    self.jacobi_det_reg_lmbd
+                    * ((torch.linalg.det(jacobi) - 1) ** 2).sum()
                 )
                 loss += jacobi_loss
                 print("calculated jacobi")
