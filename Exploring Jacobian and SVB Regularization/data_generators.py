@@ -1,7 +1,5 @@
-import numpy as np
 import torch
 from torchvision import datasets, transforms
-from torch.utils.data.sampler import SubsetRandomSampler
 
 
 def data_loader_MNIST():
@@ -9,7 +7,7 @@ def data_loader_MNIST():
     transform = transforms.Compose(
         [
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,)), # Values from Hoffman 2019
+            transforms.Normalize((0.1307,), (0.3081,)),  # Values from Hoffman 2019
         ]
     )
 

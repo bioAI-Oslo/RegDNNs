@@ -1,6 +1,10 @@
 import torch
+import pickle
 import torch.nn as nn
 from tqdm import tqdm
+from collections import OrderedDict
+
+from model_classes import LeNet
 
 
 def train(
@@ -52,9 +56,6 @@ def train(
 
             iterations += 1
 
-        if model.hard_svb:
-            svb(model, eps=model.hard_svb_lmbd)
-
         train_accuracies.append(accuracy(model, train_loader, device))
         test_accuracies.append(accuracy(model, test_loader, device))
         model.counter = 0
@@ -84,25 +85,6 @@ def accuracy(model, loader, device):
     return correct / total
 
 
-def svb(model, eps=0.05):
-    """Implements hard singular value bounding as described in Jia et al. 2019.
-    Keyword Arguments:
-        eps -- Small constant that sets the weights a small interval around 1 (default: {0.001})
-    """
-    old_weights = model.fc1.weight.data.clone().detach()
-    w = torch.linalg.svd(old_weights, full_matrices=False)
-    U, sigma, V = w[0], w[1], w[2]
-    for i in range(len(sigma)):
-        if sigma[i] > 1 + eps:
-            sigma[i] = 1 + eps
-        elif sigma[i] < 1 / (1 + eps):
-            sigma[i] = 1 / (1 + eps)
-        else:
-            pass
-    new_weights = U @ torch.diag(sigma) @ V
-    model.fc1.weight.data = new_weights
-
-
 class SaveOutput:
     def __init__(self):
         self.outputs = []
@@ -127,3 +109,147 @@ def register_hooks(model):
             layer_names.append(name)
 
     return save_output, hook_handles, layer_names
+
+
+def load_trained_model(model_name):
+    """
+    Loads a pre-trained PyTorch model and associated training data.
+
+    Parameters:
+    model_name (str): The name of the model to load. This is used to locate the saved model
+                      and training data files.
+
+    Returns:
+    tuple: A tuple containing the loaded model and lists of losses, regularization losses,
+           epochs, and train/test accuracies from training.
+    """
+    # Set to cpu as we will be loading on a laptop
+    device = torch.device("cpu")
+
+    # Initialize model based on provided model_name to get a similar model to prevent errors
+    # FIX THIS!
+    if model_name == "model_no_reg":
+        model = LeNet()
+    elif model_name == "model_l1":
+        model = LeNet(l1=True)
+    elif model_name == "model_l2":
+        model = LeNet(l2=True)
+    elif model_name == "model_l1_l2":
+        model = LeNet(l1_l2=True)
+    elif model_name == "model_svb":
+        model = LeNet(svb=True)
+    elif model_name == "model_soft_svb":
+        model = LeNet(soft_svb=True)
+    elif model_name == "model_jacobi_reg":
+        model = LeNet(jacobi_reg=True)
+    elif model_name == "model_jacobi_det_reg":
+        model = LeNet(jacobi_det_reg=True)
+    elif model_name == "model_dropout":
+        model = LeNet(dropout_rate=0.5)
+    elif model_name == "model_conf_penalty":
+        model = LeNet(conf_penalty=True)
+    elif model_name == "model_label_smoothing":
+        model = LeNet(label_smoothing=True)
+    elif model_name == "model_noise_inj_inputs":
+        model = LeNet(noise_inject_inputs=True)
+    elif model_name == "model_noise_inj_weights":
+        model = LeNet(noise_inject_weights=True)
+
+    # Load state dictionary
+    state_dict = torch.load(
+        f"./trained_mnist_models/{model_name}.pt", map_location=device
+    )
+
+    # Create new OrderedDict that does not contain `module.` prefix
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        name = k[7:] if k.startswith("module.") else k
+        new_state_dict[name] = v
+
+    # Load parameters into model
+    model.load_state_dict(new_state_dict)
+    model.to(device)
+
+    model.eval()
+
+    # Load training data
+    with open(f"./trained_mnist_models/{model_name}_data.pkl", "rb") as f:
+        data = pickle.load(f)
+
+    losses = data["losses"]
+    reg_losses = data["reg_losses"]
+    epochs = data["epochs"]
+    weights = data["weights"]
+    train_accuracies = data["train_accuracies"]
+    test_accuracies = data["test_accuracies"]
+
+    return model, losses, reg_losses, epochs, weights, train_accuracies, test_accuracies
+
+
+class ModelInfo:
+    """
+    This class is used to store information about a trained model.
+
+    Attributes:
+    name (str): The name of the model.
+    model (nn.Module): The PyTorch model.
+    losses (list): The list of loss values during training.
+    reg_losses (list): The list of regularization loss values during training.
+    epochs (int): The number of training epochs.
+    train_accuracies (list): The list of training accuracies.
+    test_accuracies (list): The list of test accuracies.
+    """
+
+    def __init__(self, name):
+        """
+        The constructor for ModelInfo class.
+
+        Parameters:
+        name (str): The name of the model.
+        """
+
+        self.name = name
+        (
+            self.model,
+            self.losses,
+            self.reg_losses,
+            self.epochs,
+            self.weights,
+            self.train_accuracies,
+            self.test_accuracies,
+        ) = self.load_model(name)
+
+    @staticmethod
+    def load_model(name):
+        """
+        This static method is used to load the model and related information from a file using load_trained_model.
+
+        Parameters:
+        name (str): The name of the model.
+
+        Returns:
+        model (nn.Module): The loaded PyTorch model.
+        losses (list): The loaded list of loss values during training.
+        reg_losses (list): The loaded list of regularization loss values during training.
+        epochs (int): The loaded number of training epochs.
+        train_accuracies (list): The loaded list of training accuracies.
+        test_accuracies (list): The loaded list of test accuracies.
+        """
+        (
+            model,
+            losses,
+            reg_losses,
+            epochs,
+            weights,
+            train_accuracies,
+            test_accuracies,
+        ) = load_trained_model(name)
+        return (
+            model,
+            losses,
+            reg_losses,
+            epochs,
+            weights,
+            train_accuracies,
+            test_accuracies,
+        )

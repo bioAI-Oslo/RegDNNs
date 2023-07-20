@@ -1,9 +1,7 @@
 import torch
 import torch.nn as nn
+from torch.autograd import grad
 import torch.nn.functional as F
-
-
-### LENET
 
 
 class LeNet(nn.Module):
@@ -13,22 +11,24 @@ class LeNet(nn.Module):
         momentum=0.9,
         in_channels=1,
         dropout_rate=0.0,
-        orthogonal=False,
-        noise_inject_input=False,
+        noise_inject_inputs=False,
         noise_inject_weights=False,
         noise_stddev=0.05,
         N_images=10,
         l1=False,
-        l1_lmbd=0.00001,
+        l1_lmbd=0.0005,
         l2=False,
-        l2_lmbd=0.0001,
+        l2_lmbd=0.0005,
         l1_l2=False,
+        svb=False,
+        svb_freq=600,
+        svb_eps=0.05,
         soft_svb=False,
         soft_svb_lmbd=0.01,
         jacobi_reg=False,
-        jacobi_reg_lmbd=0.001,
+        jacobi_reg_lmbd=0.01,
         jacobi_det_reg=False,
-        jacobi_det_reg_lmbd=0.001,
+        jacobi_det_reg_lmbd=0.01,
         conf_penalty=False,
         conf_penalty_lmbd=0.1,
         label_smoothing=False,
@@ -51,13 +51,19 @@ class LeNet(nn.Module):
         self.dropout = nn.Dropout(dropout_rate)
         self.pool = nn.MaxPool2d(kernel_size=(2, 2))
 
-        if orthogonal:
-            # Orthogonal initialization of weight matrices
-            nn.init.orthogonal_(self.conv1.weight)
-            nn.init.orthogonal_(self.conv2.weight)
-            nn.init.orthogonal_(self.fc1.weight)
-            nn.init.orthogonal_(self.fc2.weight)
-            nn.init.orthogonal_(self.fc3.weight)
+        # Orthogonal initialization if svb_reg is True
+        if svb or soft_svb:
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d):
+                    weight_mat = m.weight.data.view(
+                        m.out_channels, -1
+                    )  # Reshape to 2D matrix
+                    nn.init.orthogonal_(weight_mat)  # Apply orthogonal initialization
+                    m.weight.data = weight_mat.view_as(
+                        m.weight.data
+                    )  # Reshape back to original dimensions
+                elif isinstance(m, nn.Linear):
+                    nn.init.orthogonal_(m.weight)
         else:
             nn.init.xavier_uniform_(self.conv1.weight)
             nn.init.xavier_uniform_(self.conv2.weight)
@@ -71,6 +77,9 @@ class LeNet(nn.Module):
         self.l2 = l2
         self.l2_lmbd = l2_lmbd
         self.l1_l2 = l1_l2
+        self.svb = svb
+        self.svb_freq = svb_freq
+        self.svb_eps = svb_eps
         self.soft_svb = soft_svb
         self.soft_svb_lmbd = soft_svb_lmbd
         self.jacobi_reg = jacobi_reg
@@ -82,15 +91,17 @@ class LeNet(nn.Module):
         self.label_smoothing = label_smoothing
         self.label_smoothing_lmbd = label_smoothing_lmbd
         self.counter = 0
+        self.training_steps = 0
+        self.N_images = N_images
         self.noise_stddev = noise_stddev
-        self.noise_inject_input = noise_inject_input
+        self.noise_inject_input = noise_inject_inputs
         self.noise_inject_weights = noise_inject_weights
 
         self.L = nn.CrossEntropyLoss()
         self.opt = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum)
 
     def forward(self, x):
-        if self.training and self.noise_inject_input:
+        if self.training and self.noise_inject_inputs:
             noise = torch.randn_like(x) * self.noise_stddev
             x = x + noise
 
@@ -114,14 +125,49 @@ class LeNet(nn.Module):
         if not self.noise_inject_weights:
             x = self.conv1(x)
 
-        x = self.pool(F.relu(x))
+        x = self.pool(torch.tanh(x))
         x = self.conv2(x)
-        x = self.pool(F.relu(x))
-        x = x.view(-1, 16 * 5 * 5)
-        x = self.dropout(F.relu(self.fc1(x)))
-        x = self.dropout(F.relu(self.fc2(x)))
-        x = F.softmax(self.fc3(x), dim=1)
+        x = self.pool(torch.tanh(x))
+        x = x.view(-1, 400)
+        x = self.dropout(torch.tanh(self.fc1(x)))
+        x = self.dropout(torch.tanh(self.fc2(x)))
+        x = self.fc3(x)  # No softmax as CrossEntropyLoss does it implicitly
         return x
+
+    def jacobian_regularizer(self, x):
+        """
+        Calculates the Jacobian regularization term for an input batch.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+
+        Returns
+        -------
+        JF : torch.Tensor
+            The Jacobian regularization term.
+        """
+        C = x.shape[1]  # Number of classes in dataset
+        JF = 0  # Initialize Jacobian Frobenius norm
+        nproj = 1  # Number of random projections
+
+        for _ in range(nproj):
+            v = torch.randn(x.shape[0], C).to(x.device)  # Generate random vector
+            v_hat = v / torch.norm(v, dim=1, keepdim=True)  # Normalize
+
+            z = self(x)  # Forward pass to get predictions
+            v_hat_dot_z = torch.einsum("bi, bi->b", v_hat, z)  # Calculate dot product
+
+            Jv = grad(v_hat_dot_z.sum(), x, create_graph=True)[
+                0
+            ].detach()  # Compute Jacobian-vector product
+
+            JF += (
+                C * (Jv**2).sum() / (nproj * len(x))
+            )  # Add square of Jv to Frobenius norm
+
+        return JF
 
     def loss_fn(
         self,
@@ -173,20 +219,11 @@ class LeNet(nn.Module):
 
         # Jacobi regularization
         if self.jacobi_reg:
-            if self.counter % 50 == 0:
-                self.counter += 1
-                jacobi = torch.autograd.functional.jacobian(self.forward, x)
-                jacobi = jacobi.transpose(-2, -1) @ jacobi
-                jacobi_loss = self.jacobi_reg_lmbd * (torch.norm(jacobi) ** 2)
-                #    jacobi_reg_lmbd
-                #    * (torch.linalg.norm(square_jacobi, ord="fro", dim=(1, 2)) ** 2).sum()
-                # )
-                loss += jacobi_loss
-                print("calculated jacobi")
-                return loss, jacobi_loss
-            else:
-                self.counter += 1
-                return loss, 0
+            x.requires_grad_(True)
+            # Compute and add Jacobian regularization term
+            jacobi_loss = self.jacobi_reg_lmbd * self.jacobian_regularizer(x)
+            loss += jacobi_loss
+            return loss, jacobi_loss
 
         # Jacobi determinant regularization
         if self.jacobi_det_reg:
@@ -199,7 +236,6 @@ class LeNet(nn.Module):
                     * ((torch.linalg.det(jacobi) - 1) ** 2).sum()
                 )
                 loss += jacobi_loss
-                print("calculated jacobi")
                 return loss, jacobi_loss
             else:
                 self.counter += 1
@@ -221,7 +257,7 @@ class LeNet(nn.Module):
         labels,
     ):
         if self.label_smoothing:
-            num_classes = 10
+            num_classes = self.N_images
             smoothed_labels = (
                 1 - self.label_smoothing_lmbd
             ) * labels + self.label_smoothing_lmbd / num_classes
@@ -234,7 +270,30 @@ class LeNet(nn.Module):
         )
         loss.backward()
         self.opt.step()
-        if reg_loss != 0:
-            return loss.item(), reg_loss.item()
-        else:
-            return loss.item(), reg_loss
+
+        # If SVB regularization, apply every svb_freq steps
+        if self.svb and self.training_steps % self.svb_freq == 0:
+            with torch.no_grad():  # Do not track gradients
+                for m in self.modules():  # Loop over modules
+                    if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                        weight_orig_shape = (
+                            m.weight.shape
+                        )  # Get original shape of weights
+                        weight_matrix = m.weight.view(
+                            weight_orig_shape[0], -1
+                        )  # Flatten weights
+                        U, S, V = torch.svd(
+                            weight_matrix
+                        )  # Singular value decomposition on weights
+                        S = torch.clamp(
+                            S, 1 / (1 + self.svb_eps), 1 + self.svb_eps
+                        )  # Clamp singular values within range decided by svb_eps
+                        m.weight.data = torch.matmul(
+                            U, torch.matmul(S.diag(), V.t())
+                        ).view(
+                            weight_orig_shape
+                        )  # Update weights using clamped singular values
+
+        self.training_steps += 1
+
+        return loss.item(), reg_loss.item() if reg_loss != 0 else reg_loss

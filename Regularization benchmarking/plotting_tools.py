@@ -11,23 +11,40 @@ from tools import register_hooks
 
 
 def plot_results(
-    epochs,
-    losses,
-    train_accuracies,
-    test_accuracies,
+    models,
+    model_name,
     title=None,
 ):
-    """Plot results after training a model."""
+    """
+    Function to plot the results after training a model.
+
+    Parameters
+    ----------
+    models : dict
+        Dictionary containing instances of ModelInfo class.
+    model_name : str
+        The key of the model's instance in the models dictionary to be plotted.
+    title : str, optional
+        The title of the plot. Default is None.
+    """
+
+    epochs = models[f"{model_name}"].epochs
+    losses = models[f"{model_name}"].losses
+    train_accuracies = models[f"{model_name}"].train_accuracies
+    test_accuracies = models[f"{model_name}"].test_accuracies
+
+    # Initialize figure
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
-    ax1.plot(epochs, losses, "o--")
+
+    # Plot losses on ax1
+    ax1.plot(epochs, losses)
     ax1.set_xlabel("Epoch Number")
     ax1.set_ylabel("Cross Entropy")
     ax1.set_title("Cross Entropy")
 
-    ax2.plot(
-        range(len(train_accuracies)), train_accuracies, "o--", label="Training Accuracy"
-    )
-    ax2.plot(range(len(test_accuracies)), test_accuracies, "o--", label="Test Accuracy")
+    # Plot accuracies on ax2
+    ax2.plot(range(len(train_accuracies)), train_accuracies, label="Training Accuracy")
+    ax2.plot(range(len(test_accuracies)), test_accuracies, label="Test Accuracy")
     ax2.set_xlabel("Epoch number")
     ax2.set_ylabel("Accuracy, in %")
     ax2.set_title("Accuracy")
@@ -38,17 +55,35 @@ def plot_results(
 
 
 def plot_reg_results(
-    epochs,
-    losses,
-    reg_losses,
-    train_accuracies,
-    test_accuracies,
+    models,
+    model_name,
     title=None,
 ):
-    """Plot results after training a model with regularization."""
+    """
+    Function to plot the results after training models with regularization.
+
+    Parameters
+    ----------
+    models : dict
+        Dictionary containing instances of ModelInfo class.
+    model_name : str
+        The key of the model's instance in the models dictionary to be plotted.
+    title : str, optional
+        The title of the plot. Default is None.
+    """
+
+    epochs = models[f"{model_name}"].epochs
+    losses = models[f"{model_name}"].losses
+    reg_losses = models[f"{model_name}"].reg_losses
+    train_accuracies = models[f"{model_name}"].train_accuracies
+    test_accuracies = models[f"{model_name}"].test_accuracies
+
+    # Initialize figure
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
-    ax1.plot(epochs, losses, "o--", label="Total Loss")
-    ax1.plot(epochs, reg_losses, "o--", label="Regularization Loss")
+
+    # Plot losses on ax1
+    ax1.plot(epochs, losses, label="Total Loss")
+    ax1.plot(epochs, reg_losses, label="Regularization Loss")
     ax1.plot(
         epochs,
         np.asarray(losses) - np.asarray(reg_losses),
@@ -59,10 +94,9 @@ def plot_reg_results(
     ax1.set_ylabel("Loss")
     ax1.set_title("Losses")
 
-    ax2.plot(
-        range(len(train_accuracies)), train_accuracies, "o--", label="Training Accuracy"
-    )
-    ax2.plot(range(len(test_accuracies)), test_accuracies, "o--", label="Test Accuracy")
+    # Plot accuracies on ax2
+    ax2.plot(range(len(train_accuracies)), train_accuracies, label="Training Accuracy")
+    ax2.plot(range(len(test_accuracies)), test_accuracies, label="Test Accuracy")
     ax2.set_xlabel("Epoch number")
     ax2.set_ylabel("Accuracy, in %")
     ax2.set_title("Accuracy")
