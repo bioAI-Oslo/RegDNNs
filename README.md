@@ -2,7 +2,7 @@
 **Project**: Exploring soft and hard constraints in artificial neural networks  
 **Goal**: Understand how different regularization techniques promotes better generalization in ANNs  
   
-This project developed over time, and has four parts. Part one was a collaboration between me and [@Dalsaetra](https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss](https://www.github.com/Vemundss).
+This project developed over time, and has three parts. Part one was a collaboration between me and [@Dalsaetra](https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss](https://www.github.com/Vemundss).
   
   
 ## Content
@@ -48,7 +48,7 @@ The goal of this part of the project was investigate deep convolutional neural n
 ### Overview of Regularization Techniques
   
 #### Comparison - No Regularization
-In the absence of any regularization, a model simply minimizes the loss function on the training data. This can lead to overfitting, especially in high-dimensional models with many parameters, because the model becomes too complex and learns to fit the training data too closely, including its noise. As a result, it often performs poorly on unseen data. Regularization methods are therefore used to prevent overfitting by adding constraints to the learning process.  
+Without any regularization, the model simply minimizes the loss function on the training data. This can lead to overfitting, especially in models with many parameters that can fit a lot of noise. As a result, it often performs poorly on unseen data. I train models without regularization to use as comparison for the different regularization techniques.
   
 #### L1 Regularization
 L1 regularization, also known as Lasso regularization, involves adding a term to the loss function that penalizes the absolute value of the weights. This encourages the model to have sparse weights, meaning that many weights are zero. This can lead to a model that is easier to interpret, because it effectively performs feature selection, choosing a subset of the input features to focus on.  
@@ -57,7 +57,7 @@ L1 regularization, also known as Lasso regularization, involves adding a term to
 L2 regularization, also known as Ridge regularization, involves adding a term to the loss function that penalizes the square of the weights. This encourages the model to have small weights but does not encourage sparsity. L2 regularization can help prevent overfitting by discouraging the model from relying too much on any single input feature.  
   
 #### Elastic Net Regularization
-Elastic Net regularization is a compromise between L1 and L2 regularization. It involves adding a term to the loss function that is a mix of an L1 penalty and an L2 penalty. This allows the model to have some level of sparsity, like L1 regularization, while also encouraging small weights, like L2 regularization.  
+Elastic Net regularization is a compromise between L1 and L2 regularization. It involves adding terms to the loss function with both a L1 penalty and an L2 penalty. This allows the model to have some level of sparsity, like L1 regularization, while also encouraging small weights, like L2 regularization.  
   
 #### Soft SVB Regularization
 Soft SVB regularization, introduced by Jia et al. 2019, penalizes the model based on the Frobenius norm of the difference between the weights' Gram matrix and the identity matrix. This encourages the model's weights to be orthogonal, which can improve generalization. Soft SVB regularization might introduce additional computational cost due to the need to compute matrix multiplications and norms.  
@@ -65,8 +65,8 @@ Soft SVB regularization, introduced by Jia et al. 2019, penalizes the model base
 #### Hard SVB Regularization
 Hard SVB regularization, similar to Soft SVB, also encourages the model's weights to be orthogonal, but it does so in a more strict manner. It uses a hard constraint instead of a soft penalty, meaning that the model's weights are forced to be orthogonal.  
   
-#### Jacobi Regularization
-Jacobi regularization introduces a penalty on the norm of the Jacobian matrix of the model's outputs with respect to its inputs. The Jacobian matrix represents the first-order derivatives of the model. By penalizing the norm of the Jacobian, we encourage the model to have outputs that change linearly or sub-linearly with respect to small changes in the inputs. It can help in achieving more stable models with smoother decision boundaries. However, calculating the Jacobian matrix can be computationally expensive for complex models and large inputs.  
+#### Jacobian Regularization
+Jacobian regularization introduces a penalty on the norm of the Jacobian matrix of the model's outputs with respect to its inputs. The Jacobian matrix represents the first-order derivatives of the model. By penalizing the norm of the Jacobian, we encourage the model to have outputs that change linearly or sub-linearly with respect to small changes in the inputs. It can help in achieving more stable models with smoother decision boundaries. However, calculating the Jacobian matrix can be computationally expensive for complex models and large inputs.  
   
 #### Jacobi Determinant Regularization
 Jacobi Determinant regularization involves adding a term to the loss function that penalizes the squared difference between the determinant of the Jacobian of the model's outputs with respect to its inputs and one. This regularization approach encourages the model to maintain volume preservation in the input space to the output space. This approach can help the model to learn more balanced and well-distributed representations, which can be beneficial for tasks that involve transformations. However, the computation of the determinant of the Jacobian can be highly computationally expensive, especially for high-dimensional inputs.  
