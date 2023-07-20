@@ -94,7 +94,7 @@ class LeNet(nn.Module):
         self.training_steps = 0
         self.N_images = N_images
         self.noise_stddev = noise_stddev
-        self.noise_inject_input = noise_inject_inputs
+        self.noise_inject_inputs = noise_inject_inputs
         self.noise_inject_weights = noise_inject_weights
 
         self.L = nn.CrossEntropyLoss()
@@ -120,9 +120,6 @@ class LeNet(nn.Module):
                 self.conv1.groups,
             )
         else:
-            conv1_weight = self.conv1.weight
-
-        if not self.noise_inject_weights:
             x = self.conv1(x)
 
         x = self.pool(torch.tanh(x))
