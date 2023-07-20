@@ -16,7 +16,8 @@ if __name__ == "__main__":
     # Hyperparameters are set in class init, except for dropout_rate
     dropout_rate = 0.5
 
-    """
+    # Initialize all models and store them in a dictionary with their names
+    models = {
         "model_no_reg": LeNet(),
         "model_l1": LeNet(l1=True),
         "model_l2": LeNet(l2=True),
@@ -28,9 +29,7 @@ if __name__ == "__main__":
         "model_dropout": LeNet(dropout_rate=0.5),
         "model_conf_penalty": LeNet(conf_penalty=True),
         "model_label_smoothing": LeNet(label_smoothing=True),
-        "model_noise_inject_inputs": LeNet(noise_inject_inputs=True),"""
-    # Initialize all models and store them in a dictionary with their names
-    models = {
+        "model_noise_inject_inputs": LeNet(noise_inject_inputs=True),
         "model_noise_inject_weights": LeNet(noise_inject_weights=True),
     }
 
