@@ -132,7 +132,7 @@ def plot_weight_distributions(model, title=None):
     plt.show()
 
 
-def plot_activation_maps(model, dataloader, num_images=2):
+def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
     """Plots activation maps for each filter in each convolutional layer of model."""
 
     # Get random batch of images from the dataloader
@@ -152,17 +152,24 @@ def plot_activation_maps(model, dataloader, num_images=2):
     device = images.device
     model.to(device)
 
+    # Use a grayscale colormap if the dataset is MNIST, otherwise use the default colormap
+    cmap = "gray" if dataset == "MNIST" else None
+
     # Plot activation maps for each selected image
     for i, image in enumerate(images):
         plt.figure()
 
-        # If the image has more than 1 channel, convert it to grayscale for displaying
-        if image.shape[0] > 1:
-            image_gray = image.mean(dim=0)
+        # Un-normalize the image:
+        if dataset == "mnist":
+            image = image * 0.3081 + 0.1307
+            image_gray = image[0]  # MNIST only has one channel
+        elif dataset == "cifar10":
+            image = image * 0.5 + 0.5
+            image_gray = image.permute(1, 2, 0)  # Move channels to the end for display
         else:
-            image_gray = image[0]
+            raise ValueError(f"Unknown dataset: {dataset}")
 
-        plt.imshow(image_gray, cmap="gray")
+        plt.imshow(image_gray)  # Plot original image in original colours
         plt.title(f"Input Image {i + 1}")
         plt.show()
 
@@ -171,7 +178,10 @@ def plot_activation_maps(model, dataloader, num_images=2):
         # Iterate over each convolutional layer
         for j, layer in enumerate(conv_layers):
             x = layer(x)
-            x = F.relu(x)  # Apply ReLU activation
+            if dataset == "mnist":
+                x = torch.tanh(x)  # Apply tanh activation
+            elif dataset == "cifar10":
+                x = F.relu(x)
 
             # Plot all activation maps for the current layer
             num_filters = x.shape[1]
@@ -190,18 +200,21 @@ def plot_activation_maps(model, dataloader, num_images=2):
                 else:
                     ax = axs[row, col]
 
-                ax.imshow(x[0][k].detach().cpu().numpy(), cmap="gray")
+                ax.imshow(x[0][k].detach().cpu().numpy(), cmap=cmap)
                 ax.set_title(f"Filter {k + 1}")
                 ax.axis("off")
 
-            fig.suptitle(f"Conv Layer {j + 1} Activation Maps for Image {i + 1}")
+            fig.suptitle(
+                f"Conv Layer {j + 1} Activation Maps for Image {i + 1}",
+                fontsize="large",
+            )
             plt.tight_layout()
             plt.show()
 
 
-def plot_predicted_probabilities(model, data_loader, num_batches=10):
+def plot_max_predicted_scores(model, data_loader, num_batches=10):
     """
-    Compute and plot the model's maximum predicted probability for a number of batches
+    Compute and plot the model's maximum predicted scores (often slightly faultily interpreted as probability) for a number of batches
     from the provided data loader.
 
     Args:
@@ -219,20 +232,20 @@ def plot_predicted_probabilities(model, data_loader, num_batches=10):
             if i >= num_batches:
                 break
 
-            # Compute predicted probabilities
+            # Compute predicted scores
             x = data.to(next(model.parameters()).device)
             y_pred = model(x)
 
-            # Find maximum probability for each sample and store
+            # Find maximum predicted scores for each sample and store
             max_prob, _ = torch.max(y_pred, dim=1)
             max_probs.extend(max_prob.cpu().numpy())
 
-    # Plot histogram of maximum predicted probabilities
+    # Plot histogram of maximum predicted scores
     plt.figure(figsize=(10, 5))
     sns.histplot(max_probs, bins=30, kde=False)
-    plt.xlabel("Maximum predicted probability")
+    plt.xlabel("Maximum predicted score")
     plt.ylabel("Count")
-    plt.title("Histogram of maximum predicted probabilities")
+    plt.title("Histogram of maximum predicted scores")
     plt.grid(True)
     plt.show()
 
@@ -357,7 +370,7 @@ def plot_activations_tsne(model, data_loader, device):
     save_output.clear()
 
 
-def plot_saliency_maps(model, data_loader, num_images):
+def plot_saliency_maps(model, data_loader, num_images, dataset="mnist"):
     # Set the model to evaluation mode
     model.eval()
 
@@ -399,9 +412,19 @@ def plot_saliency_maps(model, data_loader, num_images):
             # Convert the normalized gradients to a numpy array
             saliency_map = normalized_gradients.detach().cpu().numpy()
 
+            # Unnormalize the image data depending on the dataset
+            img = images[i].detach().cpu().numpy()
+            if dataset == "mnist":
+                img = img * 0.3081 + 0.1307
+            elif dataset == "cifar10":
+                img = img * 0.5 + 0.5
+
+            # Transpose the image data and plot
+            img = np.transpose(img, (1, 2, 0))
+
             # Plot the image
             ax_img = axs[count // cols, 0]
-            ax_img.imshow(np.transpose(images[i].detach().cpu().numpy(), (1, 2, 0)))
+            ax_img.imshow(img)
             ax_img.axis("off")
 
             # Plot the saliency map
@@ -411,7 +434,7 @@ def plot_saliency_maps(model, data_loader, num_images):
 
             # Plot the overlapping image
             ax_overlap = axs[count // cols, 2]
-            ax_overlap.imshow(np.transpose(images[i].detach().cpu().numpy(), (1, 2, 0)))
+            ax_overlap.imshow(img)
             ax_overlap.imshow(saliency_map, cmap="hot", alpha=0.5)
             ax_overlap.axis("off")
 
@@ -430,11 +453,18 @@ def plot_saliency_maps(model, data_loader, num_images):
 
 
 def plot_occlusion_sensitivity(
-    model, data_loader, num_images, occluder_size=8, stride=4
+    model, data_loader, num_images, occluder_size=8, stride=4, dataset="mnist"
 ):
     model.eval()
 
     fig, axs = plt.subplots(num_images, 2, figsize=(10, num_images * 5))
+
+    # Define the occluder based on dataset
+    occluder = (
+        torch.zeros(1, occluder_size, occluder_size)
+        if dataset == "mnist"
+        else torch.ones(3, occluder_size, occluder_size)
+    )
 
     count = 0
     for images, _ in data_loader:
@@ -465,7 +495,7 @@ def plot_occlusion_sensitivity(
                         :,
                         i * stride : i * stride + occluder_size,
                         j * stride : j * stride + occluder_size,
-                    ] = 0
+                    ] = occluder
 
                     # Forward pass through the model
                     output = model(occluded_image.unsqueeze(0))
@@ -480,7 +510,12 @@ def plot_occlusion_sensitivity(
             )
 
             # Plot the original image on the left subplot
-            axs[count, 0].imshow(image.permute(1, 2, 0))
+            if dataset == "mnist":
+                axs[count, 0].imshow(image.squeeze(), cmap="gray")
+            else:
+                # reverse the normalization for CIFAR10 before plotting
+                image_denorm = image / 2 + 0.5
+                axs[count, 0].imshow(np.transpose(image_denorm.numpy(), (1, 2, 0)))
             axs[count, 0].axis("off")
 
             # Plot the occlusion scores heatmap on the right subplot

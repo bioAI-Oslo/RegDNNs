@@ -99,7 +99,7 @@ For L1, L2, and Elastic Net regularization it is useful to visualize the distrib
 Especially in the context of convolutional neural networks (CNNs), visualizing the feature maps - the activations of the convolutional layers - can provide insight into what features the network is learning. This can give a sense of how regularization is affecting the types of features learned. For instance, too much L1/L2 regularization might result in overly simplistic feature maps, while too little might result in feature maps that are overly complex or noisy.  
   
 #### Uncertainty Estimates
-For regularization methods that affect the model's confidence, like Confidence Penalty and Label Smoothing, one can plot the model's predicted probabilities. A well-regularized model should show less overconfidence and better-calibrated probabilities.  
+For regularization methods that affect the model's confidence, like Confidence Penalty and Label Smoothing, one can plot the model's predicted scores. A well-regularized model should show less overconfidence and better-calibrated scores.  
   
 #### T-SNE or PCA of Activations
 Dimensionality reduction techniques like t-SNE or PCA can be used to visualize the activations of the network. This involves taking the activation values of a particular layer and reducing them to 2 or 3 dimensions for plotting. Different classes should ideally form distinct clusters, and overfitting may manifest as overly complex boundaries between classes.  
