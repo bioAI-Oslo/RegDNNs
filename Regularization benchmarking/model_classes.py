@@ -452,12 +452,17 @@ class DDNet(nn.Module):
         JF : torch.Tensor
             The Jacobian regularization term.
         """
-        C = x.shape[1]  # Number of classes in dataset
+        num_features = self(x).shape[
+            1
+        ]  # instead of number of classes, get the feature size from the model output
+
         JF = 0  # Initialize Jacobian Frobenius norm
         nproj = 1  # Number of random projections
 
         for _ in range(nproj):
-            v = torch.randn(x.shape[0], C).to(x.device)  # Generate random vector
+            v = torch.randn(x.shape[0], num_features).to(
+                x.device
+            )  # Generate random vector
             v_hat = v / torch.norm(v, dim=1, keepdim=True)  # Normalize
 
             z = self(x)  # Forward pass to get predictions
