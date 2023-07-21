@@ -4,7 +4,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from collections import OrderedDict
 
-from model_classes import LeNet
+from model_classes import LeNet, DDNet
 
 
 def train(
@@ -126,42 +126,64 @@ def load_trained_model(model_name, dataset):
     # Set to cpu as we will be loading on a laptop
     device = torch.device("cpu")
 
-    # Get in_channels based on dataset
-    if dataset == "mnist":
-        in_channels = 1
-    elif dataset == "cifar10":
-        in_channels = 3
-    else:
-        print("Error: Dataset not implemented")
-
     # Initialize model based on provided model_name to get a similar model to prevent errors
     # FIX THIS!
-    if model_name == "model_no_reg":
-        model = LeNet(in_channels=in_channels)
-    elif model_name == "model_l1":
-        model = LeNet(in_channels=in_channels, l1=True)
-    elif model_name == "model_l2":
-        model = LeNet(in_channels=in_channels, l2=True)
-    elif model_name == "model_l1_l2":
-        model = LeNet(in_channels=in_channels, l1_l2=True)
-    elif model_name == "model_svb":
-        model = LeNet(in_channels=in_channels, svb=True)
-    elif model_name == "model_soft_svb":
-        model = LeNet(in_channels=in_channels, soft_svb=True)
-    elif model_name == "model_jacobi_reg":
-        model = LeNet(in_channels=in_channels, jacobi_reg=True)
-    elif model_name == "model_jacobi_det_reg":
-        model = LeNet(in_channels=in_channels, jacobi_det_reg=True)
-    elif model_name == "model_dropout":
-        model = LeNet(in_channels=in_channels, dropout_rate=0.5)
-    elif model_name == "model_conf_penalty":
-        model = LeNet(in_channels=in_channels, conf_penalty=True)
-    elif model_name == "model_label_smoothing":
-        model = LeNet(in_channels=in_channels, label_smoothing=True)
-    elif model_name == "model_noise_inject_inputs":
-        model = LeNet(in_channels=in_channels, noise_inject_inputs=True)
-    elif model_name == "model_noise_inject_weights":
-        model = LeNet(in_channels=in_channels, noise_inject_weights=True)
+    if dataset == "mnist":
+        if model_name == "model_no_reg":
+            model = LeNet()
+        elif model_name == "model_l1":
+            model = LeNet(l1=True)
+        elif model_name == "model_l2":
+            model = LeNet(l2=True)
+        elif model_name == "model_l1_l2":
+            model = LeNet(l1_l2=True)
+        elif model_name == "model_svb":
+            model = LeNet(svb=True)
+        elif model_name == "model_soft_svb":
+            model = LeNet(soft_svb=True)
+        elif model_name == "model_jacobi_reg":
+            model = LeNet(jacobi_reg=True)
+        elif model_name == "model_jacobi_det_reg":
+            model = LeNet(jacobi_det_reg=True)
+        elif model_name == "model_dropout":
+            model = LeNet(dropout_rate=0.5)
+        elif model_name == "model_conf_penalty":
+            model = LeNet(conf_penalty=True)
+        elif model_name == "model_label_smoothing":
+            model = LeNet(label_smoothing=True)
+        elif model_name == "model_noise_inject_inputs":
+            model = LeNet(noise_inject_inputs=True)
+        elif model_name == "model_noise_inject_weights":
+            model = LeNet(noise_inject_weights=True)
+    elif dataset == "cifar10":
+        if model_name == "model_no_reg":
+            model = DDNet()
+        elif model_name == "model_l1":
+            model = DDNet(l1=True)
+        elif model_name == "model_l2":
+            model = DDNet(l2=True)
+        elif model_name == "model_l1_l2":
+            model = DDNet(l1_l2=True)
+        elif model_name == "model_svb":
+            model = DDNet(svb=True)
+        elif model_name == "model_soft_svb":
+            model = DDNet(soft_svb=True)
+        elif model_name == "model_jacobi_reg":
+            model = DDNet(jacobi_reg=True)
+        elif model_name == "model_jacobi_det_reg":
+            model = DDNet(jacobi_det_reg=True)
+        elif model_name == "model_dropout":
+            model = DDNet(dropout_rate=0.5)
+        elif model_name == "model_conf_penalty":
+            model = DDNet(conf_penalty=True)
+        elif model_name == "model_label_smoothing":
+            model = DDNet(label_smoothing=True)
+        elif model_name == "model_noise_inject_inputs":
+            model = DDNet(noise_inject_inputs=True)
+        elif model_name == "model_noise_inject_weights":
+            model = DDNet(noise_inject_weights=True)
+    else:
+        print("Error: Dataset not implemented")
 
     # Load state dictionary
     state_dict = torch.load(
