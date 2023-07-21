@@ -30,7 +30,7 @@ class LeNet(nn.Module):
         jacobi_det_reg=False,
         jacobi_det_reg_lmbd=0.01,
         conf_penalty=False,
-        conf_penalty_lmbd=0.1,
+        conf_penalty_lmbd=0.05,
         label_smoothing=False,
         label_smoothing_lmbd=0.1,
     ):
@@ -98,6 +98,7 @@ class LeNet(nn.Module):
         self.noise_inject_weights = noise_inject_weights
 
         self.L = nn.CrossEntropyLoss()
+        self.smoothed_L = nn.KLDivLoss(reduction="batchmean")
         self.opt = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum)
 
     def forward(self, x):
@@ -172,7 +173,16 @@ class LeNet(nn.Module):
         y,
     ):
         y_pred = self(x.float())
-        loss = self.L(y_pred, y)
+
+        # Label smoothing
+        if self.label_smoothing:
+            y_smooth = torch.full_like(
+                y_pred, fill_value=self.label_smoothing_lmbd / (self.N_images - 1)
+            )
+            y_smooth.scatter_(1, y.unsqueeze(1), 1 - self.label_smoothing_lmbd)
+            loss = self.smoothed_L(y_pred.log_softmax(dim=1), y_smooth.detach())
+        else:
+            loss = self.L(y_pred, y)
 
         # L1 regularization
         if self.l1:
@@ -242,8 +252,10 @@ class LeNet(nn.Module):
 
         # Confidence penalty regularization
         if self.conf_penalty:
+            probabilities = torch.nn.functional.softmax(y_pred, dim=1)
             conf_penalty_loss = (
-                -self.conf_penalty_lmbd * (y_pred * torch.log(y_pred)).sum(dim=1).mean()
+                -self.conf_penalty_lmbd
+                * (probabilities * torch.log(probabilities + 1e-8)).sum(dim=1).mean()
             )
             loss += conf_penalty_loss
             return loss, conf_penalty_loss
@@ -255,17 +267,11 @@ class LeNet(nn.Module):
         data,
         labels,
     ):
-        if self.label_smoothing:
-            num_classes = self.N_images
-            smoothed_labels = (
-                1 - self.label_smoothing_lmbd
-            ) * labels + self.label_smoothing_lmbd / num_classes
-
         self.opt.zero_grad()
 
         loss, reg_loss = self.loss_fn(
             data,
-            smoothed_labels.long() if self.label_smoothing else labels.long(),
+            labels.long(),
         )
         loss.backward()
         self.opt.step()

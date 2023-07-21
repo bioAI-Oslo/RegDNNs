@@ -87,7 +87,6 @@ def plot_reg_results(
     ax1.plot(
         epochs,
         np.asarray(losses) - np.asarray(reg_losses),
-        "o--",
         label="Cross Entropy Loss",
     )
     ax1.set_xlabel("Epoch Number")

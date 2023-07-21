@@ -111,7 +111,7 @@ def register_hooks(model):
     return save_output, hook_handles, layer_names
 
 
-def load_trained_model(model_name):
+def load_trained_model(model_name, dataset):
     """
     Loads a pre-trained PyTorch model and associated training data.
 
@@ -126,38 +126,46 @@ def load_trained_model(model_name):
     # Set to cpu as we will be loading on a laptop
     device = torch.device("cpu")
 
+    # Get in_channels based on dataset
+    if dataset == "mnist":
+        in_channels = 1
+    elif dataset == "cifar10":
+        in_channels = 3
+    else:
+        print("Error: Dataset not implemented")
+
     # Initialize model based on provided model_name to get a similar model to prevent errors
     # FIX THIS!
     if model_name == "model_no_reg":
-        model = LeNet()
+        model = LeNet(in_channels=in_channels)
     elif model_name == "model_l1":
-        model = LeNet(l1=True)
+        model = LeNet(in_channels=in_channels, l1=True)
     elif model_name == "model_l2":
-        model = LeNet(l2=True)
+        model = LeNet(in_channels=in_channels, l2=True)
     elif model_name == "model_l1_l2":
-        model = LeNet(l1_l2=True)
+        model = LeNet(in_channels=in_channels, l1_l2=True)
     elif model_name == "model_svb":
-        model = LeNet(svb=True)
+        model = LeNet(in_channels=in_channels, svb=True)
     elif model_name == "model_soft_svb":
-        model = LeNet(soft_svb=True)
+        model = LeNet(in_channels=in_channels, soft_svb=True)
     elif model_name == "model_jacobi_reg":
-        model = LeNet(jacobi_reg=True)
+        model = LeNet(in_channels=in_channels, jacobi_reg=True)
     elif model_name == "model_jacobi_det_reg":
-        model = LeNet(jacobi_det_reg=True)
+        model = LeNet(in_channels=in_channels, jacobi_det_reg=True)
     elif model_name == "model_dropout":
-        model = LeNet(dropout_rate=0.5)
+        model = LeNet(in_channels=in_channels, dropout_rate=0.5)
     elif model_name == "model_conf_penalty":
-        model = LeNet(conf_penalty=True)
+        model = LeNet(in_channels=in_channels, conf_penalty=True)
     elif model_name == "model_label_smoothing":
-        model = LeNet(label_smoothing=True)
+        model = LeNet(in_channels=in_channels, label_smoothing=True)
     elif model_name == "model_noise_inject_inputs":
-        model = LeNet(noise_inject_inputs=True)
+        model = LeNet(in_channels=in_channels, noise_inject_inputs=True)
     elif model_name == "model_noise_inject_weights":
-        model = LeNet(noise_inject_weights=True)
+        model = LeNet(in_channels=in_channels, noise_inject_weights=True)
 
     # Load state dictionary
     state_dict = torch.load(
-        f"./trained_mnist_models/{model_name}.pt", map_location=device
+        f"./trained_{dataset}_models/{model_name}.pt", map_location=device
     )
 
     # Create new OrderedDict that does not contain `module.` prefix
@@ -173,7 +181,7 @@ def load_trained_model(model_name):
     model.eval()
 
     # Load training data
-    with open(f"./trained_mnist_models/{model_name}_data.pkl", "rb") as f:
+    with open(f"./trained_{dataset}_models/{model_name}_data.pkl", "rb") as f:
         data = pickle.load(f)
 
     losses = data["losses"]
@@ -200,7 +208,7 @@ class ModelInfo:
     test_accuracies (list): The list of test accuracies.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, dataset):
         """
         The constructor for ModelInfo class.
 
@@ -209,6 +217,7 @@ class ModelInfo:
         """
 
         self.name = name
+        self.dataset = dataset
         (
             self.model,
             self.losses,
@@ -217,10 +226,10 @@ class ModelInfo:
             self.weights,
             self.train_accuracies,
             self.test_accuracies,
-        ) = self.load_model(name)
+        ) = self.load_model(name, dataset)
 
     @staticmethod
-    def load_model(name):
+    def load_model(name, dataset):
         """
         This static method is used to load the model and related information from a file using load_trained_model.
 
@@ -243,7 +252,7 @@ class ModelInfo:
             weights,
             train_accuracies,
             test_accuracies,
-        ) = load_trained_model(name)
+        ) = load_trained_model(name, dataset)
         return (
             model,
             losses,
