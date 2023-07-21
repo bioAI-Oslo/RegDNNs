@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # Initialize all models and store them in a dictionary with their names
     models = {
-        # "model_no_reg": LeNet(in_channels=in_channels),
+        "model_no_reg": LeNet(in_channels=in_channels),
         "model_l1": LeNet(in_channels=in_channels, l1=True),
         "model_l2": LeNet(in_channels=in_channels, l2=True),
         "model_l1_l2": LeNet(in_channels=in_channels, l1_l2=True),
