@@ -473,7 +473,7 @@ class DDNet(nn.Module):
             ].detach()  # Compute Jacobian-vector product
 
             JF += (
-                C * (Jv**2).sum() / (nproj * len(x))
+                num_features * (Jv**2).sum() / (nproj * len(x))
             )  # Add square of Jv to Frobenius norm
 
         return JF
