@@ -169,8 +169,8 @@ def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
             image = image * 0.5 + 0.5
             image_gray = image.permute(1, 2, 0)  # Move channels to the end for display
         elif dataset == "cifar100":
-            mean = np.array([0.5071, 0.4865, 0.4409])
-            std = np.array([0.2009, 0.1984, 0.2023])
+            mean = torch.tensor([0.5071, 0.4865, 0.4409]).unsqueeze(-1).unsqueeze(-1)
+            std = torch.tensor([0.2009, 0.1984, 0.2023]).unsqueeze(-1).unsqueeze(-1)
             image = std * image + mean
             image_gray = image.permute(1, 2, 0)  # Move channels to the end for display
         else:
@@ -486,8 +486,8 @@ def plot_occlusion_sensitivity(
     # Define denormalization transforms
     if dataset == "cifar100":
         denorm = transforms.Normalize(
-            mean=[-0.5071 / 0.2009, -0.4865 / 0.1984, -0.4409 / 0.2023],
-            std=[1 / 0.2009, 1 / 0.1984, 1 / 0.2023],
+            mean=torch.tensor([-0.5071 / 0.2009, -0.4865 / 0.1984, -0.4409 / 0.2023]),
+            std=torch.tensor([1 / 0.2009, 1 / 0.1984, 1 / 0.2023]),
         )
     else:
         denorm = lambda x: x / 2 + 0.5
