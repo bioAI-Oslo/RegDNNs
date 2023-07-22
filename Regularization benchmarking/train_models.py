@@ -19,7 +19,7 @@ if __name__ == "__main__":
     elif dataset == "cifar10":
         train_loader, test_loader = data_loader_CIFAR10()
     elif dataset == "cifar100":
-        train_loader, test_loader = data_loader_CIFAR100
+        train_loader, test_loader = data_loader_CIFAR100()
 
     # Hyperparameters are set in class init, except for dropout_rate
     dropout_rate = 0.5
