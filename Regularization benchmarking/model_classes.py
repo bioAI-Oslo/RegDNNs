@@ -304,6 +304,7 @@ class LeNet(nn.Module):
 class DDNet(nn.Module):
     def __init__(
         self,
+        dataset="cifar10",
         lr=0.1,
         momentum=0.9,
         dropout_rate=0.0,
@@ -348,7 +349,9 @@ class DDNet(nn.Module):
         )
         self.fc1 = nn.Linear(in_features=3200, out_features=256)
         self.fc2 = nn.Linear(in_features=256, out_features=256)
-        self.fc3 = nn.Linear(in_features=256, out_features=10)
+        self.fc3 = nn.Linear(
+            in_features=256, out_features=10 if dataset == "cifar10" else 100
+        )
         self.dropout = nn.Dropout(dropout_rate)
         self.pool = nn.MaxPool2d(kernel_size=(2, 2))
 
@@ -399,6 +402,7 @@ class DDNet(nn.Module):
         self.noise_inject_inputs = noise_inject_inputs
         self.noise_inject_weights = noise_inject_weights
 
+        self.dataset = dataset
         self.L = nn.CrossEntropyLoss()
         self.smoothed_L = nn.KLDivLoss(reduction="batchmean")
         self.opt = torch.optim.SGD(self.parameters(), lr=lr, momentum=momentum)
@@ -487,8 +491,10 @@ class DDNet(nn.Module):
 
         # Label smoothing
         if self.label_smoothing:
+            n_images = 10 if self.dataset == "cifar10" else 100
             y_smooth = torch.full_like(
-                y_pred, fill_value=self.label_smoothing_lmbd / (10 - 1)  # N_images - 1
+                y_pred,
+                fill_value=self.label_smoothing_lmbd / (n_images - 1),  # N_images - 1
             )
             y_smooth.scatter_(1, y.unsqueeze(1), 1 - self.label_smoothing_lmbd)
             loss = self.smoothed_L(y_pred.log_softmax(dim=1), y_smooth.detach())

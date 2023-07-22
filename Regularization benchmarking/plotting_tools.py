@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import seaborn as sns
 import torch
 import torch.nn as nn
@@ -153,7 +154,7 @@ def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
     model.to(device)
 
     # Use a grayscale colormap if the dataset is MNIST, otherwise use the default colormap
-    cmap = "gray" if dataset == "MNIST" else None
+    cmap = "gray" if dataset == "mnist" else None
 
     # Plot activation maps for each selected image
     for i, image in enumerate(images):
@@ -165,6 +166,11 @@ def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
             image_gray = image[0]  # MNIST only has one channel
         elif dataset == "cifar10":
             image = image * 0.5 + 0.5
+            image_gray = image.permute(1, 2, 0)  # Move channels to the end for display
+        elif dataset == "cifar100":
+            mean = np.array([0.5071, 0.4865, 0.4409])
+            std = np.array([0.2009, 0.1984, 0.2023])
+            image = std * image + mean
             image_gray = image.permute(1, 2, 0)  # Move channels to the end for display
         else:
             raise ValueError(f"Unknown dataset: {dataset}")
@@ -180,7 +186,7 @@ def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
             x = layer(x)
             if dataset == "mnist":
                 x = torch.tanh(x)  # Apply tanh activation
-            elif dataset == "cifar10":
+            elif dataset == "cifar10" or dataset == "cifar100":
                 x = F.relu(x)
 
             # Plot all activation maps for the current layer
@@ -250,22 +256,25 @@ def plot_max_predicted_scores(model, data_loader, num_batches=10):
     plt.show()
 
 
-def plot_activations_pca(model, data_loader, device):
+def plot_activations_pca(model, data_loader, device, dataset="mnist"):
+    num_classes = 100 if dataset == "cifar100" else 10
+    colors = cm.get_cmap("rainbow", num_classes)(np.arange(num_classes))
+
     save_output, hook_handles, layer_names = register_hooks(model)
     model.eval()
 
-    colors = [
-        "#1f77b4",
-        "#ff7f0e",
-        "#2ca02c",
-        "#d62728",
-        "#9467bd",
-        "#8c564b",
-        "#e377c2",
-        "#7f7f7f",
-        "#bcbd22",
-        "#17becf",
-    ]
+    # colors = [
+    #     "#1f77b4",
+    #     "#ff7f0e",
+    #     "#2ca02c",
+    #     "#d62728",
+    #     "#9467bd",
+    #     "#8c564b",
+    #     "#e377c2",
+    #     "#7f7f7f",
+    #     "#bcbd22",
+    #     "#17becf",
+    # ]
 
     with torch.no_grad():
         for images, batch_labels in data_loader:
@@ -310,22 +319,25 @@ def plot_activations_pca(model, data_loader, device):
     save_output.clear()
 
 
-def plot_activations_tsne(model, data_loader, device):
+def plot_activations_tsne(model, data_loader, device, dataset="mnist"):
+    num_classes = 100 if dataset == "cifar100" else 10
+    colors = cm.get_cmap("rainbow", num_classes)(np.arange(num_classes))
+
     save_output, hook_handles, layer_names = register_hooks(model)
     model.eval()
 
-    colors = [
-        "#1f77b4",
-        "#ff7f0e",
-        "#2ca02c",
-        "#d62728",
-        "#9467bd",
-        "#8c564b",
-        "#e377c2",
-        "#7f7f7f",
-        "#bcbd22",
-        "#17becf",
-    ]
+    # colors = [
+    #     "#1f77b4",
+    #     "#ff7f0e",
+    #     "#2ca02c",
+    #     "#d62728",
+    #     "#9467bd",
+    #     "#8c564b",
+    #     "#e377c2",
+    #     "#7f7f7f",
+    #     "#bcbd22",
+    #     "#17becf",
+    # ]
 
     with torch.no_grad():
         for images, batch_labels in data_loader:
@@ -418,6 +430,10 @@ def plot_saliency_maps(model, data_loader, num_images, dataset="mnist"):
                 img = img * 0.3081 + 0.1307
             elif dataset == "cifar10":
                 img = img * 0.5 + 0.5
+            elif dataset == "cifar100":
+                mean = np.array([0.5071, 0.4865, 0.4409])
+                std = np.array([0.2009, 0.1984, 0.2023])
+                img = std * img + mean
 
             # Transpose the image data and plot
             img = np.transpose(img, (1, 2, 0))

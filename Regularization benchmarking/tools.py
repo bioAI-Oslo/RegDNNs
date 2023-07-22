@@ -16,7 +16,6 @@ def train(
 ):
     losses = []
     epochs = []
-    # weights = []
     train_accuracies = []
     test_accuracies = []
     reg_losses = []
@@ -24,8 +23,6 @@ def train(
 
     for epoch in tqdm(range(n_epochs)):
         N = len(train_loader)
-        # for param in model.parameters():
-        #   weights.append(param.detach().cpu().numpy().copy())
         for i, (data, labels) in enumerate(train_loader):
             epochs.append(epoch + i / N)
             data = data.to(device)
@@ -182,6 +179,33 @@ def load_trained_model(model_name, dataset):
             model = DDNet(noise_inject_inputs=True)
         elif model_name == "model_noise_inject_weights":
             model = DDNet(noise_inject_weights=True)
+    elif dataset == "cifar100":
+        if model_name == "model_no_reg":
+            model = DDNet(dataset="cifar100")
+        elif model_name == "model_l1":
+            model = DDNet(dataset="cifar100", l1=True)
+        elif model_name == "model_l2":
+            model = DDNet(dataset="cifar100", l2=True)
+        elif model_name == "model_l1_l2":
+            model = DDNet(dataset="cifar100", l1_l2=True)
+        elif model_name == "model_svb":
+            model = DDNet(dataset="cifar100", svb=True)
+        elif model_name == "model_soft_svb":
+            model = DDNet(dataset="cifar100", soft_svb=True)
+        elif model_name == "model_jacobi_reg":
+            model = DDNet(dataset="cifar100", jacobi_reg=True)
+        elif model_name == "model_jacobi_det_reg":
+            model = DDNet(dataset="cifar100", jacobi_det_reg=True)
+        elif model_name == "model_dropout":
+            model = DDNet(dataset="cifar100", dropout_rate=0.5)
+        elif model_name == "model_conf_penalty":
+            model = DDNet(dataset="cifar100", conf_penalty=True)
+        elif model_name == "model_label_smoothing":
+            model = DDNet(dataset="cifar100", label_smoothing=True)
+        elif model_name == "model_noise_inject_inputs":
+            model = DDNet(dataset="cifar100", noise_inject_inputs=True)
+        elif model_name == "model_noise_inject_weights":
+            model = DDNet(dataset="cifar100", noise_inject_weights=True)
     else:
         print("Error: Dataset not implemented")
 
@@ -209,7 +233,6 @@ def load_trained_model(model_name, dataset):
     losses = data["losses"]
     reg_losses = data["reg_losses"]
     epochs = data["epochs"]
-    # weights = data["weights"]
     train_accuracies = data["train_accuracies"]
     test_accuracies = data["test_accuracies"]
 
@@ -245,7 +268,6 @@ class ModelInfo:
             self.losses,
             self.reg_losses,
             self.epochs,
-            # self.weights,
             self.train_accuracies,
             self.test_accuracies,
         ) = self.load_model(name, dataset)
@@ -271,7 +293,6 @@ class ModelInfo:
             losses,
             reg_losses,
             epochs,
-            # weights,
             train_accuracies,
             test_accuracies,
         ) = load_trained_model(name, dataset)
@@ -280,7 +301,6 @@ class ModelInfo:
             losses,
             reg_losses,
             epochs,
-            # weights,
             train_accuracies,
             test_accuracies,
         )

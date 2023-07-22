@@ -1,7 +1,5 @@
-import numpy as np
 import torch
 from torchvision import datasets, transforms
-from torch.utils.data.sampler import SubsetRandomSampler
 
 
 def data_loader_MNIST():
@@ -56,12 +54,11 @@ def data_loader_CIFAR10():
     return train_loader, test_loader
 
 
-def data_loader_CIFAR100_32_32():
+def data_loader_CIFAR100():
     """Load CIFAR100 data for use with LeNet. Pictures are 32x32x3"""
 
     transform = transforms.Compose(
         [
-            transforms.Resize((32, 32)),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.5071, 0.4865, 0.4409],
@@ -74,13 +71,13 @@ def data_loader_CIFAR100_32_32():
         root="./data", train=True, download=True, transform=transform
     )
     train_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=128, shuffle=False, num_workers=2
+        train_set, batch_size=100, shuffle=True, num_workers=5
     )
 
     test_set = datasets.CIFAR100(
         root="./data", train=False, download=True, transform=transform
     )
     test_loader = torch.utils.data.DataLoader(
-        test_set, batch_size=128, shuffle=False, num_workers=2
+        test_set, batch_size=100, shuffle=False, num_workers=5
     )
     return train_loader, test_loader
