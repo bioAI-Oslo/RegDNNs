@@ -33,7 +33,7 @@ if __name__ == "__main__":
         "model_svb": DDNet(dataset=dataset, svb=True),
         "model_soft_svb": DDNet(dataset=dataset, soft_svb=True),
         "model_jacobi_reg": DDNet(dataset=dataset, jacobi_reg=True),
-        "model_jacobi_det_reg": DDNet(dataset=dataset, jacobi_det_reg=True),
+        # "model_jacobi_det_reg": DDNet(dataset=dataset, jacobi_det_reg=True),
         "model_dropout": DDNet(dataset=dataset, dropout_rate=0.5),
         "model_conf_penalty": DDNet(dataset=dataset, conf_penalty=True),
         "model_label_smoothing": DDNet(dataset=dataset, label_smoothing=True),
