@@ -41,7 +41,7 @@ if __name__ == "__main__":
         "model_noise_inject_weights": DDNet(dataset=dataset, noise_inject_weights=True),
     }
 
-    n_epochs = 10
+    n_epochs = 50
 
     # Iterate through each model
     for model_name, model in models.items():
