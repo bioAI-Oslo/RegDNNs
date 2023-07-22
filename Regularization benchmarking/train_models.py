@@ -27,18 +27,18 @@ if __name__ == "__main__":
         "model_l1": DDNet(l1=True),
         "model_l2": DDNet(l2=True),
         "model_l1_l2": DDNet(l1_l2=True),
-        "model_svb": DDNet(svb=True),
-        "model_soft_svb": DDNet(soft_svb=True),
-        "model_jacobi_reg": DDNet(jacobi_reg=True),
-        "model_jacobi_det_reg": DDNet(jacobi_det_reg=True),
-        "model_dropout": DDNet(dropout_rate=0.5),
-        "model_conf_penalty": DDNet(conf_penalty=True),
-        "model_label_smoothing": DDNet(label_smoothing=True),
-        "model_noise_inject_inputs": DDNet(noise_inject_inputs=True),
-        "model_noise_inject_weights": DDNet(noise_inject_weights=True),
+        # "model_svb": DDNet(svb=True),
+        # "model_soft_svb": DDNet(soft_svb=True),
+        # "model_jacobi_reg": DDNet(jacobi_reg=True),
+        # "model_jacobi_det_reg": DDNet(jacobi_det_reg=True),
+        # "model_dropout": DDNet(dropout_rate=0.5),
+        # "model_conf_penalty": DDNet(conf_penalty=True),
+        # "model_label_smoothing": DDNet(label_smoothing=True),
+        # "model_noise_inject_inputs": DDNet(noise_inject_inputs=True),
+        # "model_noise_inject_weights": DDNet(noise_inject_weights=True),
     }
 
-    n_epochs = 5
+    n_epochs = 100
 
     # Iterate through each model
     for model_name, model in models.items():
