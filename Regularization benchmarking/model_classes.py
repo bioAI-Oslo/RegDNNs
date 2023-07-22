@@ -557,6 +557,7 @@ class DDNet(nn.Module):
                 self.counter += 1
                 jacobi = torch.autograd.functional.jacobian(self.forward, x)
                 jacobi = jacobi.transpose(-2, -1) @ jacobi
+                jacobi = jacobi.detach()  # For memory
                 jacobi_loss = (
                     self.jacobi_det_reg_lmbd
                     * ((torch.linalg.det(jacobi) - 1) ** 2).sum()
