@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from torchvision import transforms
 
 from tools import register_hooks
 
@@ -482,6 +483,15 @@ def plot_occlusion_sensitivity(
         else torch.ones(3, occluder_size, occluder_size)
     )
 
+    # Define denormalization transforms
+    if dataset == "cifar100":
+        denorm = transforms.Normalize(
+            mean=[-0.5071 / 0.2009, -0.4865 / 0.1984, -0.4409 / 0.2023],
+            std=[1 / 0.2009, 1 / 0.1984, 1 / 0.2023],
+        )
+    else:
+        denorm = lambda x: x / 2 + 0.5
+
     count = 0
     for images, _ in data_loader:
         for image in images:
@@ -529,8 +539,8 @@ def plot_occlusion_sensitivity(
             if dataset == "mnist":
                 axs[count, 0].imshow(image.squeeze(), cmap="gray")
             else:
-                # reverse the normalization for CIFAR10 before plotting
-                image_denorm = image / 2 + 0.5
+                # reverse the normalization for CIFAR10/CIFAR100 before plotting
+                image_denorm = denorm(image)
                 axs[count, 0].imshow(np.transpose(image_denorm.numpy(), (1, 2, 0)))
             axs[count, 0].axis("off")
 
