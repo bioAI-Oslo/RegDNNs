@@ -10,9 +10,9 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Set dataset
-    dataset = "mnist"
+    # dataset = "mnist"
     # dataset = "cifar10"
-    # dataset = "cifar100"
+    dataset = "cifar100"
 
     if dataset == "mnist":
         train_loader, test_loader = data_loader_MNIST()
@@ -26,22 +26,22 @@ if __name__ == "__main__":
 
     # Initialize all models and store them in a dictionary with their names
     models = {
-        "model_no_reg": LeNet(),
-        "model_l1": LeNet(l1=True),
-        "model_l2": LeNet(l2=True),
-        "model_l1_l2": LeNet(l1_l2=True),
-        "model_svb": LeNet(svb=True),
-        "model_soft_svb": LeNet(soft_svb=True),
-        "model_jacobi_reg": LeNet(jacobi_reg=True),
-        "model_jacobi_det_reg": LeNet(jacobi_det_reg=True),
-        "model_dropout": LeNet(dropout_rate=0.5),
-        "model_conf_penalty": LeNet(conf_penalty=True),
-        "model_label_smoothing": LeNet(label_smoothing=True),
-        "model_noise_inject_inputs": LeNet(noise_inject_inputs=True),
-        "model_noise_inject_weights": LeNet(noise_inject_weights=True),
+        "model_no_reg": DDNet(dataset=dataset),
+        "model_l1": DDNet(dataset=dataset, l1=True),
+        "model_l2": DDNet(dataset=dataset, l2=True),
+        "model_l1_l2": DDNet(dataset=dataset, l1_l2=True),
+        "model_svb": DDNet(dataset=dataset, svb=True),
+        "model_soft_svb": DDNet(dataset=dataset, soft_svb=True),
+        "model_jacobi_reg": DDNet(dataset=dataset, jacobi_reg=True),
+        "model_jacobi_det_reg": DDNet(dataset=dataset, jacobi_det_reg=True),
+        "model_dropout": DDNet(dataset=dataset, dropout_rate=0.5),
+        "model_conf_penalty": DDNet(dataset=dataset, conf_penalty=True),
+        "model_label_smoothing": DDNet(dataset=dataset, label_smoothing=True),
+        "model_noise_inject_inputs": DDNet(dataset=dataset, noise_inject_inputs=True),
+        "model_noise_inject_weights": DDNet(dataset=dataset, noise_inject_weights=True),
     }
 
-    n_epochs = 50
+    n_epochs = 2
 
     # Iterate through each model
     for model_name, model in models.items():
