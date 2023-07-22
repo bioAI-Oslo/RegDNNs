@@ -52,7 +52,7 @@ if __name__ == "__main__":
         # Move the model to the device (CPU or GPU)
         model.to(device)
 
-        losses, reg_losses, epochs, weights, train_accuracies, test_accuracies = train(
+        losses, reg_losses, epochs, train_accuracies, test_accuracies = train(
             train_loader, test_loader, model, device, n_epochs
         )
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
             "losses": losses,
             "reg_losses": reg_losses,
             "epochs": epochs,
-            "weights": weights,
+            # "weights": weights,
             "train_accuracies": train_accuracies,
             "test_accuracies": test_accuracies,
         }
