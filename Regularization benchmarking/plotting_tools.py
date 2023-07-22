@@ -506,7 +506,7 @@ def plot_occlusion_sensitivity(
 
             # Normalize the occlusion scores between 0 and 1
             occlusion_scores = (occlusion_scores - occlusion_scores.min()) / (
-                occlusion_scores.max() - occlusion_scores.min()
+                occlusion_scores.max() - occlusion_scores.min() + 1e-8
             )
 
             # Plot the original image on the left subplot

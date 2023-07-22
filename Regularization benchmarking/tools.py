@@ -16,7 +16,7 @@ def train(
 ):
     losses = []
     epochs = []
-    weights = []
+    # weights = []
     train_accuracies = []
     test_accuracies = []
     reg_losses = []
@@ -24,8 +24,8 @@ def train(
 
     for epoch in tqdm(range(n_epochs)):
         N = len(train_loader)
-        for param in model.parameters():
-            weights.append(param.detach().cpu().numpy().copy())
+        # for param in model.parameters():
+        #   weights.append(param.detach().cpu().numpy().copy())
         for i, (data, labels) in enumerate(train_loader):
             epochs.append(epoch + i / N)
             data = data.to(device)
@@ -64,7 +64,7 @@ def train(
             "Accuracy of the network on the test images: %.2f %%"
             % (100 * accuracy(model, test_loader, device))
         )
-    return losses, reg_losses, epochs, weights, train_accuracies, test_accuracies
+    return losses, reg_losses, epochs, train_accuracies, test_accuracies
 
 
 def accuracy(model, loader, device):
@@ -209,11 +209,11 @@ def load_trained_model(model_name, dataset):
     losses = data["losses"]
     reg_losses = data["reg_losses"]
     epochs = data["epochs"]
-    weights = data["weights"]
+    # weights = data["weights"]
     train_accuracies = data["train_accuracies"]
     test_accuracies = data["test_accuracies"]
 
-    return model, losses, reg_losses, epochs, weights, train_accuracies, test_accuracies
+    return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
 
 
 class ModelInfo:
@@ -245,7 +245,7 @@ class ModelInfo:
             self.losses,
             self.reg_losses,
             self.epochs,
-            self.weights,
+            # self.weights,
             self.train_accuracies,
             self.test_accuracies,
         ) = self.load_model(name, dataset)
@@ -271,7 +271,7 @@ class ModelInfo:
             losses,
             reg_losses,
             epochs,
-            weights,
+            # weights,
             train_accuracies,
             test_accuracies,
         ) = load_trained_model(name, dataset)
@@ -280,7 +280,7 @@ class ModelInfo:
             losses,
             reg_losses,
             epochs,
-            weights,
+            # weights,
             train_accuracies,
             test_accuracies,
         )
