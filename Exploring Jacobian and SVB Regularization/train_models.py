@@ -1,8 +1,7 @@
 import torch
-import os
 import pickle
-from data_generators import data_loader_MNIST
-from model_classes import LeNet_MNIST
+from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_CIFAR100
+from model_classes import LeNet_MNIST, DDNet
 from tools import train
 from torch.nn import DataParallel
 
@@ -10,60 +9,63 @@ if __name__ == "__main__":
     # Device configuration, use GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Loading MNIST dataset
-    train_loader, test_loader = data_loader_MNIST()
+    # Set dataset
+    # dataset = "mnist"
+    dataset = "cifar10"
+    # dataset = "cifar100"
 
-    # Hyperparameters for the models
-    lr = 0.1
-    momentum = 0.9
+    if dataset == "mnist":
+        train_loader, test_loader = data_loader_MNIST()
+    elif dataset == "cifar10":
+        train_loader, test_loader = data_loader_CIFAR10()
+    elif dataset == "cifar100":
+        train_loader, test_loader = data_loader_CIFAR100()
+
+    # Hyperparameters are set in class init, except for dropout_rate and l2_lmbd
     l2_lmbd = 0.0005
-    jacobi_reg_lmbd = 0.01
-    svb_freq = 600
-    svb_eps = 0.05
+    dropout_rate = 0.5
 
-    # Initialize model with regularization of choice
-    model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=jacobi_reg_lmbd)
-
-    # Check if there are multiple GPUs, and if so, use DataParallel
-    if torch.cuda.device_count() > 1:
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
-        model = DataParallel(model)
-
-    # Move the model to the device
-    model = model.to(device)
-
-    # Number of epochs for training, 250 in Hoffman 2019
-    n_epochs = 250
-    # Train model and collect data
-    (
-        losses,
-        reg_losses,
-        epochs,
-        train_accuracies,
-        test_accuracies,
-    ) = train(train_loader, test_loader, model, device, n_epochs)
-
-    # Switch to evaluation mode
-    model.eval()
-
-    # Create a directory to save the trained models, if it does not exist
-    if not os.path.exists("./trained_mnist_models"):
-        os.makedirs("./trained_mnist_models")
-
-    # Save state of trained model based on training
-    if isinstance(model, torch.nn.DataParallel):
-        torch.save(model.module.state_dict(), "./trained_mnist_models/model_jacobi.pt")
-    else:
-        torch.save(model.state_dict(), "./trained_mnist_models/model_jacobi.pt")
-
-    # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
-    data = {
-        "losses": losses,
-        "reg_losses": reg_losses,
-        "epochs": epochs,
-        "train_accuracies": train_accuracies,
-        "test_accuracies": test_accuracies,
+    # Initialize all models and store them in a dictionary with their names
+    models = {
+        "model_no_reg": DDNet(),
+        "model_no_reg_no_dropout": DDNet(dropout_rate=0.0),
+        "model_l2": DDNet(l2_lmbd=l2_lmbd),
+        "model_l2_no_dropout": DDNet(dropout_rate=0.0, l2_lmbd=l2_lmbd),
+        "model_jacobi_reg": DDNet(jacobi_reg=True),
+        "model_jacobi_reg_no_dropout": DDNet(dropout_rate=0.0, jacobi_reg=True),
+        "model_svb": DDNet(svb_reg=True),
+        "model_svb_no_dropout": DDNet(dropout_rate=0.0, svb_reg=True),
     }
 
-    with open("./trained_mnist_models/model_jacobi_data.pkl", "wb") as f:
-        pickle.dump(data, f)
+    # Number of epochs for training, 250 in Hoffman 2019
+    n_epochs = 10
+
+    # Iterate through each model
+    for model_name, model in models.items():
+        print(f"Training model: {model_name} on dataset: {dataset}")
+
+        # Check if there are multiple GPUs, and if so, use DataParallel
+        if torch.cuda.device_count() > 1:
+            print("Let's use", torch.cuda.device_count(), "GPUs!")
+            model = DataParallel(model)
+
+        # Move the model to the device (CPU or GPU)
+        model.to(device)
+
+        losses, reg_losses, epochs, train_accuracies, test_accuracies = train(
+            train_loader, test_loader, model, device, n_epochs
+        )
+
+        torch.save(model.state_dict(), f"./trained_{dataset}_models/{model_name}.pt")
+
+        # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
+        data = {
+            "losses": losses,
+            "reg_losses": reg_losses,
+            "epochs": epochs,
+            "train_accuracies": train_accuracies,
+            "test_accuracies": test_accuracies,
+        }
+
+        with open(f"./trained_{dataset}_models/{model_name}_data.pkl", "wb") as f:
+            pickle.dump(data, f)

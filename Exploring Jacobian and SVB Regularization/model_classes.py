@@ -1,14 +1,15 @@
 import torch
 import torch.nn as nn
 from torch.autograd import grad
+import torch.nn.functional as F
 
 
 class LeNet_MNIST(nn.Module):
     """
-    LeNet model architecture for MNIST digit classification with optional 
-    Jacobian, SVB, Dropout and L2 regularization, following the design used in Hoffman 2019. 
+    LeNet model architecture for MNIST digit classification with optional
+    Jacobian, SVB, Dropout and L2 regularization, following the design used in Hoffman 2019.
 
-    This model is a deep neural network with two convolutional layers and 
+    This model is a deep neural network with two convolutional layers and
     three fully connected layers.
 
     Parameters
@@ -32,6 +33,7 @@ class LeNet_MNIST(nn.Module):
     svb_eps : float
         The epsilon for computing SVB.
     """
+
     def __init__(
         self,
         lr=0.1,
@@ -42,7 +44,7 @@ class LeNet_MNIST(nn.Module):
         jacobi_reg_lmbd=0.01,
         svb_reg=False,
         svb_freq=600,
-        svb_eps = 0.05,
+        svb_eps=0.05,
     ):
         super(LeNet_MNIST, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -95,7 +97,7 @@ class LeNet_MNIST(nn.Module):
         self.svb_eps = svb_eps
 
         # Track training steps
-        self.training_steps = 0  
+        self.training_steps = 0
 
     def forward(self, x):
         """
@@ -134,7 +136,7 @@ class LeNet_MNIST(nn.Module):
             The Jacobian regularization term.
         """
         C = x.shape[1]  # Number of classes in dataset
-        JF = 0 # Initialize Jacobian Frobenius norm
+        JF = 0  # Initialize Jacobian Frobenius norm
         nproj = 1  # Number of random projections
 
         for _ in range(nproj):
@@ -148,9 +150,11 @@ class LeNet_MNIST(nn.Module):
                 0
             ].detach()  # Compute Jacobian-vector product
 
-            JF += C * (Jv**2).sum() / (nproj * len(x)) # Add square of Jv to Frobenius norm
+            JF += (
+                C * (Jv**2).sum() / (nproj * len(x))
+            )  # Add square of Jv to Frobenius norm
 
-        return JF 
+        return JF
 
     def loss_fn(
         self,
@@ -158,7 +162,7 @@ class LeNet_MNIST(nn.Module):
         y,
     ):
         """
-        Calculates the loss function (cross-entropy) with an optional 
+        Calculates the loss function (cross-entropy) with an optional
         Jacobian regularization term.
 
         Parameters
@@ -175,8 +179,8 @@ class LeNet_MNIST(nn.Module):
         jacobi_loss : torch.Tensor
             The calculated Jacobian regularization loss (if applicable).
         """
-        y_pred = self(x.float()) # Forward pass to get predictions
-        loss = self.L(y_pred, y) # Compute loss using cross-entropy
+        y_pred = self(x.float())  # Forward pass to get predictions
+        loss = self.L(y_pred, y)  # Compute loss using cross-entropy
 
         # Jacobi regularization
         if self.jacobi_reg:
@@ -194,7 +198,7 @@ class LeNet_MNIST(nn.Module):
         labels,
     ):
         """
-        Performs one step of training: forward pass, loss calculation, 
+        Performs one step of training: forward pass, loss calculation,
         backward pass and parameters update.
 
         Parameters
@@ -211,26 +215,227 @@ class LeNet_MNIST(nn.Module):
         reg_loss : float
             The calculated regularization loss (if applicable).
         """
-        self.opt.zero_grad() # Zero out gradients
+        self.opt.zero_grad()  # Zero out gradients
         loss, reg_loss = self.loss_fn(
             data,
             labels.long(),
-        ) # Compute loss
-        loss.backward() # Backward pass to compute gradients
-        self.opt.step() # Update parameters
+        )  # Compute loss
+        loss.backward()  # Backward pass to compute gradients
+        self.opt.step()  # Update parameters
 
         # If SVB regularization, apply every svb_freq steps
         if self.svb_reg and self.training_steps % self.svb_freq == 0:
-            with torch.no_grad(): # Do not track gradients
-                for m in self.modules(): # Loop over modules
+            with torch.no_grad():  # Do not track gradients
+                for m in self.modules():  # Loop over modules
                     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                        weight_orig_shape = m.weight.shape # Get original shape of weights
-                        weight_matrix = m.weight.view(weight_orig_shape[0], -1) # Flatten weights
-                        U, S, V = torch.svd(weight_matrix) # Singular value decomposition on weights
-                        S = torch.clamp(S, 1 / (1 + self.svb_eps), 1 + self.svb_eps) # Clamp singular values within range decided by svb_eps
+                        weight_orig_shape = (
+                            m.weight.shape
+                        )  # Get original shape of weights
+                        weight_matrix = m.weight.view(
+                            weight_orig_shape[0], -1
+                        )  # Flatten weights
+                        U, S, V = torch.svd(
+                            weight_matrix
+                        )  # Singular value decomposition on weights
+                        S = torch.clamp(
+                            S, 1 / (1 + self.svb_eps), 1 + self.svb_eps
+                        )  # Clamp singular values within range decided by svb_eps
                         m.weight.data = torch.matmul(
                             U, torch.matmul(S.diag(), V.t())
-                        ).view(weight_orig_shape) # Update weights using clamped singular values
+                        ).view(
+                            weight_orig_shape
+                        )  # Update weights using clamped singular values
 
         self.training_steps += 1
+        return loss.item(), reg_loss.item() if reg_loss != 0 else reg_loss
+
+
+class DDNet(nn.Module):
+    def __init__(
+        self,
+        dataset="cifar10",
+        lr=0.1,
+        momentum=0.9,
+        dropout_rate=0.5,
+        l2_lmbd=0.0005,
+        svb=False,
+        svb_freq=600,
+        svb_eps=0.05,
+        jacobi_reg=False,
+        jacobi_reg_lmbd=0.01,
+    ):
+        super(DDNet, self).__init__()
+        self.conv1 = nn.Conv2d(
+            in_channels=3,
+            out_channels=64,
+            kernel_size=(3, 3),
+            stride=1,
+            padding=0,
+        )
+        self.conv2 = nn.Conv2d(
+            in_channels=64, out_channels=64, kernel_size=(3, 3), stride=1, padding=0
+        )
+        self.conv3 = nn.Conv2d(
+            in_channels=64, out_channels=128, kernel_size=(3, 3), stride=1, padding=0
+        )
+        self.conv4 = nn.Conv2d(
+            in_channels=128, out_channels=128, kernel_size=(3, 3), stride=1, padding=0
+        )
+        self.fc1 = nn.Linear(in_features=3200, out_features=256)
+        self.fc2 = nn.Linear(in_features=256, out_features=256)
+        self.fc3 = nn.Linear(
+            in_features=256, out_features=10 if dataset == "cifar10" else 100
+        )
+        self.dropout = nn.Dropout(dropout_rate)
+        self.pool = nn.MaxPool2d(kernel_size=(2, 2))
+
+        # Orthogonal initialization if svb is True
+        if svb:
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d):
+                    weight_mat = m.weight.data.view(
+                        m.out_channels, -1
+                    )  # Reshape to 2D matrix
+                    nn.init.orthogonal_(weight_mat)  # Apply orthogonal initialization
+                    m.weight.data = weight_mat.view_as(
+                        m.weight.data
+                    )  # Reshape back to original dimensions
+                elif isinstance(m, nn.Linear):
+                    nn.init.orthogonal_(m.weight)
+        else:
+            nn.init.xavier_uniform_(self.conv1.weight)
+            nn.init.xavier_uniform_(self.conv2.weight)
+            nn.init.xavier_uniform_(self.conv3.weight)
+            nn.init.xavier_uniform_(self.conv4.weight)
+            nn.init.xavier_uniform_(self.fc1.weight)
+            nn.init.xavier_uniform_(self.fc2.weight)
+            nn.init.xavier_uniform_(self.fc3.weight)
+
+        # Parameters for regularization
+        self.l2_lmbd = l2_lmbd
+        self.svb = svb
+        self.svb_freq = svb_freq
+        self.svb_eps = svb_eps
+        self.jacobi_reg = jacobi_reg
+        self.jacobi_reg_lmbd = jacobi_reg_lmbd
+        self.training_steps = 0
+
+        self.dataset = dataset
+        self.L = nn.CrossEntropyLoss()
+        self.opt = torch.optim.SGD(
+            self.parameters(), lr=lr, momentum=momentum, weight_decay=l2_lmbd
+        )
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = self.pool(F.relu(x))
+        x = self.conv3(x)
+        x = F.relu(x)
+        x = self.conv4(x)
+        x = self.pool(F.relu(x))
+        x = x.view(-1, 3200)
+        x = self.dropout(F.relu(self.fc1(x)))
+        x = self.dropout(F.relu(self.fc2(x)))
+        x = self.fc3(x)  # No softmax as CrossEntropyLoss does it implicitly
+        return x
+
+    def jacobian_regularizer(self, x):
+        """
+        Calculates the Jacobian regularization term for an input batch.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+
+        Returns
+        -------
+        JF : torch.Tensor
+            The Jacobian regularization term.
+        """
+        num_features = self(x).shape[
+            1
+        ]  # instead of number of classes, get the feature size from the model output
+
+        JF = 0  # Initialize Jacobian Frobenius norm
+        nproj = 1  # Number of random projections
+
+        for _ in range(nproj):
+            v = torch.randn(x.shape[0], num_features).to(
+                x.device
+            )  # Generate random vector
+            v_hat = v / torch.norm(v, dim=1, keepdim=True)  # Normalize
+
+            z = self(x)  # Forward pass to get predictions
+            v_hat_dot_z = torch.einsum("bi, bi->b", v_hat, z)  # Calculate dot product
+
+            Jv = grad(v_hat_dot_z.sum(), x, create_graph=True)[
+                0
+            ].detach()  # Compute Jacobian-vector product
+
+            JF += (
+                num_features * (Jv**2).sum() / (nproj * len(x))
+            )  # Add square of Jv to Frobenius norm
+
+        return JF
+
+    def loss_fn(
+        self,
+        x,
+        y,
+    ):
+        y_pred = self(x.float())
+        loss = self.L(y_pred, y)
+
+        # Jacobi regularization
+        if self.jacobi_reg:
+            x.requires_grad_(True)
+            # Compute and add Jacobian regularization term
+            jacobi_loss = self.jacobi_reg_lmbd * self.jacobian_regularizer(x)
+            loss += jacobi_loss
+            return loss, jacobi_loss
+
+        return loss, loss
+
+    def train_step(
+        self,
+        data,
+        labels,
+    ):
+        self.opt.zero_grad()
+
+        loss, reg_loss = self.loss_fn(
+            data,
+            labels.long(),
+        )
+        loss.backward()
+        self.opt.step()
+
+        # If SVB regularization, apply every svb_freq steps
+        if self.svb and self.training_steps % self.svb_freq == 0:
+            with torch.no_grad():  # Do not track gradients
+                for m in self.modules():  # Loop over modules
+                    if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                        weight_orig_shape = (
+                            m.weight.shape
+                        )  # Get original shape of weights
+                        weight_matrix = m.weight.view(
+                            weight_orig_shape[0], -1
+                        )  # Flatten weights
+                        U, S, V = torch.svd(
+                            weight_matrix
+                        )  # Singular value decomposition on weights
+                        S = torch.clamp(
+                            S, 1 / (1 + self.svb_eps), 1 + self.svb_eps
+                        )  # Clamp singular values within range decided by svb_eps
+                        m.weight.data = torch.matmul(
+                            U, torch.matmul(S.diag(), V.t())
+                        ).view(
+                            weight_orig_shape
+                        )  # Update weights using clamped singular values
+
+        self.training_steps += 1
+
         return loss.item(), reg_loss.item() if reg_loss != 0 else reg_loss

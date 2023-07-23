@@ -264,19 +264,6 @@ def plot_activations_pca(model, data_loader, device, dataset="mnist"):
     save_output, hook_handles, layer_names = register_hooks(model)
     model.eval()
 
-    # colors = [
-    #     "#1f77b4",
-    #     "#ff7f0e",
-    #     "#2ca02c",
-    #     "#d62728",
-    #     "#9467bd",
-    #     "#8c564b",
-    #     "#e377c2",
-    #     "#7f7f7f",
-    #     "#bcbd22",
-    #     "#17becf",
-    # ]
-
     with torch.no_grad():
         for images, batch_labels in data_loader:
             images = images.to(device)
@@ -326,19 +313,6 @@ def plot_activations_tsne(model, data_loader, device, dataset="mnist"):
 
     save_output, hook_handles, layer_names = register_hooks(model)
     model.eval()
-
-    # colors = [
-    #     "#1f77b4",
-    #     "#ff7f0e",
-    #     "#2ca02c",
-    #     "#d62728",
-    #     "#9467bd",
-    #     "#8c564b",
-    #     "#e377c2",
-    #     "#7f7f7f",
-    #     "#bcbd22",
-    #     "#17becf",
-    # ]
 
     with torch.no_grad():
         for images, batch_labels in data_loader:
@@ -432,8 +406,8 @@ def plot_saliency_maps(model, data_loader, num_images, dataset="mnist"):
             elif dataset == "cifar10":
                 img = img * 0.5 + 0.5
             elif dataset == "cifar100":
-                mean = np.array([0.5071, 0.4865, 0.4409])
-                std = np.array([0.2009, 0.1984, 0.2023])
+                mean = np.array([0.5071, 0.4865, 0.4409]).reshape(3, 1, 1)
+                std = np.array([0.2009, 0.1984, 0.2023]).reshape(3, 1, 1)
                 img = std * img + mean
 
             # Transpose the image data and plot
