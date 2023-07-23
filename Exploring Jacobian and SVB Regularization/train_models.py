@@ -27,14 +27,22 @@ if __name__ == "__main__":
 
     # Initialize all models and store them in a dictionary with their names
     models = {
-        "model_no_reg_1": DDNet(),
-        "model_no_reg_no_dropout_1": DDNet(dropout_rate=0.0),
-        "model_l2_1": DDNet(l2_lmbd=l2_lmbd),
-        "model_l2_no_dropout_1": DDNet(dropout_rate=0.0, l2_lmbd=l2_lmbd),
-        "model_jacobi_1": DDNet(jacobi=True),
-        "model_jacobi_no_dropout_1": DDNet(dropout_rate=0.0, jacobi=True),
-        "model_svb_1": DDNet(svb=True),
-        "model_svb_no_dropout_1": DDNet(dropout_rate=0.0, svb=True),
+        "model_no_reg_2": DDNet(),
+        "model_no_reg_no_dropout_2": DDNet(dropout_rate=0.0),
+        "model_l2_2": DDNet(l2_lmbd=l2_lmbd),
+        "model_l2_no_dropout_2": DDNet(dropout_rate=0.0, l2_lmbd=l2_lmbd),
+        "model_jacobi_2": DDNet(jacobi=True),
+        "model_jacobi_no_dropout_2": DDNet(dropout_rate=0.0, jacobi=True),
+        "model_svb_2": DDNet(svb=True),
+        "model_svb_no_dropout_2": DDNet(dropout_rate=0.0, svb=True),
+        "model_no_reg_3": DDNet(),
+        "model_no_reg_no_dropout_3": DDNet(dropout_rate=0.0),
+        "model_l2_3": DDNet(l2_lmbd=l2_lmbd),
+        "model_l2_no_dropout_3": DDNet(dropout_rate=0.0, l2_lmbd=l2_lmbd),
+        "model_jacobi_3": DDNet(jacobi=True),
+        "model_jacobi_no_dropout_3": DDNet(dropout_rate=0.0, jacobi=True),
+        "model_svb_3": DDNet(svb=True),
+        "model_svb_no_dropout_3": DDNet(dropout_rate=0.0, svb=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019

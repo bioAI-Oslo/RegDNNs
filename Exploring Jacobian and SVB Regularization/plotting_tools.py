@@ -198,6 +198,7 @@ def plot_decision_boundary(
     device,
     resolution=300,
     zoom=[0.025, 0.01, 0.001],
+    dataset="mnist",
     title="No regularization",
 ):
     """
@@ -219,6 +220,8 @@ def plot_decision_boundary(
         The resolution of the grid to be used, by default 300.
     zoom : list, optional
         The zoom levels to visualize, by default [0.025, 0.01, 0.001].
+    dataset: str
+        The dataset the model was trained on.
     title : str, optional
         The title for the plot, by default "No regularization".
     """
@@ -254,7 +257,15 @@ def plot_decision_boundary(
 
         # Compute the model's predictions over the grid
         with torch.no_grad():
-            output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
+            if dataset == "mnist":
+                output = model(plane.view(-1, 1, 28, 28)).view(
+                    resolution, resolution, -1
+                )
+            elif dataset == "cifar10":
+                output = model(plane.view(-1, 3, 32, 32)).view(
+                    resolution, resolution, -1
+                )
+
         probs = torch.nn.functional.softmax(output, dim=-1)
 
         # Get the class with the highest probability
@@ -364,7 +375,9 @@ def get_random_img(dataloader):
     return image
 
 
-def plot_and_print_img(image, model, device, regularization_title="no regularization"):
+def plot_and_print_img(
+    image, model, device, dataset="mnist", regularization_title="no regularization"
+):
     """
     Plot an image and print the model's prediction for this image.
 
@@ -376,21 +389,55 @@ def plot_and_print_img(image, model, device, regularization_title="no regulariza
         The trained model.
     device : str
         The device to run the model ('cpu' or 'cuda').
+    dataset: str
+        The dataset used to train the model.
     regularization_title : str, optional
         The regularization method used in the model training, by default "no regularization".
     """
     # Ensure model is in evaluation mode
     model.eval()
 
+    # The class names for CIFAR10
+    class_names = [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck",
+    ]
+
     # Get and print model's prediction for the image
     with torch.no_grad():
-        output = model(image.view(1, 1, 28, 28).to(device))
+        if dataset == "mnist":
+            output = model(image.view(1, 1, 28, 28).to(device))
+        elif dataset == "cifar10":
+            output = model(image.view(1, 3, 32, 32).to(device))
+
     _, predicted = torch.max(output, 1)
-    print(f"Prediction with {regularization_title}: {predicted.item()}")
+
+    if dataset == "mnist":
+        print(f"Prediction with {regularization_title}: {predicted.item()}")
+    elif dataset == "cifar10":
+        print(
+            f"Prediction with {regularization_title}: {class_names[predicted.item()]}"
+        )
 
     # Plot the image
     plt.figure(figsize=(5, 5))
-    plt.imshow(image.numpy(), cmap="gray")
+
+    # Check if the image is grayscale or color and adjust accordingly
+    if dataset == "mnist":  # grayscale
+        plt.imshow(image.numpy().squeeze(), cmap="gray")
+    elif dataset == "cifar10":  # color
+        # Denormalize the image before plotting
+        image = image * 0.5 + 0.5
+        plt.imshow(np.transpose(image.numpy(), (1, 2, 0)))
+
     plt.title("Input image")
     plt.show()
 
