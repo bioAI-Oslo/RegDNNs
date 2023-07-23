@@ -109,33 +109,65 @@ def plot_reg_results(
 
 
 def plot_weight_distributions(model, title=None):
-    """Plot weight distributions of model."""
+    """Plot weight distributions of the given model.
+
+    This function goes through each layer of the model, extracts the weights
+    if the layer has any, and plots a histogram of the weight values.
+
+    Args:
+        model (nn.Module): The model whose weights to plot.
+        title (str, optional): The title for the plot. Defaults to None, in which case no title is displayed.
+
+    """
+
+    # Create a list of all the layers in the model that have weights.
+    # Note: We exclude layers of type nn.CrossEntropyLoss because these don't have weights.
     layers_with_weights = [
         (name, module)
         for name, module in model.named_modules()
         if hasattr(module, "weight") and not isinstance(module, nn.CrossEntropyLoss)
     ]
 
+    # Initialize a matplotlib figure with one subplot per layer with weights
     fig, axs = plt.subplots(
         len(layers_with_weights), 1, figsize=(10, len(layers_with_weights) * 5)
     )
+
+    # If there's only one layer with weights, axs would be just one AxesSubplot object.
+    # In that case, make it a single-item list so that we can iterate over axs in the following for loop.
     if len(layers_with_weights) == 1:
         axs = [axs]
 
+    # Loop over the layers with weights
     for i, (name, layer) in enumerate(layers_with_weights):
+        # Get the weights of the layer and flatten the array to 1D for histogram plotting
         weights = layer.weight.data.cpu().numpy()
         weights = weights.flatten()
+
+        # Plot a histogram of the weights in the current layer
         ax = axs[i]
         sns.histplot(weights, kde=True, ax=ax, bins=30)
         ax.set_title(f"Layer {i+1}: {name} Weight Distribution")
 
     plt.suptitle(f"{title}", fontsize=24)
-    plt.tight_layout(rect=[0, 0, 1, 0.96])  # To provide space for the global title
+
+    # Adjust the layout so that the subplots don't overlap and there's space for the suptitle
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
     plt.show()
 
 
 def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
-    """Plots activation maps for each filter in each convolutional layer of model."""
+    """Plots activation maps for each filter in each convolutional layer of the model.
+
+    Args:
+        model (nn.Module): The model whose activations to plot.
+        dataloader (DataLoader): The DataLoader to use for obtaining input images.
+        num_images (int, optional): Number of images to plot activations for. Defaults to 1.
+        dataset (str, optional): Name of the dataset ("mnist", "cifar10", or "cifar100"). Defaults to "mnist".
+
+    Raises:
+        ValueError: If the dataset name is not one of the expected values.
+    """
 
     # Get random batch of images from the dataloader
     data_iter = iter(dataloader)
@@ -150,7 +182,7 @@ def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
         module for module in model.modules() if isinstance(module, nn.Conv2d)
     ]
 
-    # Move model to device of images
+    # Move model to the same device as the images
     device = images.device
     model.to(device)
 
@@ -184,11 +216,13 @@ def plot_activation_maps(model, dataloader, num_images=1, dataset="mnist"):
 
         # Iterate over each convolutional layer
         for j, layer in enumerate(conv_layers):
-            x = layer(x)
+            x = layer(x)  # Pass the image through the layer to get its activations.
+
+            # Apply activation function based on dataset
             if dataset == "mnist":
-                x = torch.tanh(x)  # Apply tanh activation
+                x = torch.tanh(x)  # LeNet activation function
             elif dataset == "cifar10" or dataset == "cifar100":
-                x = F.relu(x)
+                x = F.relu(x)  # DDNet activation function
 
             # Plot all activation maps for the current layer
             num_filters = x.shape[1]
@@ -258,28 +292,46 @@ def plot_max_predicted_scores(model, data_loader, num_batches=10):
 
 
 def plot_activations_pca(model, data_loader, device, dataset="mnist"):
-    num_classes = 100 if dataset == "cifar100" else 10
-    colors = cm.get_cmap("rainbow", num_classes)(np.arange(num_classes))
+    """Plots PCA of activations for each layer of the model.
 
+    Args:
+        model (nn.Module): The model whose activations to plot.
+        data_loader (DataLoader): The DataLoader to use for obtaining input images.
+        device (str): The device to move the data to (e.g., "cuda" or "cpu").
+        dataset (str, optional): Name of the dataset ("mnist", "cifar10", or "cifar100"). Defaults to "mnist".
+    """
+    num_classes = (
+        100 if dataset == "cifar100" else 10
+    )  # Number of classes depends on dataset
+    colors = cm.get_cmap("rainbow", num_classes)(
+        np.arange(num_classes)
+    )  # Generate colors for each class
+
+    # Register hooks on model layers to save output
     save_output, hook_handles, layer_names = register_hooks(model)
     model.eval()
 
-    with torch.no_grad():
-        for images, batch_labels in data_loader:
+    with torch.no_grad():  # No gradient computation required for PCA
+        for images, batch_labels in data_loader:  # Load batches of images and labels
             images = images.to(device)
-            model(images)
+            model(images)  # Forward pass
             batch_labels = batch_labels.cpu().numpy()
-            break
+            break  # Only process one batch
 
+        # For each layer's output
         for i, output in enumerate(save_output.outputs):
-            output = output.view(output.size(0), -1).cpu().numpy()
+            output = (
+                output.view(output.size(0), -1).cpu().numpy()
+            )  # Flatten output tensor, excluding the batch dimension
 
+            # Compute PCA and transform the output
             pca = PCA(n_components=2)
             result = pca.fit_transform(output)
 
+            # Plot the transformed output
             plt.figure(figsize=(6, 6))
             added_labels = set()
-            for j in range(len(result)):
+            for j in range(len(result)):  # For each datapoint
                 label = str(int(batch_labels[j]))
                 if label not in added_labels:
                     plt.scatter(
@@ -292,6 +344,7 @@ def plot_activations_pca(model, data_loader, device, dataset="mnist"):
                 else:
                     plt.scatter(result[j, 0], result[j, 1], color=colors[int(label)])
 
+            # Sorting labels and handles in order of class labels
             handles, legend_labels = plt.gca().get_legend_handles_labels()
             by_label = {label: handle for label, handle in zip(legend_labels, handles)}
             ordered_labels = sorted(by_label.keys(), key=int)
@@ -301,32 +354,51 @@ def plot_activations_pca(model, data_loader, device, dataset="mnist"):
             plt.title(f"PCA of {layer_names[i]} Layer")
             plt.show()
 
-    for handle in hook_handles:
+    for handle in hook_handles:  # Remove hooks after use
         handle.remove()
 
     save_output.clear()
 
 
 def plot_activations_tsne(model, data_loader, device, dataset="mnist"):
+    """Plots t-SNE of activations for each layer of the model.
+
+    Args:
+        model (nn.Module): The model whose activations to plot.
+        data_loader (DataLoader): The DataLoader to use for obtaining input images.
+        device (str): The device to move the data to (e.g., "cuda" or "cpu").
+        dataset (str, optional): Name of the dataset ("mnist", "cifar10", or "cifar100"). Defaults to "mnist".
+    """
+    # Number of classes is specific to dataset
     num_classes = 100 if dataset == "cifar100" else 10
     colors = cm.get_cmap("rainbow", num_classes)(np.arange(num_classes))
 
+    # Register hooks on model layers to save output
     save_output, hook_handles, layer_names = register_hooks(model)
     model.eval()
 
+    # No gradient computation required for t-SNE
     with torch.no_grad():
+        # Load a batch of images and labels
         for images, batch_labels in data_loader:
             images = images.to(device)
+            # Forward pass through the model
             model(images)
+            # Converting labels to numpy array
             batch_labels = batch_labels.cpu().numpy()
+            # Only process one batch
             break
 
+        # For each layer's output
         for i, output in enumerate(save_output.outputs):
+            # Flatten the output tensor, excluding the batch dimension
             output = output.view(output.size(0), -1).cpu().numpy()
 
+            # Compute t-SNE and transform the output
             tsne = TSNE(n_components=2, random_state=0)
             result = tsne.fit_transform(output)
 
+            # Plotting the transformed output
             plt.figure(figsize=(6, 6))
             added_labels = set()
             for j in range(len(result)):
@@ -342,6 +414,7 @@ def plot_activations_tsne(model, data_loader, device, dataset="mnist"):
                 else:
                     plt.scatter(result[j, 0], result[j, 1], color=colors[int(label)])
 
+            # Sorting the labels and handles in order of class labels
             handles, legend_labels = plt.gca().get_legend_handles_labels()
             by_label = {label: handle for label, handle in zip(legend_labels, handles)}
             ordered_labels = sorted(by_label.keys(), key=int)
@@ -351,6 +424,7 @@ def plot_activations_tsne(model, data_loader, device, dataset="mnist"):
             plt.title(f"t-SNE of {layer_names[i]} Layer")
             plt.show()
 
+    # Remove the hooks after use
     for handle in hook_handles:
         handle.remove()
 
@@ -358,6 +432,14 @@ def plot_activations_tsne(model, data_loader, device, dataset="mnist"):
 
 
 def plot_saliency_maps(model, data_loader, num_images, dataset="mnist"):
+    """Plots saliency maps of the first num_images images in data_loader.
+
+    Args:
+        model (nn.Module): The model for which to calculate saliency maps.
+        data_loader (DataLoader): The DataLoader to use for obtaining input images.
+        num_images (int): The number of images for which to plot saliency maps.
+        dataset (str, optional): Name of the dataset ("mnist", "cifar10", or "cifar100"). Defaults to "mnist".
+    """
     # Set the model to evaluation mode
     model.eval()
 
@@ -382,6 +464,7 @@ def plot_saliency_maps(model, data_loader, num_images, dataset="mnist"):
             if count >= num_images:
                 break
 
+            # Calculate gradient of output with respect to images
             outputs[i, labels[i]].backward(retain_graph=True)
 
             # Get the gradients for the i-th image
@@ -446,8 +529,23 @@ def plot_saliency_maps(model, data_loader, num_images, dataset="mnist"):
 def plot_occlusion_sensitivity(
     model, data_loader, num_images, occluder_size=8, stride=4, dataset="mnist"
 ):
+    """
+    Plots occlusion sensitivity heatmaps for images in the provided data_loader.
+    The occlusion sensitivity is calculated by sliding an occluder (a patch of zero or mean pixel values)
+    across the image and observing the effect on the model's output confidence for the true class.
+
+    Args:
+        model (nn.Module): The trained model.
+        data_loader (DataLoader): The DataLoader for obtaining input images.
+        num_images (int): The number of images for which to plot occlusion sensitivity.
+        occluder_size (int, optional): The side length of the square occluder. Defaults to 8.
+        stride (int, optional): The stride for the occluder. Defaults to 4.
+        dataset (str, optional): The dataset the images come from. This affects the normalization used. Defaults to "mnist".
+    """
+    # Set model to evaluation mode
     model.eval()
 
+    # Set up subplots for the images and their occlusion sensitivity maps
     fig, axs = plt.subplots(num_images, 2, figsize=(10, num_images * 5))
 
     # Define the occluder based on dataset

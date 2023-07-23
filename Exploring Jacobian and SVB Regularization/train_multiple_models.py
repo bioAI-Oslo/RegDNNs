@@ -17,7 +17,7 @@ if __name__ == "__main__":
     lr = 0.1
     momentum = 0.9
     l2_lmbd = 0.0005
-    jacobi_reg_lmbd = 0.01
+    jacobi_lmbd = 0.01
     svb_freq = 600
     svb_eps = 0.05
 
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     for i in range(1, n + 1):
         # Initialize model with regularization of choice
         model = LeNet_MNIST(
-            dropout_rate=0.0, svb_reg=True, svb_freq=svb_freq, svb_eps=svb_eps
+            dropout_rate=0.0, svb=True, svb_freq=svb_freq, svb_eps=svb_eps
         )
 
         # Check if there are multiple GPUs, and if so, use DataParallel

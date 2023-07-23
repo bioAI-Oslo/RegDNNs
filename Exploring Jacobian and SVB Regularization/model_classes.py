@@ -22,9 +22,9 @@ class LeNet_MNIST(nn.Module):
         The dropout rate applied after each fully connected layer.
     l2_lmbd : float
         The weight decay coefficient for L2 regularization.
-    jacobi_reg : bool
+    jacobi : bool
         If True, applies Jacobian regularization.
-    jacobi_reg_lmbd : float
+    jacobi_lmbd : float
         The regularization coefficient for Jacobian regularization.
     svb_reg : bool
         If True, applies singular value bounding (SVB) regularization.
@@ -40,9 +40,9 @@ class LeNet_MNIST(nn.Module):
         momentum=0.9,
         dropout_rate=0.5,
         l2_lmbd=0.0,
-        jacobi_reg=False,
-        jacobi_reg_lmbd=0.01,
-        svb_reg=False,
+        jacobi=False,
+        jacobi_lmbd=0.01,
+        svb=False,
         svb_freq=600,
         svb_eps=0.05,
     ):
@@ -64,7 +64,7 @@ class LeNet_MNIST(nn.Module):
         self.pool = nn.MaxPool2d(kernel_size=(2, 2))
 
         # Orthogonal initialization if svb_reg is True
-        if svb_reg:
+        if svb:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
                     weight_mat = m.weight.data.view(
@@ -90,9 +90,9 @@ class LeNet_MNIST(nn.Module):
         )
 
         # Regularization parameters
-        self.jacobi_reg = jacobi_reg
-        self.jacobi_reg_lmbd = jacobi_reg_lmbd
-        self.svb_reg = svb_reg
+        self.jacobi = jacobi
+        self.jacobi_lmbd = jacobi_lmbd
+        self.svb = svb
         self.svb_freq = svb_freq
         self.svb_eps = svb_eps
 
@@ -183,10 +183,10 @@ class LeNet_MNIST(nn.Module):
         loss = self.L(y_pred, y)  # Compute loss using cross-entropy
 
         # Jacobi regularization
-        if self.jacobi_reg:
+        if self.jacobi:
             x.requires_grad_(True)
             # Compute and add Jacobian regularization term
-            jacobi_loss = self.jacobi_reg_lmbd * self.jacobian_regularizer(x)
+            jacobi_loss = self.jacobi_lmbd * self.jacobian_regularizer(x)
             loss += jacobi_loss
             return loss, jacobi_loss
 
@@ -224,7 +224,7 @@ class LeNet_MNIST(nn.Module):
         self.opt.step()  # Update parameters
 
         # If SVB regularization, apply every svb_freq steps
-        if self.svb_reg and self.training_steps % self.svb_freq == 0:
+        if self.svb and self.training_steps % self.svb_freq == 0:
             with torch.no_grad():  # Do not track gradients
                 for m in self.modules():  # Loop over modules
                     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
@@ -261,8 +261,8 @@ class DDNet(nn.Module):
         svb=False,
         svb_freq=600,
         svb_eps=0.05,
-        jacobi_reg=False,
-        jacobi_reg_lmbd=0.01,
+        jacobi=False,
+        jacobi_lmbd=0.01,
     ):
         super(DDNet, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -316,8 +316,8 @@ class DDNet(nn.Module):
         self.svb = svb
         self.svb_freq = svb_freq
         self.svb_eps = svb_eps
-        self.jacobi_reg = jacobi_reg
-        self.jacobi_reg_lmbd = jacobi_reg_lmbd
+        self.jacobi = jacobi
+        self.jacobi_lmbd = jacobi_lmbd
         self.training_steps = 0
 
         self.dataset = dataset
@@ -390,10 +390,10 @@ class DDNet(nn.Module):
         loss = self.L(y_pred, y)
 
         # Jacobi regularization
-        if self.jacobi_reg:
+        if self.jacobi:
             x.requires_grad_(True)
             # Compute and add Jacobian regularization term
-            jacobi_loss = self.jacobi_reg_lmbd * self.jacobian_regularizer(x)
+            jacobi_loss = self.jacobi_lmbd * self.jacobian_regularizer(x)
             loss += jacobi_loss
             return loss, jacobi_loss
 

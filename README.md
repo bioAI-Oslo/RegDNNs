@@ -43,10 +43,7 @@ The code in this part is quite unstructured and contains multiple errors as it w
 
 ## Part Two: Regularization Benchmarking
 The goal of this part of the project was to investigate deep convolutional neural networks trained with different regularization techniques and build intuition for how the techniques work and how they influence the network. To do this I implemented many different regularization techniques and visualization techniques for DNNs. I tested the implementations on three datasets: MNIST, CIFAR10 and CIFAR100, using the LeNet model (See Lecun et al, 1998) and the DDNet model (See Hoffman 2019). For this part I also learned how to use ssh to connect to and use a data cluster, and how to use parallell computing to train on multiple GPUs using pytorch. See notebooks MNIST_LeNet, CIFAR10_DDNet and CIFAR100_DDNet for results. Following is a list of the regularization and visualization techniques I implemented, with a short description explaining how they work. 
-
-TODO: Fix documentation in plotting_tools and tools.
   
-
 ### Overview of Regularization Techniques
   
 #### Comparison - No Regularization

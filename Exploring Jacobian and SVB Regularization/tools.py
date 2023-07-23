@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 from collections import OrderedDict
 
-from model_classes import LeNet_MNIST
+from model_classes import LeNet_MNIST, DDNet
 
 
 def train(
@@ -170,7 +170,7 @@ def register_hooks(model):
     return save_output, hook_handles, layer_names
 
 
-def load_trained_model(model_name):
+def load_trained_model(model_name, dataset):
     """
     Loads a pre-trained PyTorch model and associated training data.
 
@@ -186,32 +186,66 @@ def load_trained_model(model_name):
     device = torch.device("cpu")
 
     # Initialize model based on provided model_name to get a similar model to prevent errors
-    if model_name.startswith("model_no_reg"):
-        if "no_dropout" in model_name:
-            model = LeNet_MNIST(dropout_rate=0.0)
-        else:
+    # FIX THIS!
+    if dataset == "mnist":
+        if model_name.startswith("model_no_reg"):
             model = LeNet_MNIST()
-    elif model_name.startswith("model_l2"):
-        if "no_dropout" in model_name:
-            model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=0.0005)
-        else:
+        elif model_name.startswith("model_no_reg_no_dropout"):
+            model = LeNet_MNIST(dropout_rate=0.0)
+        elif model_name.startswith("model_l2"):
             model = LeNet_MNIST(l2_lmbd=0.0005)
-    elif model_name.startswith("model_jacobi"):
-        if "no_dropout" in model_name:
-            model = LeNet_MNIST(dropout_rate=0.0, jacobi_reg=True, jacobi_reg_lmbd=0.01)
-        else:
-            model = LeNet_MNIST(jacobi_reg=True, jacobi_reg_lmbd=0.01)
-    elif model_name.startswith("model_svb"):
-        if "no_dropout" in model_name:
-            model = LeNet_MNIST(
-                dropout_rate=0.0, svb_reg=True, svb_freq=100, svb_eps=0.01
+        elif model_name.startswith("model_l2_no_dropout"):
+            model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=0.0005)
+        elif model_name.startswith("model_svb"):
+            model = LeNet_MNIST(svb=True)
+        elif model_name.startswith("model_svb_no_dropout"):
+            model = LeNet_MNIST(dropout_rate=0.0, svb=True)
+        elif model_name.startswith("model_jacobi"):
+            model = LeNet_MNIST(jacobi=True)
+        elif model_name.startswith("model_jacobi_no_dropout"):
+            model = LeNet_MNIST(dropout_rate=0.0, jacobi=True)
+    elif dataset == "cifar10":
+        if model_name.startswith("model_no_reg"):
+            model = DDNet()
+        elif model_name.startswith("model_no_reg_no_dropout"):
+            model = DDNet(dropout_rate=0.0)
+        elif model_name.startswith("model_l2"):
+            model = DDNet(l2_lmbd=0.0005)
+        elif model_name.startswith("model_l2_no_dropout"):
+            model = DDNet(dropout_rate=0.0, l2_lmbd=0.0005)
+        elif model_name.startswith("model_svb"):
+            model = DDNet(svb=True)
+        elif model_name.startswith("model_svb_no_dropout"):
+            model = DDNet(dropout_rate=0.0, svb=True)
+        elif model_name.startswith("model_jacobi"):
+            model = DDNet(jacobi=True)
+        elif model_name.startswith("model_jacobi_no_dropout"):
+            model = DDNet(dropout_rate=0.0, jacobi=True)
+    elif dataset == "cifar100":
+        if model_name.startswith("model_no_reg"):
+            model = DDNet(
+                dataset="cifar100",
             )
-        else:
-            model = LeNet_MNIST(svb_reg=True, svb_freq=100, svb_eps=0.01)
+        elif model_name.startswith("model_no_reg_no_dropout"):
+            model = DDNet(dataset="cifar100", dropout_rate=0.0)
+        elif model_name.startswith("model_l2"):
+            model = DDNet(dataset="cifar100", l2_lmbd=0.0005)
+        elif model_name.startswith("model_l2_no_dropout"):
+            model = DDNet(dataset="cifar100", dropout_rate=0.0, l2_lmbd=0.0005)
+        elif model_name.startswith("model_svb"):
+            model = DDNet(dataset="cifar100", svb=True)
+        elif model_name.startswith("model_svb_no_dropout"):
+            model = DDNet(dataset="cifar100", dropout_rate=0.0, svb=True)
+        elif model_name.startswith("model_jacobi"):
+            model = DDNet(dataset="cifar100", jacobi=True)
+        elif model_name.startswith("model_jacobi_no_dropout"):
+            model = DDNet(dataset="cifar100", dropout_rate=0.0, jacobi=True)
+    else:
+        print("Error: Dataset not implemented")
 
     # Load state dictionary
     state_dict = torch.load(
-        f"./trained_mnist_models/{model_name}.pt", map_location=device
+        f"./trained_{dataset}_models/{model_name}.pt", map_location=device
     )
 
     # Create new OrderedDict that does not contain `module.` prefix
@@ -227,7 +261,7 @@ def load_trained_model(model_name):
     model.eval()
 
     # Load training data
-    with open(f"./trained_mnist_models/{model_name}_data.pkl", "rb") as f:
+    with open(f"./trained_{dataset}_models/{model_name}_data.pkl", "rb") as f:
         data = pickle.load(f)
 
     losses = data["losses"]
@@ -324,7 +358,7 @@ class ModelInfo:
     test_accuracies (list): The list of test accuracies.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, dataset):
         """
         The constructor for ModelInfo class.
 
@@ -333,6 +367,7 @@ class ModelInfo:
         """
 
         self.name = name
+        self.dataset = dataset
         (
             self.model,
             self.losses,
@@ -340,10 +375,10 @@ class ModelInfo:
             self.epochs,
             self.train_accuracies,
             self.test_accuracies,
-        ) = self.load_model(name)
+        ) = self.load_model(name, dataset)
 
     @staticmethod
-    def load_model(name):
+    def load_model(name, dataset):
         """
         This static method is used to load the model and related information from a file using load_trained_model.
 
@@ -365,7 +400,7 @@ class ModelInfo:
             epochs,
             train_accuracies,
             test_accuracies,
-        ) = load_trained_model(name)
+        ) = load_trained_model(name, dataset)
         return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
 
 

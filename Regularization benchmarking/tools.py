@@ -14,6 +14,20 @@ def train(
     device,
     n_epochs=2,
 ):
+    """
+    Function to train a PyTorch model.
+
+    Parameters:
+    train_loader (DataLoader): DataLoader for the training data.
+    test_loader (DataLoader): DataLoader for the test data.
+    model (nn.Module): The PyTorch model to train.
+    device (string): The device to run training on. Usually "cuda" or "cpu".
+    n_epochs (int): The number of epochs to train the model for.
+
+    Returns:
+    Tuple of lists: Tracking of losses, regularization losses, epochs,
+    training accuracies, and testing accuracies over training process.
+    """
     losses = []
     epochs = []
     train_accuracies = []
@@ -21,13 +35,17 @@ def train(
     reg_losses = []
     iterations = 0
 
+    # Train on dataset epoch times
     for epoch in tqdm(range(n_epochs)):
         N = len(train_loader)
+
+        # Loop over data in train_loader
         for i, (data, labels) in enumerate(train_loader):
             epochs.append(epoch + i / N)
             data = data.to(device)
             labels = labels.to(device)
 
+            # Compute loss based on # available GPUs
             if torch.cuda.device_count() > 1:
                 loss_data, reg_loss_data = model.module.train_step(
                     data,
@@ -47,6 +65,8 @@ def train(
                     opt = model.module.opt
                 else:
                     opt = model.opt
+
+                # Update lr for each parameter group
                 for g in opt.param_groups:
                     g["lr"] = g["lr"] / 10
                     print(f"Decayed lr from {g['lr'] * 10} to {g['lr']}")
@@ -65,11 +85,22 @@ def train(
 
 
 def accuracy(model, loader, device):
-    """Calculate the accuracy of a model. Uses a data loader."""
+    """
+    Calculate the accuracy of a model.
+
+    Parameters:
+    model (nn.Module): The PyTorch model to evaluate.
+    loader (DataLoader): DataLoader for the dataset to evaluate on.
+    device (str): The device to run evaluation on. Usually "cuda" or "cpu".
+
+    Returns:
+    float: The accuracy of the model on the given dataset.
+    """
     correct = 0
     total = 0
     model.eval()  # Switch to evaluation mode
-    with torch.no_grad():
+    with torch.no_grad():  # Do not track gradients
+        # Calculate accuracy
         for data in loader:
             inputs, labels = data
             inputs = inputs.to(device)
@@ -83,17 +114,43 @@ def accuracy(model, loader, device):
 
 
 class SaveOutput:
+    """
+    Class to save outputs from specified layers in a model.
+    """
+
     def __init__(self):
         self.outputs = []
 
     def __call__(self, module, module_in, module_out):
+        """
+        Saves the output from a forward pass through a module.
+
+        Parameters:
+        module (nn.Module): The module that just performed a forward pass.
+        module_in (Tensor): The input to the module.
+        module_out (Tensor): The output from the module.
+        """
         self.outputs.append(module_out)
 
     def clear(self):
+        """
+        Clear the saved outputs.
+        """
         self.outputs = []
 
 
 def register_hooks(model):
+    """
+    Registers forward hooks for Conv2d and Linear layers in a model.
+
+    Parameters:
+    model (nn.Module): The PyTorch model to register hooks on.
+
+    Returns:
+    tuple: A tuple containing an instance of SaveOutput (to access saved outputs),
+    a list of handles to the hooks (for removing the hooks later), and a list of
+    the names of the layers hooks were registered on.
+    """
     save_output = SaveOutput()
     layer_names = []
 
