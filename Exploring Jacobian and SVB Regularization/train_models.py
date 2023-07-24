@@ -43,14 +43,14 @@ if __name__ == "__main__":
         "model_jacobi_no_dropout_3": DDNet(dropout_rate=0.0, jacobi=True),
         "model_svb_3": DDNet(svb=True),
         "model_svb_no_dropout_3": DDNet(dropout_rate=0.0, svb=True),
-        "model_no_reg_4": DDNet(),
-        "model_no_reg_no_dropout_4": DDNet(dropout_rate=0.0),
-        "model_l2_4": DDNet(l2_lmbd=l2_lmbd),
-        "model_l2_no_dropout_4": DDNet(dropout_rate=0.0, l2_lmbd=l2_lmbd),
-        "model_jacobi_4": DDNet(jacobi=True),
-        "model_jacobi_no_dropout_4": DDNet(dropout_rate=0.0, jacobi=True),
-        "model_svb_4": DDNet(svb=True),
-        "model_svb_no_dropout_4": DDNet(dropout_rate=0.0, svb=True),
+        # "model_no_reg_4": DDNet(),
+        # "model_no_reg_no_dropout_4": DDNet(dropout_rate=0.0),
+        # "model_l2_4": DDNet(l2_lmbd=l2_lmbd),
+        # "model_l2_no_dropout_4": DDNet(dropout_rate=0.0, l2_lmbd=l2_lmbd),
+        # "model_jacobi_4": DDNet(jacobi=True),
+        # "model_jacobi_no_dropout_4": DDNet(dropout_rate=0.0, jacobi=True),
+        # "model_svb_4": DDNet(svb=True),
+        # "model_svb_no_dropout_4": DDNet(dropout_rate=0.0, svb=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
