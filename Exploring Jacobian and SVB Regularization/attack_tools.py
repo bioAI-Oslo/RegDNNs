@@ -41,6 +41,7 @@ def fgsm_attack_test(model, device, test_loader, epsilon):
 
     # Accuracy counter
     correct = 0
+    model.eval()
 
     # Loop over all examples in test set
     for data, target in tqdm(test_loader):
@@ -136,6 +137,7 @@ def pgd_attack_test(model, device, test_loader, eps, alpha, iters):
     """
     # Counter for correct predictions
     correct = 0
+    model.eval()
 
     # Iterate over the test dataset
     for images, labels in test_loader:
