@@ -14,8 +14,8 @@ if __name__ == "__main__":
     # dataset = "cifar100"
 
     # Set attack
-    # attack = "fgsm"
-    attack = "pgd"
+    attack = "fgsm"
+    # attack = "pgd"
 
     if dataset == "mnist":
         _, test_loader = data_loader_MNIST()
@@ -52,22 +52,38 @@ if __name__ == "__main__":
     # Epsilons to use for FGSM attacks
     epsilons = [
         0,
-        0.05,
-        0.1,
-        0.15,
-        0.2,
-        0.25,
-        0.3,
-        0.35,
-        0.4,
-        0.45,
-        0.5,
-        0.55,
-        0.6,
-        0.65,
-        0.7,
-        0.75,
+        1 / 255,
+        5 / 255,
+        10 / 255,
+        15 / 255,
+        20 / 255,
+        30 / 255,
+        35 / 255,
+        40 / 255,
+        45 / 255,
+        50 / 255,
+        55 / 255,
+        60 / 255,
+        65 / 255,
+        70 / 255,
+        75 / 255,
     ]
+    # 0.05
+    # 0.1,
+    # 0.15,
+    # 0.2,
+    # 0.25,
+    # 0.3,
+    #     0.35,
+    #     0.4,
+    #     0.45,
+    #     0.5,
+    #     0.55,
+    #     0.6,
+    #     0.65,
+    #     0.7,
+    #     0.75,
+    # ]
 
     # Iterations to use for PGD attack
     iters_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30, 35, 40, 45, 50]
@@ -86,8 +102,8 @@ if __name__ == "__main__":
                     models[model_name].model,
                     device,
                     test_loader,
-                    eps=0.2,
-                    alpha=0.05,
+                    eps=32 / 255,  # Value from Hoffman 2019
+                    alpha=1 / 255,  # Value from Hoffman 2019
                     iters=iter,
                 )
                 accuracies.append(acc)
