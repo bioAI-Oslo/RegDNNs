@@ -111,7 +111,7 @@ Occlusion sensitivity is a method that involves systematically occluding differe
   
   
 ## Part Three: Exploring Jacobian and SVB Regularization
-*This is an ongoing part of the project, so notes here might be messy.*
+*This is an ongoing part of the project, so notes are messy.*
 For this part I chose to continue with the regularization techniques of the Jacobian Regularization from Hoffman 2019 and the SVB regularization from Jia 2019. I wanted to investigate these techniques further, also using models trained with L2 regularization and no regularization for comparison. I also chose to continue with the following visualization techniques for the investigation: accuracy curves and activation plots through dimensionality reduction (PCA). I also implement the visualization technique of decision boundaries from Hoffman 2019, and use it on my models to try to understand how they work. The models in this part are implemented and trained as described in Hoffman 2019. More details are provided in each file. Untill now I have tested using LeNet on MNIST and DDNet on CIFAR10. I plan to also test a version of ResNet on ImageNet to see how the regularization techniques effect larger models.  
 
 #### Visualization Techniques
