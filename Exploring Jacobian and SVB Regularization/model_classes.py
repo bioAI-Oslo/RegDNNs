@@ -257,7 +257,7 @@ class DDNet(nn.Module):
         lr=0.1,
         momentum=0.9,
         dropout_rate=0.5,
-        l2_lmbd=0.0005,
+        l2_lmbd=0.0,
         svb=False,
         svb_freq=600,
         svb_eps=0.05,
