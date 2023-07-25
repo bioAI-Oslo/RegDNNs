@@ -1,4 +1,6 @@
 import numpy as np
+import os
+import pickle
 import matplotlib.pyplot as plt
 import torch
 from sklearn.decomposition import PCA
@@ -454,6 +456,7 @@ def plot_fgsm(
     model,
     device,
     test_loader,
+    dataset,
     epsilons=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
 ):
     """
@@ -464,10 +467,14 @@ def plot_fgsm(
     ----------
     model : torch.nn.Module
         The trained PyTorch model.
+    model_name: str
+        The name of the model.
     device : str
         The device to run the model on ('cpu' or 'cuda').
     test_loader : torch.utils.data.DataLoader
         The DataLoader for the test dataset.
+    dataset: str
+        The dataset the model is trained on.
     epsilons : list, optional
         A list of epsilon values for the FGSM attacks. Epsilon determines the step size of the perturbations
         during the attack. Default is [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3].
@@ -477,13 +484,22 @@ def plot_fgsm(
     values. The xticks and yticks on the graph are dynamically determined based on the range of epsilon values
     and accuracies, respectively.
     """
-    # Define the epsilon values to use for the FGSM attacks
-    accuracies = []
+    filepath = f"./attacked_{dataset}_models/{model_name}_fgsm_accuracies.pkl"
 
-    # Test the model's accuracy under FGSM attacks with each epsilon value
-    for eps in epsilons:
-        acc = fgsm_attack_test(model, device, test_loader, eps)
-        accuracies.append(acc)
+    if os.path.exists(filepath):
+        # Load the results if they have been previously calculated and saved
+        with open(filepath, "rb") as f:
+            data = pickle.load(f)
+            epsilons = data["epsilons"]
+            accuracies = data["accuracies"]
+    else:
+        # Define the epsilon values to use for the FGSM attacks
+        accuracies = []
+
+        # Test the model's accuracy under FGSM attacks with each epsilon value
+        for eps in epsilons:
+            acc = fgsm_attack_test(model, device, test_loader, eps)
+            accuracies.append(acc)
 
     # Calculate suitable step sizes for xticks
     xstep = (max(epsilons) - min(epsilons)) / 10
