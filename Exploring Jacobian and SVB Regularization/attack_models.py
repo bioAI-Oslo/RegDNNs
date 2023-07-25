@@ -66,7 +66,7 @@ if __name__ == "__main__":
     ]
 
     # Perform FGSM attack and store results
-    for model_name, model in models.items():
+    for model_name in model_names:
         print(f"Attacking model: {model_name} on dataset: {dataset} with FGSM")
 
         # Store accuracies for all epsilons
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
         # Perform the attack for each epsilon
         for eps in epsilons:
-            acc = fgsm_attack_test(model, device, test_loader, eps)
+            acc = fgsm_attack_test(models[model_name].model, device, test_loader, eps)
             accuracies.append(acc)
 
         # Save the accuracies for all epsilons for this model
