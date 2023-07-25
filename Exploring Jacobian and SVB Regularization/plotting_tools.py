@@ -454,6 +454,7 @@ def plot_and_print_img(
 
 def plot_fgsm(
     model,
+    model_name,
     device,
     test_loader,
     dataset,
@@ -502,10 +503,10 @@ def plot_fgsm(
             accuracies.append(acc)
 
     # Calculate suitable step sizes for xticks
-    xstep = (max(epsilons) - min(epsilons)) / 10
+    xstep = (max(epsilons) - min(epsilons)) / (len(epsilons) - 1)
 
     # Plot the accuracy results
-    plt.figure(figsize=(5, 5))
+    plt.figure(figsize=(8, 6))
     plt.plot(epsilons, accuracies, "*-")
     plt.yticks(np.arange(0, 1.1, step=0.1))
     plt.xticks(np.arange(min(epsilons), max(epsilons) + xstep, step=xstep))
