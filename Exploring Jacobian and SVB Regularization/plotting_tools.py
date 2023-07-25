@@ -518,8 +518,10 @@ def plot_fgsm(
 
 def plot_pgd(
     model,
+    model_name,
     device,
     test_loader,
+    dataset,
     eps,
     alpha,
     iters_list=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
@@ -540,15 +542,24 @@ def plot_pgd(
     counts. The xticks and yticks on the graph are dynamically determined based on the range of iteration counts
     and accuracies, respectively.
     """
-    accuracies = []  # List to store results
+    filepath = f"./attacked_{dataset}_models/{model_name}_pgd_accuracies.pkl"
 
-    # Test the model's accuracy under PGD attacks with each number of iterations
-    for iters in iters_list:
-        acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
-        accuracies.append(acc)
+    if os.path.exists(filepath):
+        # Load the results if they have been previously calculated and saved
+        with open(filepath, "rb") as f:
+            data = pickle.load(f)
+            iters_list = data["iters_list"]
+            accuracies = data["accuracies"]
+    else:
+        accuracies = []  # List to store results
+
+        # Test the model's accuracy under PGD attacks with each number of iterations
+        for iters in iters_list:
+            acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
+            accuracies.append(acc)
 
     # Plot the results
-    plt.figure(figsize=(5, 5))
+    plt.figure(figsize=(8, 6))
     plt.plot(iters_list, accuracies, "*-")
     plt.yticks(np.arange(0, 1.1, step=0.1))
     plt.xticks(np.arange(min(iters_list), max(iters_list) + 1, step=5))

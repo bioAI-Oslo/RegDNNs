@@ -27,10 +27,7 @@ if __name__ == "__main__":
 
     # Initialize all models and store them in a dictionary with their names
     models = {
-        "model_jacobi_and_svb_0": LeNet_MNIST(jacobi=True, svb=True),
         "model_all_0": LeNet_MNIST(l2_lmbd=l2_lmbd, jacobi=True, svb=True),
-        "model_jacobi_and_l2_0": LeNet_MNIST(l2_lmbd=l2_lmbd, jacobi=True),
-        "model_svb_and_l2_0": LeNet_MNIST(l2_lmbd=l2_lmbd, svb=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
