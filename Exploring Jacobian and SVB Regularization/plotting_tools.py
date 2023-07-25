@@ -6,7 +6,7 @@ from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
 
-from tools import register_hooks, fgsm_attack_test, total_variation
+from tools import register_hooks, fgsm_attack_test, total_variation_isotropic
 
 
 def plot_results(
@@ -297,7 +297,7 @@ def plot_decision_boundary(
         ax.add_patch(circle)
 
         # Compute and print the total variation of the decision boundaries
-        tv = total_variation(predictions.cpu().numpy())
+        tv = total_variation_isotropic(predictions.cpu().numpy())
 
         ax.set_title(f"Zoom level: {zoom_level}.  Total Variation: {tv}")
 

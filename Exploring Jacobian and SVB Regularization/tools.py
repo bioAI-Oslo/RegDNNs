@@ -404,11 +404,9 @@ class ModelInfo:
         return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
 
 
-def total_variation(image):
+def total_variation_isotropic(image):
     """
-    Function to compute the total variation of an image. Total variation
-    is the sum of the absolute differences for neighboring pixel-values
-    in the input images. This measures how much noise is in the images.
+    Function to compute the isotropic total variation of an image.
 
     Parameters
     ----------
@@ -418,11 +416,35 @@ def total_variation(image):
     Returns
     -------
     total_variation : float
-        Total variation of the image.
+        Isotropic total variation of the image.
     """
-    return np.sum(np.abs(image[:-1, :-1] - image[1:, :-1])) + np.sum(
-        np.abs(image[:-1, :-1] - image[:-1, 1:])
-    )
+    diffs_in_x = np.diff(image, axis=1)[:-1, :]  # Slice to match y dimension after diff
+    diffs_in_y = np.diff(image, axis=0)[:, :-1]  # Slice to match x dimension after diff
+
+    magnitude_of_diffs = np.sqrt(diffs_in_x**2 + diffs_in_y**2)
+    total_variation = np.sum(magnitude_of_diffs)
+    return total_variation
+
+
+def total_variation_anisotropic(image):
+    """
+    Function to compute the anisotropic total variation of an image.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        2D numpy array representing the grayscale image.
+
+    Returns
+    -------
+    total_variation : float
+        Anisotropic total variation of the image.
+    """
+    diffs_in_x = np.abs(np.diff(image, axis=1))
+    diffs_in_y = np.abs(np.diff(image, axis=0))
+
+    total_variation = np.sum(diffs_in_x) + np.sum(diffs_in_y[:-1])
+    return total_variation
 
 
 def compute_total_variation(
@@ -433,6 +455,7 @@ def compute_total_variation(
     device,
     resolution=300,
     zoom=[0.025, 0.01, 0.001],
+    mode="isotropic",
 ):
     """
     Function to calculate the total variation of decision boundaries of a model in a 2D plane for different zoom levels.
@@ -453,7 +476,14 @@ def compute_total_variation(
         The resolution of the grid to be used, by default 300.
     zoom : list, optional
         The zoom levels to calculate total variation of, by default [0.025, 0.01, 0.001].
+    mode : str, optional
+        The mode of total variation to be used, can be either 'isotropic' or 'anisotropic', by default 'isotropic'.
     """
+
+    # Check if the mode is valid
+    if mode not in ["isotropic", "anisotropic"]:
+        raise ValueError("Invalid mode. Expected 'isotropic' or 'anisotropic'")
+
     # Enter evaluation mode
     model.eval()
 
@@ -483,7 +513,10 @@ def compute_total_variation(
         # Get the class with the highest probability
         _, predictions = torch.max(probs, dim=-1)
 
-        # Compute and return the total variation of the decision boundaries for each zoom level
-        tv = total_variation(predictions.cpu().numpy())
+        # Compute the total variation according to the specified mode
+        if mode == "isotropic":
+            tv = total_variation_isotropic(predictions.cpu().numpy())
+        else:
+            tv = total_variation_anisotropic(predictions.cpu().numpy())
         tv_list.append(tv)
     return tv_list
