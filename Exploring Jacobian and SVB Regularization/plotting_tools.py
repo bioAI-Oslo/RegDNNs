@@ -522,8 +522,8 @@ def plot_pgd(
     device,
     test_loader,
     dataset,
-    eps,
-    alpha,
+    eps=0.2,
+    alpha=0.1,
     iters_list=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
 ):
     """
@@ -574,39 +574,55 @@ def plot_multiple_pgd(
     model_names,
     device,
     test_loader,
-    eps,
-    alpha,
+    dataset,
+    eps=0.2,
+    alpha=0.1,
     iters_list=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
 ):
     """
     Test the models' accuracy under PGD attacks with different number of iterations and plot the results.
 
     Parameters:
-    model_list (list): The models to attack.
+    models (dict): The models to attack.
+    model_names (list): The names of the models.
     device (torch.device): The device to perform computations on.
     test_loader (torch.utils.data.DataLoader): The test data loader.
+    dataset (str): The name of the dataset.
     eps (float): The maximum perturbation for each pixel.
     alpha (float): The step size for each iteration.
     iters_list (list, optional): A list of iteration counts for the PGD attacks.
 
-    This function will test each odels' robustness against PGD attacks by calculating its accuracy on the test
+    This function will test each models' robustness against PGD attacks by calculating its accuracy on the test
     dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the iteration
     counts. The xticks and yticks on the graph are dynamically determined based on the range of iteration counts
     and accuracies, respectively.
     """
-    model_list = [models[name].model for name in model_names]
     plt.figure(figsize=(10, 7))  # Increase the size of the plot for readability
 
-    for model, name in zip(model_list, model_names):
-        accuracies = []  # List to store results
+    for model_name in model_names:
+        model = models[model_name].model
+        filepath = f"./attacked_{dataset}_models/{model_name}_pgd_accuracies.pkl"
 
-        # Test the model's accuracy under PGD attacks with each number of iterations
-        for iters in iters_list:
-            acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
-            accuracies.append(acc)
+        if os.path.exists(filepath):
+            # Load the results if they have been previously calculated and saved
+            with open(filepath, "rb") as f:
+                data = pickle.load(f)
+                iters_list = data["iters_list"]
+                accuracies = data["accuracies"]
+        else:
+            accuracies = []  # List to store results
 
-        # Plot the results fpr each model
-        plt.plot(iters_list, accuracies, "-*", label=name)
+            # Test the model's accuracy under PGD attacks with each number of iterations
+            for iters in iters_list:
+                acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
+                accuracies.append(acc)
+
+            # Save the accuracies for all iterations for this model
+            with open(filepath, "wb") as f:
+                pickle.dump({"iters_list": iters_list, "accuracies": accuracies}, f)
+
+        # Plot the results for each model
+        plt.plot(iters_list, accuracies, "-*", label=model_name)
 
     plt.yticks(np.arange(0, 1.1, step=0.1))
     plt.xticks(np.arange(min(iters_list), max(iters_list) + 1, step=5))

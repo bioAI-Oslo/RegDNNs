@@ -189,56 +189,38 @@ def load_trained_model(model_name, dataset):
     if dataset == "mnist":
         if model_name.startswith("model_no_reg"):
             model = LeNet_MNIST()
-        elif model_name.startswith("model_no_reg_no_dropout"):
-            model = LeNet_MNIST(dropout_rate=0.0)
         elif model_name.startswith("model_l2"):
             model = LeNet_MNIST(l2_lmbd=0.0005)
-        elif model_name.startswith("model_l2_no_dropout"):
-            model = LeNet_MNIST(dropout_rate=0.0, l2_lmbd=0.0005)
         elif model_name.startswith("model_svb"):
             model = LeNet_MNIST(svb=True)
-        elif model_name.startswith("model_svb_no_dropout"):
-            model = LeNet_MNIST(dropout_rate=0.0, svb=True)
         elif model_name.startswith("model_jacobi"):
             model = LeNet_MNIST(jacobi=True)
-        elif model_name.startswith("model_jacobi_no_dropout"):
-            model = LeNet_MNIST(dropout_rate=0.0, jacobi=True)
+        elif model_name.startswith("model_all"):
+            model = LeNet_MNIST(l2_lmbd=0.0005, jacobi=True, svb=True)
     elif dataset == "cifar10":
         if model_name.startswith("model_no_reg"):
             model = DDNet()
-        elif model_name.startswith("model_no_reg_no_dropout"):
-            model = DDNet(dropout_rate=0.0)
         elif model_name.startswith("model_l2"):
             model = DDNet(l2_lmbd=0.0005)
-        elif model_name.startswith("model_l2_no_dropout"):
-            model = DDNet(dropout_rate=0.0, l2_lmbd=0.0005)
         elif model_name.startswith("model_svb"):
             model = DDNet(svb=True)
-        elif model_name.startswith("model_svb_no_dropout"):
-            model = DDNet(dropout_rate=0.0, svb=True)
         elif model_name.startswith("model_jacobi"):
             model = DDNet(jacobi=True)
-        elif model_name.startswith("model_jacobi_no_dropout"):
-            model = DDNet(dropout_rate=0.0, jacobi=True)
+        elif model_name.startswith("model_all"):
+            model = DDNet(l2_lmbd=0.0005, jacobi=True, svb=True)
     elif dataset == "cifar100":
         if model_name.startswith("model_no_reg"):
             model = DDNet(
                 dataset="cifar100",
             )
-        elif model_name.startswith("model_no_reg_no_dropout"):
-            model = DDNet(dataset="cifar100", dropout_rate=0.0)
         elif model_name.startswith("model_l2"):
             model = DDNet(dataset="cifar100", l2_lmbd=0.0005)
-        elif model_name.startswith("model_l2_no_dropout"):
-            model = DDNet(dataset="cifar100", dropout_rate=0.0, l2_lmbd=0.0005)
         elif model_name.startswith("model_svb"):
             model = DDNet(dataset="cifar100", svb=True)
-        elif model_name.startswith("model_svb_no_dropout"):
-            model = DDNet(dataset="cifar100", dropout_rate=0.0, svb=True)
         elif model_name.startswith("model_jacobi"):
             model = DDNet(dataset="cifar100", jacobi=True)
-        elif model_name.startswith("model_jacobi_no_dropout"):
-            model = DDNet(dataset="cifar100", dropout_rate=0.0, jacobi=True)
+        elif model_name.startswith("model_all"):
+            model = DDNet(dataset="cifar100", l2_lmbd=0.0005, jacobi=True, svb=True)
     else:
         print("Error: Dataset not implemented")
 

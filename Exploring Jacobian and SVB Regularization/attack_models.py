@@ -35,7 +35,7 @@ if __name__ == "__main__":
         "model_svb_0",
         "model_svb_no_dropout_0",
         "model_jacobi_and_svb_0",
-        # "model_all_0",
+        "model_all_0",
         "model_jacobi_and_l2_0",
         "model_svb_and_l2_0",
     ]
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                     device,
                     test_loader,
                     eps=0.2,
-                    alpha=0.1,
+                    alpha=0.05,
                     iters=iter,
                 )
                 accuracies.append(acc)
