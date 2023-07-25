@@ -30,10 +30,10 @@ if __name__ == "__main__":
         "model_jacobi_no_dropout_0",
         "model_svb_0",
         "model_svb_no_dropout_0",
-        "model_jacobi_and_svb_0",
-        "model_all_0",
-        "model_jacobi_and_l2_0",
-        "model_svb_and_l2_0",
+        # "model_jacobi_and_svb_0",
+        # "model_all_0",
+        # "model_jacobi_and_l2_0",
+        # "model_svb_and_l2_0",
     ]
     models = {name: ModelInfo(name, dataset) for name in model_names}
 
