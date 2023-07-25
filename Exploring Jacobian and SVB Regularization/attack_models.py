@@ -14,8 +14,8 @@ if __name__ == "__main__":
     # dataset = "cifar100"
 
     # Set attack
-    # attack = "fgsm"
-    attack = "pgd"
+    attack = "fgsm"
+    # attack = "pgd"
 
     if dataset == "mnist":
         _, test_loader = data_loader_MNIST()

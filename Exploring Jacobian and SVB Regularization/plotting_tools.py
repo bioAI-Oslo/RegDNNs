@@ -516,6 +516,70 @@ def plot_fgsm(
     plt.show()
 
 
+def plot_multiple_fgsm(
+    models,
+    model_names,
+    device,
+    test_loader,
+    dataset,
+    epsilons=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
+):
+    """
+    Test the models' accuracy under FGSM attacks with different epsilon values and plot the results.
+
+    Parameters:
+    models (dict): The dictionary of models to attack.
+    model_names (list): The names of the models.
+    device (torch.device): The device to perform computations on.
+    test_loader (torch.utils.data.DataLoader): The test data loader.
+    dataset (str): The dataset the models were trained on.
+    epsilons (list, optional): A list of epsilon values for the FGSM attacks.
+
+    This function will test each model's robustness against FGSM attacks by calculating its accuracy on the test
+    dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the epsilon
+    values. The xticks and yticks on the graph are dynamically determined based on the range of epsilon values
+    and accuracies, respectively.
+    """
+    plt.figure(figsize=(10, 7))  # Increase the size of the plot for readability
+
+    for model_name in model_names:
+        model = models[model_name].model
+        filepath = f"./attacked_{dataset}_models/{model_name}_fgsm_accuracies.pkl"
+
+        if os.path.exists(filepath):
+            # Load the results if they have been previously calculated and saved
+            with open(filepath, "rb") as f:
+                data = pickle.load(f)
+                epsilons = data["epsilons"]
+                accuracies = data["accuracies"]
+        else:
+            accuracies = []  # List to store results
+
+            # Test the model's accuracy under PGD attacks with each number of iterations
+            for eps in epsilons:
+                acc = fgsm_attack_test(model, device, test_loader, eps)
+                accuracies.append(acc)
+
+            # Save the accuracies for all iterations for this model
+            with open(filepath, "wb") as f:
+                pickle.dump({"epsilons": epsilons, "accuracies": accuracies}, f)
+
+        # Plot the results for each model
+        plt.plot(epsilons, accuracies, "-*", label=model_name)
+
+    # Calculate suitable step sizes for xticks
+    xstep = (max(epsilons) - min(epsilons)) / (len(epsilons) - 1)
+
+    plt.yticks(np.arange(0, 1.1, step=0.1))
+    plt.xticks(np.arange(min(epsilons), max(epsilons) + xstep, step=xstep))
+    plt.title("Accuracy vs Epsilon")
+    plt.xlabel("Epsilon")
+    plt.ylabel("Accuracy")
+    plt.legend()  # Add a legend to distinguish lines for different models
+    plt.grid(True)  # Add a grid for better visualization
+    plt.show()
+
+
 def plot_pgd(
     model,
     model_name,
