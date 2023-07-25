@@ -2,7 +2,6 @@ import numpy as np
 import pickle
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from tqdm import tqdm
 from collections import OrderedDict
 
@@ -271,77 +270,6 @@ def load_trained_model(model_name, dataset):
     test_accuracies = data["test_accuracies"]
 
     return model, losses, reg_losses, epochs, train_accuracies, test_accuracies
-
-
-def fgsm_attack(image, epsilon, data_grad):
-    """
-    Implements the Fast Gradient Sign Method (FGSM) attack.
-
-    Parameters:
-    image (torch.Tensor): The original, unperturbed image.
-    epsilon (float): The perturbation magnitude.
-    data_grad (torch.Tensor): The gradient of the loss with respect to the input image.
-
-    Returns:
-    torch.Tensor: The perturbed image.
-    """
-    # Collect the element-wise sign of the data gradient
-    sign_data_grad = data_grad.sign()
-    # Create the perturbed image by adjusting each pixel of the input image
-    perturbed_image = image + epsilon * sign_data_grad
-    # Adding clipping to maintain [0,1] range
-    perturbed_image = torch.clamp(perturbed_image, 0, 1)
-    # Return the perturbed image
-    return perturbed_image
-
-
-def fgsm_attack_test(model, device, test_loader, epsilon):
-    """
-    Test a model under FGSM attack.
-
-    Parameters:
-    model (torch.nn.Module): The PyTorch model to evaluate.
-    device (torch.device): The device to perform computations on.
-    test_loader (torch.utils.data.DataLoader): The test data loader.
-    epsilon (float): The perturbation magnitude for FGSM attack.
-
-    Returns:
-    float: The accuracy of the model on perturbed test data.
-    """
-
-    # Accuracy counter
-    correct = 0
-
-    # Loop over all examples in test set
-    for data, target in test_loader:
-        # Send the data and label to the device
-        data, target = data.to(device), target.to(device)
-        # Set requires_grad attribute of tensor. Important for Attack
-        data.requires_grad = True
-        # Forward pass the data through the model
-        output = model(data)
-        # Calculate the loss
-        loss = F.nll_loss(F.log_softmax(output, dim=1), target)
-        # Zero all existing gradients
-        model.zero_grad()
-        # Calculate gradients of model in backward pass
-        loss.backward()
-        # Collect datagrad
-        data_grad = data.grad.data
-        # Call FGSM Attack
-        perturbed_data = fgsm_attack(data, epsilon, data_grad)
-        # Re-classify the perturbed image
-        output = model(perturbed_data)
-        final_pred = output.max(1, keepdim=True)[
-            1
-        ]  # get the index of the max log-probability
-        correct += (
-            (final_pred.view(target.shape) == target).sum().item()
-        )  # update the correct predictions count
-
-    # Calculate final accuracy for this epsilon
-    final_acc = correct / float(len(test_loader.dataset))
-    return final_acc
 
 
 class ModelInfo:

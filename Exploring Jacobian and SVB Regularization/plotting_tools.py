@@ -6,7 +6,11 @@ from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
 
-from tools import register_hooks, fgsm_attack_test, total_variation_isotropic
+from attack_tools import fgsm_attack_test, pgd_attack_test
+from tools import (
+    register_hooks,
+    total_variation_isotropic,
+)
 
 
 def plot_results(
@@ -299,7 +303,7 @@ def plot_decision_boundary(
         # Compute and print the total variation of the decision boundaries
         tv = total_variation_isotropic(predictions.cpu().numpy())
 
-        ax.set_title(f"Zoom level: {zoom_level}.  Total Variation: {tv}")
+        ax.set_title(f"Zoom level: {zoom_level}.  Total Variation (isotropic): {tv}")
 
     # Set legend for the whole figure
     legend_elements = [
@@ -376,7 +380,11 @@ def get_random_img(dataloader):
 
 
 def plot_and_print_img(
-    image, model, device, dataset="mnist", regularization_title="no regularization"
+    image,
+    model,
+    device,
+    regularization_title="no regularization",
+    dataset="mnist",
 ):
     """
     Plot an image and print the model's prediction for this image.
@@ -488,4 +496,95 @@ def plot_fgsm(
     plt.title("Accuracy vs Epsilon")
     plt.xlabel("Epsilon")
     plt.ylabel("Accuracy")
+    plt.show()
+
+
+def plot_pgd(
+    model,
+    device,
+    test_loader,
+    eps,
+    alpha,
+    iters_list=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+):
+    """
+    Test the model's accuracy under PGD attacks with different number of iterations and plot the results.
+
+    Parameters:
+    model (torch.nn.Module): The model to attack.
+    device (torch.device): The device to perform computations on.
+    test_loader (torch.utils.data.DataLoader): The test data loader.
+    eps (float): The maximum perturbation for each pixel.
+    alpha (float): The step size for each iteration.
+    iters_list (list, optional): A list of iteration counts for the PGD attacks.
+
+    This function will test the model's robustness against PGD attacks by calculating its accuracy on the test
+    dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the iteration
+    counts. The xticks and yticks on the graph are dynamically determined based on the range of iteration counts
+    and accuracies, respectively.
+    """
+    accuracies = []  # List to store results
+
+    # Test the model's accuracy under PGD attacks with each number of iterations
+    for iters in iters_list:
+        acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
+        accuracies.append(acc)
+
+    # Plot the results
+    plt.figure(figsize=(5, 5))
+    plt.plot(iters_list, accuracies, "*-")
+    plt.yticks(np.arange(0, 1.1, step=0.1))
+    plt.xticks(np.arange(min(iters_list), max(iters_list) + 1, step=5))
+    plt.title("Accuracy vs PGD Iterations")
+    plt.xlabel("PGD Iterations")
+    plt.ylabel("Accuracy")
+    plt.show()
+
+
+def plot_multiple_pgd(
+    models,
+    model_names,
+    device,
+    test_loader,
+    eps,
+    alpha,
+    iters_list=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+):
+    """
+    Test the models' accuracy under PGD attacks with different number of iterations and plot the results.
+
+    Parameters:
+    model_list (list): The models to attack.
+    device (torch.device): The device to perform computations on.
+    test_loader (torch.utils.data.DataLoader): The test data loader.
+    eps (float): The maximum perturbation for each pixel.
+    alpha (float): The step size for each iteration.
+    iters_list (list, optional): A list of iteration counts for the PGD attacks.
+
+    This function will test each odels' robustness against PGD attacks by calculating its accuracy on the test
+    dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the iteration
+    counts. The xticks and yticks on the graph are dynamically determined based on the range of iteration counts
+    and accuracies, respectively.
+    """
+    model_list = [models[name].model for name in model_names]
+    plt.figure(figsize=(10, 7))  # Increase the size of the plot for readability
+
+    for model, name in zip(model_list, model_names):
+        accuracies = []  # List to store results
+
+        # Test the model's accuracy under PGD attacks with each number of iterations
+        for iters in iters_list:
+            acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
+            accuracies.append(acc)
+
+        # Plot the results fpr each model
+        plt.plot(iters_list, accuracies, "-*", label=name)
+
+    plt.yticks(np.arange(0, 1.1, step=0.1))
+    plt.xticks(np.arange(min(iters_list), max(iters_list) + 1, step=5))
+    plt.title("Accuracy vs PGD Iterations")
+    plt.xlabel("PGD Iterations")
+    plt.ylabel("Accuracy")
+    plt.legend()  # Add a legend to distinguish lines for different models
+    plt.grid(True)  # Add a grid for better visualization
     plt.show()
