@@ -1,9 +1,8 @@
 import torch
 import pickle
 from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_CIFAR100
-from model_classes import LeNet_MNIST, DDNet
-from tools import fgsm_attack_test, ModelInfo
-from torch.nn import DataParallel
+from tools import ModelInfo
+from attack_tools import fgsm_attack_test, pgd_attack_test
 
 if __name__ == "__main__":
     # Device configuration, use GPU if available
