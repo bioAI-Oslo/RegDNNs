@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     # Define zoom levels, number of images, and confidence level for confidence interval calculation
     zoom_levels = [0.025, 0.01, 0.001]
-    n_images = 10
+    n_images = 50
     confidence_level = 0.95
     mode = "isotropic"
 
