@@ -13,8 +13,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Set dataset
-    dataset = "mnist"
-    # dataset = "cifar10"
+    # dataset = "mnist"
+    dataset = "cifar10"
     # dataset = "cifar100"
 
     if dataset == "mnist":
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     zoom_levels = [0.025, 0.01, 0.001]
     n_images = 50
     confidence_level = 0.95
-    mode = "anisotropic"
+    mode = "isotropic"
 
     # Dataframe to store results
     cols = pd.MultiIndex.from_product([zoom_levels, ["mean", "conf_interval"]])
