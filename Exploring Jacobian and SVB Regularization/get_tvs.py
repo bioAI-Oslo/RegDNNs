@@ -72,6 +72,8 @@ if __name__ == "__main__":
             img = get_random_img(test_loader)
             v1, v2 = generate_random_vectors(img)
 
+            v1 = v1.to(device)
+            v2 = v2.to(device)
             img = img.to(device)
 
             # Compute the isotropic total variation of decision boundaries for the current model
