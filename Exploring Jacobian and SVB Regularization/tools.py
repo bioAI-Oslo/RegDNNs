@@ -404,8 +404,8 @@ def compute_total_variation(
     for zoom_level in zoom:
         # Generate grid of points in plane defined by img, v1 and v2
         scale = 1 / zoom_level  # Scale decided by zoom_level
-        x = torch.linspace(-scale, scale, resolution)
-        y = torch.linspace(-scale, scale, resolution)
+        x = torch.linspace(-scale, scale, resolution).to(device)
+        y = torch.linspace(-scale, scale, resolution).to(device)
         xv, yv = torch.meshgrid(x, y)
 
         v1 = v1.to(device)  # Move v1 to the same device as the model
