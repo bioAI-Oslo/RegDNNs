@@ -366,6 +366,7 @@ def compute_total_variation(
     resolution=300,
     zoom=[0.025, 0.01, 0.001],
     mode="isotropic",
+    dataset="mnist",
 ):
     """
     Function to calculate the total variation of decision boundaries of a model in a 2D plane for different zoom levels.
@@ -420,7 +421,15 @@ def compute_total_variation(
 
         # Compute the model's predictions over the grid
         with torch.no_grad():
-            output = model(plane.view(-1, 1, 28, 28)).view(resolution, resolution, -1)
+            if dataset == "mnist":
+                output = model(plane.view(-1, 1, 28, 28)).view(
+                    resolution, resolution, -1
+                )
+            elif dataset == "cifar10":
+                output = model(plane.view(-1, 3, 32, 32)).view(
+                    resolution, resolution, -1
+                )
+
         probs = torch.nn.functional.softmax(output, dim=-1)
 
         # Get the class with the highest probability

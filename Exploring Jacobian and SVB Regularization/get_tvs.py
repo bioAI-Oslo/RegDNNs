@@ -85,6 +85,7 @@ if __name__ == "__main__":
                 resolution=300,
                 zoom=zoom_levels,
                 mode=mode,
+                dataset=dataset,
             )
             for zoom, tv in zip(zoom_levels, tv_list):
                 tv_values[zoom].append(tv)
