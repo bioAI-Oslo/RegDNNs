@@ -5,12 +5,8 @@ import pickle
 from scipy import stats
 from tqdm import tqdm
 from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_CIFAR100
-from tools import (
-    ModelInfo,
-    compute_total_variation,
-    get_random_img,
-    generate_random_vectors,
-)
+from tools import ModelInfo, compute_total_variation
+from plotting_tools import get_random_img, generate_random_vectors
 
 if __name__ == "__main__":
     # Device configuration, use GPU if available
