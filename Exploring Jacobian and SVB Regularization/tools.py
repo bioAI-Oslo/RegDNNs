@@ -408,6 +408,9 @@ def compute_total_variation(
         y = torch.linspace(-scale, scale, resolution)
         xv, yv = torch.meshgrid(x, y)
 
+        v1 = v1.to(device)  # Move v1 to the same device as the model
+        v2 = v2.to(device)  # Move v2 to the same device as the model
+
         # Create the 2D plane passing through the image
         plane = (
             img[None, None, :]
