@@ -86,7 +86,8 @@ if __name__ == "__main__":
                     models[model_name].model,
                     device,
                     test_loader,
-                    eps=32 / 255,  # Value from Hoffman 2019
+                    eps=64
+                    / 255,  # Twice the value from Hoffman 2019 (which was 32/255)
                     alpha=1 / 255,  # Value from Hoffman 2019
                     iters=iter,
                     dataset=dataset,
