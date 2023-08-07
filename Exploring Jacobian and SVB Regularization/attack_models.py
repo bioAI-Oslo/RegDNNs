@@ -88,7 +88,8 @@ if __name__ == "__main__":
                     test_loader,
                     eps=64
                     / 255,  # Twice the value from Hoffman 2019 (which was 32/255)
-                    alpha=1 / 255,  # Value from Hoffman 2019
+                    alpha=4
+                    / 255,  # Four times the value from Hoffman 2019 (which was 1/255)
                     iters=iter,
                     dataset=dataset,
                 )
