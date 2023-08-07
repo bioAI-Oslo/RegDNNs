@@ -499,7 +499,7 @@ def plot_fgsm(
 
         # Test the model's accuracy under FGSM attacks with each epsilon value
         for eps in epsilons:
-            acc = fgsm_attack_test(model, device, test_loader, eps)
+            acc = fgsm_attack_test(model, device, test_loader, eps, dataset)
             accuracies.append(acc)
 
     # Calculate suitable step sizes for xticks
@@ -557,7 +557,7 @@ def plot_multiple_fgsm(
 
             # Test the model's accuracy under PGD attacks with each number of iterations
             for eps in epsilons:
-                acc = fgsm_attack_test(model, device, test_loader, eps)
+                acc = fgsm_attack_test(model, device, test_loader, eps, dataset)
                 accuracies.append(acc)
 
             # Save the accuracies for all iterations for this model
