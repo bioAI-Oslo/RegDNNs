@@ -89,12 +89,17 @@ if __name__ == "__main__":
                     eps=32 / 255,  # Value from Hoffman 2019
                     alpha=1 / 255,  # Value from Hoffman 2019
                     iters=iter,
+                    dataset=dataset,
                 )
                 accuracies.append(acc)
         elif attack == "fgsm":
             for eps in epsilons:
                 acc = fgsm_attack_test(
-                    models[model_name].model, device, test_loader, epsilon=eps
+                    models[model_name].model,
+                    device,
+                    test_loader,
+                    epsilon=eps,
+                    dataset=dataset,
                 )
                 accuracies.append(acc)
 
