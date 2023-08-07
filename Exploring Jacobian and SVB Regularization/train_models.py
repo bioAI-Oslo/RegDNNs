@@ -35,10 +35,10 @@ if __name__ == "__main__":
         "model_svb_no_dropout_0": DDNet(dropout_rate=0.0, svb=True),
         "model_jacobi_0": DDNet(jacobi=True),
         "model_jacobi_no_dropout_0": DDNet(dropout_rate=0.0, jacobi=True),
-        # "model_jacobi_and_svb_0": DDNet(svb=True, jacobi=True),
-        # "model_all_0": DDNet(l2_lmbd=l2_lmbd, svb=True, jacobi=True),
-        # "model_jacobi_and_l2_0": DDNet(l2_lmbd=l2_lmbd, jacobi=True),
-        # "model_svb_and_l2_0": DDNet(l2_lmbd=l2_lmbd, svb=True),
+        "model_jacobi_and_svb_0": DDNet(svb=True, jacobi=True),
+        "model_all_0": DDNet(l2_lmbd=l2_lmbd, svb=True, jacobi=True),
+        "model_jacobi_and_l2_0": DDNet(l2_lmbd=l2_lmbd, jacobi=True),
+        "model_svb_and_l2_0": DDNet(l2_lmbd=l2_lmbd, svb=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
