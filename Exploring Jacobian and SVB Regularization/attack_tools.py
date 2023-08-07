@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
+from torchvision import transforms
 
 
 def fgsm_attack(image, epsilon, data_grad, dataset):
@@ -28,7 +29,10 @@ def fgsm_attack(image, epsilon, data_grad, dataset):
     perturbed_image = torch.clamp(perturbed_image, 0, 1)
 
     # Apply the original normalization
-    perturbed_image = (perturbed_image - 0.1307) / 0.3081
+    if dataset == "mnist":
+        perturbed_image = (perturbed_image - 0.1307) / 0.3081
+    elif dataset == "cifar10":
+        perturbed_image = (perturbed_image - 0.5) / 0.5
     # Return the perturbed image
     return perturbed_image
 
@@ -83,7 +87,7 @@ def fgsm_attack_test(model, device, test_loader, epsilon, dataset):
     return final_acc
 
 
-def pgd_attack(model, images, labels, device, eps, alpha, iters):
+def pgd_attack(model, images, labels, device, eps, alpha, iters, dataset):
     """
     Perform the Projected Gradient Descent (PGD) attack.
 
@@ -95,6 +99,7 @@ def pgd_attack(model, images, labels, device, eps, alpha, iters):
     eps (float): The maximum perturbation for each pixel.
     alpha (float): The step size for each iteration.
     iters (int): The number of iterations.
+    dataset (str): The dataset the images belong to.
 
     Returns:
     torch.Tensor: The perturbed images.
@@ -122,13 +127,29 @@ def pgd_attack(model, images, labels, device, eps, alpha, iters):
         adv_images = images + alpha * images.grad.sign()
         # Clip perturbations of original image to be within epsilon
         eta = torch.clamp(adv_images - ori_images, min=-eps, max=eps)
-        # Add clipped perturbations to the original images to get the adverserial images, ensuring the result is still in [0, 1]
-        images = torch.clamp(ori_images + eta, min=0, max=1).detach_()
+
+        # Add clipped perturbations to the original images to get the adverserial images
+        images = (ori_images + eta).detach_()
+
+        # Reverse normalization before clipping to ensure the perturbed images are in the correct range
+        if dataset == "mnist":
+            images = images * 0.3081 + 0.1307
+        elif dataset == "cifar10":
+            images = images * 0.5 + 0.5
+
+        # Clip values to [0,1]
+        images = torch.clamp(images, min=0, max=1)
+
+        # Reapply normalization after clipping
+        if dataset == "mnist":
+            images = (images - 0.1307) / 0.3081
+        elif dataset == "cifar10":
+            images = (images - 0.5) / 0.5
 
     return images
 
 
-def pgd_attack_test(model, device, test_loader, eps, alpha, iters):
+def pgd_attack_test(model, device, test_loader, eps, alpha, iters, dataset):
     """
     Test the model under PGD attack and return the accuracy on perturbed images.
 
@@ -154,7 +175,9 @@ def pgd_attack_test(model, device, test_loader, eps, alpha, iters):
         labels = labels.to(device)
 
         # Generate adverserial examples using PGD
-        perturbed_images = pgd_attack(model, images, labels, device, eps, alpha, iters)
+        perturbed_images = pgd_attack(
+            model, images, labels, device, eps, alpha, iters, dataset
+        )
         # Get predictions for the adverserial examples
         outputs = model(perturbed_images)
 

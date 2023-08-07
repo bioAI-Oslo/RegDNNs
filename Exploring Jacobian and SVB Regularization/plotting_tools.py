@@ -540,7 +540,25 @@ def plot_multiple_fgsm(
     values. The xticks and yticks on the graph are dynamically determined based on the range of epsilon values
     and accuracies, respectively.
     """
+    colors = [
+        "blue",
+        "orange",
+        "green",
+        "red",
+        "purple",
+        "brown",
+        "pink",
+        "gray",
+        "olive",
+        "cyan",
+        "lime",
+        "navy",
+    ]  # Add more colors if needed
+
     plt.figure(figsize=(10, 7))  # Increase the size of the plot for readability
+
+    # Set the current color cycle
+    plt.gca().set_prop_cycle("color", colors)
 
     for model_name in model_names:
         model = models[model_name].model
@@ -619,7 +637,9 @@ def plot_pgd(
 
         # Test the model's accuracy under PGD attacks with each number of iterations
         for iters in iters_list:
-            acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
+            acc = pgd_attack_test(
+                model, device, test_loader, eps, alpha, iters, dataset
+            )
             accuracies.append(acc)
 
     # Plot the results
@@ -661,7 +681,24 @@ def plot_multiple_pgd(
     counts. The xticks and yticks on the graph are dynamically determined based on the range of iteration counts
     and accuracies, respectively.
     """
+    colors = [
+        "blue",
+        "orange",
+        "green",
+        "red",
+        "purple",
+        "brown",
+        "pink",
+        "gray",
+        "olive",
+        "cyan",
+        "lime",
+        "navy",
+    ]  # Add more colors if needed
+
     plt.figure(figsize=(10, 7))  # Increase the size of the plot for readability
+    # Set the current color cycle
+    plt.gca().set_prop_cycle("color", colors)
 
     for model_name in model_names:
         model = models[model_name].model
@@ -678,7 +715,9 @@ def plot_multiple_pgd(
 
             # Test the model's accuracy under PGD attacks with each number of iterations
             for iters in iters_list:
-                acc = pgd_attack_test(model, device, test_loader, eps, alpha, iters)
+                acc = pgd_attack_test(
+                    model, device, test_loader, eps, alpha, iters, dataset
+                )
                 accuracies.append(acc)
 
             # Save the accuracies for all iterations for this model
