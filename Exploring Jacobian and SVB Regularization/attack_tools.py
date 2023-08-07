@@ -26,6 +26,9 @@ def fgsm_attack(image, epsilon, data_grad, dataset):
     perturbed_image = inversed_image + epsilon * sign_data_grad
     # Adding clipping to maintain [0,1] range
     perturbed_image = torch.clamp(perturbed_image, 0, 1)
+
+    # Apply the original normalization
+    perturbed_image = (perturbed_image - 0.1307) / 0.3081
     # Return the perturbed image
     return perturbed_image
 
