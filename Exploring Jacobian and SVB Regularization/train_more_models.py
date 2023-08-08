@@ -1,7 +1,7 @@
 import torch
 import pickle
 from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_CIFAR100
-from model_classes import LeNet_MNIST, DDNet
+from model_classes import LeNet_MNIST, DDNet, ResNet18
 from tools import train
 from torch.nn import DataParallel
 
@@ -32,17 +32,22 @@ if __name__ == "__main__":
         # "model_svb_0": DDNet(svb=True),
         # "model_jacobi_0": DDNet(jacobi=True),
         # "model_jacobi_no_dropout_0": DDNet(dropout_rate=0.0, jacobi=True),
-        "model_no_reg_0": DDNet(lr=0.05, dataset="cifar100"),
-        "model_l2_0": DDNet(lr=0.05, dataset="cifar100", l2_lmbd=l2_lmbd),
-        "model_svb_0": DDNet(lr=0.05, dataset="cifar100", svb=True),
-        "model_jacobi_0": DDNet(lr=0.05, dataset="cifar100", jacobi=True),
-        "model_jacobi_no_dropout_0": DDNet(
-            lr=0.05, dataset="cifar100", dropout_rate=0.0, jacobi=True
-        ),
+        # "model_no_reg_0": DDNet(lr=0.05, dataset="cifar100"),
+        # "model_l2_0": DDNet(lr=0.05, dataset="cifar100", l2_lmbd=l2_lmbd),
+        # "model_svb_0": DDNet(lr=0.05, dataset="cifar100", svb=True),
+        # "model_jacobi_0": DDNet(lr=0.05, dataset="cifar100", jacobi=True),
+        # "model_jacobi_no_dropout_0": DDNet(
+        #     lr=0.05, dataset="cifar100", dropout_rate=0.0, jacobi=True
+        # ),
+        "model_no_reg_5": ResNet18(),
+        "model_l2_5": ResNet18(l2_lmbd=l2_lmbd),
+        "model_svb_5": ResNet18(svb=True),
+        "model_jacobi_5": ResNet18(jacobi=True),
+        "model_jacobi_no_dropout_5": ResNet18(dropout_rate=0.0, jacobi=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
-    n_epochs = 50
+    n_epochs = 5
 
     # Iterate through each model
     for model_name, model in models.items():

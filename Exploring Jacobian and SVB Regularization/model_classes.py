@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import grad
 import torch.nn.functional as F
+from torchvision.models import resnet18
 
 
 class LeNet_MNIST(nn.Module):
@@ -340,6 +341,143 @@ class DDNet(nn.Module):
         x = self.dropout(F.relu(self.fc2(x)))
         x = self.fc3(x)  # No softmax as CrossEntropyLoss does it implicitly
         return x
+
+    def jacobian_regularizer(self, x):
+        """
+        Calculates the Jacobian regularization term for an input batch.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+
+        Returns
+        -------
+        JF : torch.Tensor
+            The Jacobian regularization term.
+        """
+        num_features = self(x).shape[
+            1
+        ]  # instead of number of classes, get the feature size from the model output
+
+        JF = 0  # Initialize Jacobian Frobenius norm
+        nproj = 1  # Number of random projections
+
+        for _ in range(nproj):
+            v = torch.randn(x.shape[0], num_features).to(
+                x.device
+            )  # Generate random vector
+            v_hat = v / torch.norm(v, dim=1, keepdim=True)  # Normalize
+
+            z = self(x)  # Forward pass to get predictions
+            v_hat_dot_z = torch.einsum("bi, bi->b", v_hat, z)  # Calculate dot product
+
+            Jv = grad(v_hat_dot_z.sum(), x, create_graph=True)[
+                0
+            ].detach()  # Compute Jacobian-vector product
+
+            JF += (
+                num_features * (Jv**2).sum() / (nproj * len(x))
+            )  # Add square of Jv to Frobenius norm
+
+        return JF
+
+    def loss_fn(
+        self,
+        x,
+        y,
+    ):
+        y_pred = self(x.float())
+        loss = self.L(y_pred, y)
+
+        # Jacobi regularization
+        if self.jacobi:
+            x.requires_grad_(True)
+            # Compute and add Jacobian regularization term
+            jacobi_loss = self.jacobi_lmbd * self.jacobian_regularizer(x)
+            loss += jacobi_loss
+            return loss, jacobi_loss
+
+        return loss, loss
+
+    def train_step(
+        self,
+        data,
+        labels,
+    ):
+        self.opt.zero_grad()
+
+        loss, reg_loss = self.loss_fn(
+            data,
+            labels.long(),
+        )
+        loss.backward()
+        self.opt.step()
+
+        # If SVB regularization, apply every svb_freq steps
+        if self.svb and self.training_steps % self.svb_freq == 0:
+            with torch.no_grad():  # Do not track gradients
+                for m in self.modules():  # Loop over modules
+                    if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                        weight_orig_shape = (
+                            m.weight.shape
+                        )  # Get original shape of weights
+                        weight_matrix = m.weight.view(
+                            weight_orig_shape[0], -1
+                        )  # Flatten weights
+                        U, S, V = torch.svd(
+                            weight_matrix
+                        )  # Singular value decomposition on weights
+                        S = torch.clamp(
+                            S, 1 / (1 + self.svb_eps), 1 + self.svb_eps
+                        )  # Clamp singular values within range decided by svb_eps
+                        m.weight.data = torch.matmul(
+                            U, torch.matmul(S.diag(), V.t())
+                        ).view(
+                            weight_orig_shape
+                        )  # Update weights using clamped singular values
+
+        self.training_steps += 1
+
+        return loss.item(), reg_loss.item() if reg_loss != 0 else reg_loss
+
+
+class ResNet18(nn.Module):  # For CIFAR100
+    def __init__(
+        self,
+        lr=0.1,  # 0.1 in Hoffman 2019
+        momentum=0.9,
+        dropout_rate=0.5,
+        l2_lmbd=0.0,
+        svb=False,
+        svb_freq=600,
+        svb_eps=0.05,
+        jacobi=False,
+        jacobi_lmbd=0.01,  # 0.01 in Hoffman 2019
+    ):
+        super(ResNet18, self).__init__()
+        # Initialize ResNet18 with pretrained=False since we're using CIFAR100, not ImageNet
+        self.model = resnet18(pretrained=False)
+        self.model.fc = nn.Linear(
+            self.model.fc.in_features, 100
+        )  # Adapting for CIFAR100
+
+        # Parameters for regularization
+        self.l2_lmbd = l2_lmbd
+        self.svb = svb
+        self.svb_freq = svb_freq
+        self.svb_eps = svb_eps
+        self.jacobi = jacobi
+        self.jacobi_lmbd = jacobi_lmbd
+        self.training_steps = 0
+
+        self.L = nn.CrossEntropyLoss()
+        self.opt = torch.optim.SGD(
+            self.parameters(), lr=lr, momentum=momentum, weight_decay=l2_lmbd
+        )
+
+    def forward(self, x):
+        return self.model(x)
 
     def jacobian_regularizer(self, x):
         """
