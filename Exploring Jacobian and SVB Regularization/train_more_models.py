@@ -32,17 +32,17 @@ if __name__ == "__main__":
         # "model_svb_0": DDNet(svb=True),
         # "model_jacobi_0": DDNet(jacobi=True),
         # "model_jacobi_no_dropout_0": DDNet(dropout_rate=0.0, jacobi=True),
-        # "model_no_reg_0": DDNet(dataset="cifar100"),
-        # "model_l2_0": DDNet(dataset="cifar100", l2_lmbd=l2_lmbd),
-        # "model_svb_0": DDNet(dataset="cifar100", svb=True),
-        "model_jacobi_0": DDNet(dataset="cifar100", jacobi=True),
+        "model_no_reg_0": DDNet(lr=0.05, dataset="cifar100"),
+        "model_l2_0": DDNet(lr=0.05, dataset="cifar100", l2_lmbd=l2_lmbd),
+        "model_svb_0": DDNet(lr=0.05, dataset="cifar100", svb=True),
+        "model_jacobi_0": DDNet(lr=0.05, dataset="cifar100", jacobi=True),
         "model_jacobi_no_dropout_0": DDNet(
-            dataset="cifar100", dropout_rate=0.0, jacobi=True
+            lr=0.05, dataset="cifar100", dropout_rate=0.0, jacobi=True
         ),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
-    n_epochs = 10
+    n_epochs = 50
 
     # Iterate through each model
     for model_name, model in models.items():

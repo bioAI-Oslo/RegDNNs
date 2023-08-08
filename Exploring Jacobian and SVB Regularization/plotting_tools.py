@@ -199,8 +199,12 @@ def plot_decision_boundary(
         )
 
         # Create a colormap and plot decision boundaries
-        colors = plt.get_cmap("tab10").colors
-        cmap = ListedColormap([colors[i] for i in range(10)])
+        if dataset == "cifar100":
+            cmap = "nipy_spectral"  # Suitable for many classes
+        else:
+            colors = plt.get_cmap("tab10").colors
+            cmap = ListedColormap([colors[i] for i in range(10)])
+
         img_plot = ax.imshow(
             predictions.cpu(),
             origin="lower",
@@ -219,17 +223,18 @@ def plot_decision_boundary(
 
         ax.set_title(f"Zoom level: {zoom_level}.  Total Variation (isotropic): {tv}")
 
-    # Set legend for the whole figure
-    legend_elements = [
-        Patch(facecolor=cmap(i), edgecolor=cmap(i), label=str(i)) for i in range(10)
-    ]
-    fig.legend(
-        handles=legend_elements,
-        bbox_to_anchor=(0.97, 1),
-        loc="upper left",
-        fontsize="large",
-        handlelength=2,
-    )
+    if dataset != "cifar100":
+        # Set legend for the whole figure
+        legend_elements = [
+            Patch(facecolor=cmap(i), edgecolor=cmap(i), label=str(i)) for i in range(10)
+        ]
+        fig.legend(
+            handles=legend_elements,
+            bbox_to_anchor=(0.97, 1),
+            loc="upper left",
+            fontsize="large",
+            handlelength=2,
+        )
 
     # Add a title to the overall plot
     plt.suptitle(title, fontsize=20)
