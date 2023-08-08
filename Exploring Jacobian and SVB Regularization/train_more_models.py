@@ -39,11 +39,16 @@ if __name__ == "__main__":
         # "model_jacobi_no_dropout_0": DDNet(
         #     lr=0.05, dataset="cifar100", dropout_rate=0.0, jacobi=True
         # ),
-        "model_no_reg_5": ResNet18(),
-        "model_l2_5": ResNet18(l2_lmbd=l2_lmbd),
-        "model_svb_5": ResNet18(svb=True),
-        "model_jacobi_5": ResNet18(jacobi=True),
-        "model_jacobi_no_dropout_5": ResNet18(dropout_rate=0.0, jacobi=True),
+        "model_no_reg_1": ResNet18(),
+        "model_l2_1": ResNet18(l2_lmbd=l2_lmbd),
+        "model_svb_1": ResNet18(svb=True),
+        "model_jacobi_1": ResNet18(jacobi=True),
+        "model_jacobi_no_dropout_1": ResNet18(dropout_rate=0.0, jacobi=True),
+        "model_no_reg_2": ResNet18(),
+        "model_l2_2": ResNet18(l2_lmbd=l2_lmbd),
+        "model_svb_2": ResNet18(svb=True),
+        "model_jacobi_2": ResNet18(jacobi=True),
+        "model_jacobi_no_dropout_2": ResNet18(dropout_rate=0.0, jacobi=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
