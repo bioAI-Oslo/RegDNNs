@@ -27,11 +27,16 @@ if __name__ == "__main__":
 
     # Initialize all models and store them in a dictionary with their names
     models = {
-        # "model_no_reg_1": DDNet(),
-        # "model_l2_1": DDNet(l2_lmbd=l2_lmbd),
-        # "model_svb_1": DDNet(svb=True),
-        "model_jacobi_1": DDNet(jacobi=True),
-        # "model_jacobi_no_dropout_1": DDNet(dropout_rate=0.0, jacobi=True),
+        "model_no_reg_3": DDNet(),
+        "model_l2_3": DDNet(l2_lmbd=l2_lmbd),
+        "model_svb_3": DDNet(svb=True),
+        "model_jacobi_3": DDNet(jacobi=True),
+        "model_jacobi_no_dropout_3": DDNet(dropout_rate=0.0, jacobi=True),
+        "model_no_reg_4": DDNet(),
+        "model_l2_4": DDNet(l2_lmbd=l2_lmbd),
+        "model_svb_4": DDNet(svb=True),
+        "model_jacobi_4": DDNet(jacobi=True),
+        "model_jacobi_no_dropout_4": DDNet(dropout_rate=0.0, jacobi=True),
         # "model_no_reg_0": DDNet(dataset = "cifar100"),
         # "model_l2_0": DDNet(dataset = "cifar100", l2_lmbd=l2_lmbd),
         # "model_svb_0": DDNet(dataset = "cifar100", svb=True),
