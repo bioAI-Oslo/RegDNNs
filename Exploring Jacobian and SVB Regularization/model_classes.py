@@ -254,7 +254,7 @@ class DDNet(nn.Module):
     def __init__(
         self,
         dataset="cifar10",
-        lr=0.1,
+        lr=0.1,  # 0.1 in Hoffman 2019
         momentum=0.9,
         dropout_rate=0.5,
         l2_lmbd=0.0,
@@ -262,7 +262,7 @@ class DDNet(nn.Module):
         svb_freq=600,
         svb_eps=0.05,
         jacobi=False,
-        jacobi_lmbd=0.01,
+        jacobi_lmbd=0.01,  # 0.01 in Hoffman 2019
     ):
         super(DDNet, self).__init__()
         self.conv1 = nn.Conv2d(

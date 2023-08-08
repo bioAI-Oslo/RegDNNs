@@ -24,14 +24,16 @@ if __name__ == "__main__":
     # Hyperparameters are set in class init, except for dropout_rate and l2_lmbd
     l2_lmbd = 0.0005
     dropout_rate = 0.5
+    # For CIFAR10, based on my own testing
+    lr = 0.05
 
     # Initialize all models and store them in a dictionary with their names
     models = {
-        "model_no_reg_0": DDNet(),
-        # "model_l2_0": DDNet(l2_lmbd=l2_lmbd),
-        "model_svb_0": DDNet(svb=True),
-        "model_jacobi_0": DDNet(jacobi=True),
-        "model_jacobi_no_dropout_0": DDNet(dropout_rate=0.0, jacobi=True),
+        "model_no_reg_0": DDNet(lr=lr),
+        "model_l2_0": DDNet(lr=lr, l2_lmbd=l2_lmbd),
+        "model_svb_0": DDNet(lr=lr, svb=True),
+        "model_jacobi_0": DDNet(lr=lr, jacobi=True),
+        "model_jacobi_no_dropout_0": DDNet(lr=lr, dropout_rate=0.0, jacobi=True),
         # "model_no_reg_0": DDNet(dataset = "cifar100"),
         # "model_l2_0": DDNet(dataset = "cifar100", l2_lmbd=l2_lmbd),
         # "model_svb_0": DDNet(dataset = "cifar100", svb=True),
