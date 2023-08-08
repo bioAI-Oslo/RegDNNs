@@ -55,7 +55,7 @@ def data_loader_CIFAR10():
 
 
 def data_loader_CIFAR100():
-    """Load CIFAR100 data for use with LeNet. Pictures are 32x32x3"""
+    """Load CIFAR100 data for use with DDNet. Pictures are 32x32x3"""
 
     transform = transforms.Compose(
         [

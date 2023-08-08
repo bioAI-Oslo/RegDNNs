@@ -8,10 +8,7 @@ from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
 
 from attack_tools import fgsm_attack_test, pgd_attack_test
-from tools import (
-    register_hooks,
-    total_variation_isotropic,
-)
+from tools import total_variation_isotropic
 
 
 def plot_results(
@@ -182,7 +179,7 @@ def plot_decision_boundary(
                 output = model(plane.view(-1, 1, 28, 28)).view(
                     resolution, resolution, -1
                 )
-            elif dataset == "cifar10":
+            elif dataset == "cifar10" or dataset == "cifar100":
                 output = model(plane.view(-1, 3, 32, 32)).view(
                     resolution, resolution, -1
                 )
