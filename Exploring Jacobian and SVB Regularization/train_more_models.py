@@ -47,7 +47,7 @@ if __name__ == "__main__":
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
-    n_epochs = 5
+    n_epochs = 50
 
     # Iterate through each model
     for model_name, model in models.items():
