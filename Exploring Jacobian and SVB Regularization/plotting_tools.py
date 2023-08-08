@@ -363,9 +363,9 @@ def plot_and_print_img(
         plt.imshow(np.transpose(image.numpy(), (1, 2, 0)))
     elif dataset == "cifar100":  # color
         # Denormalize the image before plotting
-        image = image * torch.tensor([0.2009, 0.1984, 0.2023]) + torch.tensor(
-            [0.5071, 0.4865, 0.4409]
-        )
+        image = (
+            image * torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
+        ) + torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
         plt.imshow(np.transpose(image.numpy(), (1, 2, 0)))
 
     plt.title("Input image")
