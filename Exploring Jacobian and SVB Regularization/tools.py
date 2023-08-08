@@ -5,7 +5,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from collections import OrderedDict
 
-from model_classes import LeNet_MNIST, DDNet
+from model_classes import LeNet_MNIST, DDNet, ResNet18
 
 
 def train(
@@ -210,17 +210,15 @@ def load_trained_model(model_name, dataset):
             model = DDNet(l2_lmbd=0.0005, jacobi=True, svb=True)
     elif dataset == "cifar100":
         if model_name.startswith("model_no_reg"):
-            model = DDNet(
-                dataset="cifar100",
-            )
+            model = ResNet18()
         elif model_name.startswith("model_l2"):
-            model = DDNet(dataset="cifar100", l2_lmbd=0.0005)
+            model = ResNet18(l2_lmbd=0.0005)
         elif model_name.startswith("model_svb"):
-            model = DDNet(dataset="cifar100", svb=True)
+            model = ResNet18(svb=True)
         elif model_name.startswith("model_jacobi"):
-            model = DDNet(dataset="cifar100", jacobi=True)
+            model = ResNet18(jacobi=True)
         elif model_name.startswith("model_all"):
-            model = DDNet(dataset="cifar100", l2_lmbd=0.0005, jacobi=True, svb=True)
+            model = ResNet18(l2_lmbd=0.0005, jacobi=True, svb=True)
     else:
         print("Error: Dataset not implemented")
 
