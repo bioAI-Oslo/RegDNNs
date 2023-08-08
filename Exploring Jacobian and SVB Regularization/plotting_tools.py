@@ -337,7 +337,7 @@ def plot_and_print_img(
     with torch.no_grad():
         if dataset == "mnist":
             output = model(image.view(1, 1, 28, 28).to(device))
-        elif dataset == "cifar10":
+        elif dataset == "cifar10" or dataset == "cifar100":
             output = model(image.view(1, 3, 32, 32).to(device))
 
     _, predicted = torch.max(output, 1)
@@ -348,6 +348,8 @@ def plot_and_print_img(
         print(
             f"Prediction with {regularization_title}: {class_names[predicted.item()]}"
         )
+    elif dataset == "cifar100":
+        pass
 
     # Plot the image
     plt.figure(figsize=(5, 5))
@@ -358,6 +360,12 @@ def plot_and_print_img(
     elif dataset == "cifar10":  # color
         # Denormalize the image before plotting
         image = image * 0.5 + 0.5
+        plt.imshow(np.transpose(image.numpy(), (1, 2, 0)))
+    elif dataset == "cifar100":  # color
+        # Denormalize the image before plotting
+        image = image * torch.tensor([0.2009, 0.1984, 0.2023]) + torch.tensor(
+            [0.5071, 0.4865, 0.4409]
+        )
         plt.imshow(np.transpose(image.numpy(), (1, 2, 0)))
 
     plt.title("Input image")
