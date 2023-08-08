@@ -3,7 +3,6 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 import torch
-from sklearn.decomposition import PCA
 from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
@@ -110,90 +109,6 @@ def plot_reg_results(
     ax2.legend()
     plt.suptitle(f"{title}", fontsize=28)
     plt.show()
-
-
-def plot_activations_pca(model, data_loader, device):
-    """
-    Function to plot the first two principal components of the activations
-    of the layers in the model using PCA. The function takes in a model,
-    a data loader to provide the data and the device where the model is
-    placed (cpu or gpu).
-
-    Parameters
-    ----------
-    model : torch.nn.Module
-        PyTorch model whose layer's activations is to be plotted.
-    data_loader : torch.utils.data.DataLoader
-        DataLoader to provide data for running through the model.
-    device : str
-        Device on which the model is placed. Either 'cpu' or 'cuda'.
-    """
-    # Register hooks on model's layers to store their outputs
-    save_output, hook_handles, layer_names = register_hooks(model)
-    model.eval()
-
-    # Define list of colors for the different classes (for MNIST/CIFAR10)
-    colors = [
-        "#1f77b4",
-        "#ff7f0e",
-        "#2ca02c",
-        "#d62728",
-        "#9467bd",
-        "#8c564b",
-        "#e377c2",
-        "#7f7f7f",
-        "#bcbd22",
-        "#17becf",
-    ]
-
-    with torch.no_grad():
-        # Run a batch of data through the model
-        for images, batch_labels in data_loader:
-            images = images.to(device)
-            model(images)
-            batch_labels = batch_labels.cpu().numpy()
-            break
-
-        # Plot PCA of each layer's outputs
-        for i, output in enumerate(save_output.outputs):
-            # Flatten each output
-            output = output.view(output.size(0), -1).cpu().numpy()
-
-            # Apply PCA
-            pca = PCA(n_components=2)
-            result = pca.fit_transform(output)
-
-            # Plot first two principal components
-            plt.figure(figsize=(6, 6))
-            added_labels = set()
-            for j in range(len(result)):
-                label = str(int(batch_labels[j]))
-                if label not in added_labels:
-                    plt.scatter(
-                        result[j, 0],
-                        result[j, 1],
-                        color=colors[int(label)],
-                        label=label,
-                    )
-                    added_labels.add(label)
-                else:
-                    plt.scatter(result[j, 0], result[j, 1], color=colors[int(label)])
-
-            # Organize legend
-            handles, legend_labels = plt.gca().get_legend_handles_labels()
-            by_label = {label: handle for label, handle in zip(legend_labels, handles)}
-            ordered_labels = sorted(by_label.keys(), key=int)
-            ordered_handles = [by_label[label] for label in ordered_labels]
-            plt.legend(ordered_handles, ordered_labels)
-
-            plt.title(f"PCA of {layer_names[i]} Layer")
-            plt.show()
-
-    # Remove handles for hooks
-    for handle in hook_handles:
-        handle.remove()
-
-    save_output.clear()
 
 
 def plot_decision_boundary(
