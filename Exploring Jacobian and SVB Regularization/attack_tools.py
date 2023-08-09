@@ -64,6 +64,7 @@ def fgsm_attack_test(model, device, test_loader, epsilon, dataset):
     # Accuracy counter
     correct = 0
     model.eval()
+    model = model.to(device)
 
     # Loop over all examples in test set
     for data, target in tqdm(test_loader):
