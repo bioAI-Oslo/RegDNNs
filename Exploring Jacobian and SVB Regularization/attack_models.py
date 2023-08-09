@@ -10,8 +10,8 @@ if __name__ == "__main__":
 
     # Set dataset
     # dataset = "mnist"
-    dataset = "cifar10"
-    # dataset = "cifar100"
+    # dataset = "cifar10"
+    dataset = "cifar100"
 
     # Set attack
     attack = "fgsm"
