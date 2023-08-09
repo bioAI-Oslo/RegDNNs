@@ -43,7 +43,7 @@ if __name__ == "__main__":
         "model_svb_2",
         "model_no_reg_3",
         "model_l2_3",
-        "model_jacobi_3",
+        # "model_jacobi_3",
         "model_jacobi_no_dropout_3",
         "model_svb_3",
         "model_no_reg_4",
