@@ -39,8 +39,9 @@ def fgsm_attack(image, device, epsilon, data_grad, dataset):
         perturbed_image = (perturbed_image - 0.5) / 0.5
     elif dataset == "cifar100":
         perturbed_image = (
-            perturbed_image - torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
-        ) / torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
+            perturbed_image
+            - torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1).to(device)
+        ) / torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1).to(device)
     # Return the perturbed image
     return perturbed_image
 
