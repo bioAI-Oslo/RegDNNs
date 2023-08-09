@@ -14,8 +14,8 @@ if __name__ == "__main__":
 
     # Set dataset
     # dataset = "mnist"
-    # dataset = "cifar10"
-    dataset = "cifar100"
+    dataset = "cifar10"
+    # dataset = "cifar100"
 
     if dataset == "mnist":
         _, test_loader = data_loader_MNIST()
