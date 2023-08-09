@@ -197,7 +197,7 @@ def pgd_attack_test(model, device, test_loader, eps, alpha, iters, dataset):
             model, images, labels, device, eps, alpha, iters, dataset
         )
         # Get predictions for the adverserial examples
-        outputs = model(perturbed_images)
+        outputs = model(perturbed_images).to(device)
 
         # Get the index of the max log-probability as the predicted label
         _, predicted = torch.max(outputs.data, 1)
