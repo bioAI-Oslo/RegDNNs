@@ -23,6 +23,10 @@ def fgsm_attack(image, epsilon, data_grad, dataset):
         inversed_image = image * 0.3081 + 0.1307
     elif dataset == "cifar10":
         inversed_image = image * 0.5 + 0.5
+    elif dataset == "cifar100":
+        inversed_image = (
+            image * torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
+        ) + torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
     # Create the perturbed image by adjusting each pixel of the input image
     perturbed_image = inversed_image + epsilon * sign_data_grad
     # Adding clipping to maintain [0,1] range
@@ -33,6 +37,10 @@ def fgsm_attack(image, epsilon, data_grad, dataset):
         perturbed_image = (perturbed_image - 0.1307) / 0.3081
     elif dataset == "cifar10":
         perturbed_image = (perturbed_image - 0.5) / 0.5
+    elif dataset == "cifar100":
+        perturbed_image = (
+            perturbed_image - torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
+        ) / torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
     # Return the perturbed image
     return perturbed_image
 
@@ -136,6 +144,10 @@ def pgd_attack(model, images, labels, device, eps, alpha, iters, dataset):
             images = images * 0.3081 + 0.1307
         elif dataset == "cifar10":
             images = images * 0.5 + 0.5
+        elif dataset == "cifar100":
+            images = (
+                images * torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
+            ) + torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
 
         # Clip values to [0,1]
         images = torch.clamp(images, min=0, max=1)
@@ -145,6 +157,10 @@ def pgd_attack(model, images, labels, device, eps, alpha, iters, dataset):
             images = (images - 0.1307) / 0.3081
         elif dataset == "cifar10":
             images = (images - 0.5) / 0.5
+        elif dataset == "cifar100":
+            images = (
+                images - torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
+            ) / torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
 
     return images
 
