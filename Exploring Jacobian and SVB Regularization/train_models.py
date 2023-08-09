@@ -10,8 +10,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Set dataset
-    # dataset = "mnist"
-    dataset = "cifar10"
+    dataset = "mnist"
+    # dataset = "cifar10"
     # dataset = "cifar100"
 
     if dataset == "mnist":
@@ -26,21 +26,34 @@ if __name__ == "__main__":
     dropout_rate = 0.5
 
     # Initialize all models and store them in a dictionary with their names
+    # Examples
+    # For MNIST on LeNet:
+    # "model_no_reg": LeNet_MNIST()
+    # "model_no_reg_no_dropout": LeNet_MNIST(dropout_rate = 0.0)
+    # "model_l2": LeNet_MNIST(l2_lmbd = 0.0005
+    # "model_jacobi/svb": LeNet_MNIST(svb = True)
+    # For CIFAR10 on DDNet, same as LeNet_MNIST:
+    # "model_no_reg": DDNet(),
+    # For CIFAR100 on DDNET, same as above, except add keyword first:
+    # "model_no_reg": DDNET(dataset = "cifar100")
+    # For CIFAR100 on ResNet18, same as above, but dropout automatically set to 0:
+    # "model_no_reg_0": ResNet18()
+
     models = {
-        # "model_no_reg_3": DDNet(),
-        # "model_l2_3": DDNet(l2_lmbd=l2_lmbd),
-        # "model_svb_3": DDNet(svb=True),
-        "model_jacobi_3": DDNet(jacobi=True),
-        # "model_jacobi_no_dropout_3": DDNet(dropout_rate=0.0, jacobi=True),
-        # "model_no_reg_0": DDNet(dataset = "cifar100"),
-        # "model_l2_0": DDNet(dataset = "cifar100", l2_lmbd=l2_lmbd),
-        # "model_svb_0": DDNet(dataset = "cifar100", svb=True),
-        # "model_jacobi_0": DDNet(dataset = "cifar100", jacobi=True),
-        # "model_jacobi_no_dropout_0": DDNet(dataset = "cifar100", dropout_rate=0.0, jacobi=True),
+        "model_no_reg_0": LeNet_MNIST(),
+        "model_l2_0": LeNet_MNIST(l2_lmbd=0.0005),
+        "model_svb_0": LeNet_MNIST(svb=True),
+        "model_jacobi_0": LeNet_MNIST(jacobi=True),
+        "model_jacobi_no_dropout_0": LeNet_MNIST(dropout_rate=0.0, jacobi=True),
+        "model_no_reg_1": LeNet_MNIST(),
+        "model_l2_1": LeNet_MNIST(l2_lmbd=0.0005),
+        "model_svb_1": LeNet_MNIST(svb=True),
+        "model_jacobi_1": LeNet_MNIST(jacobi=True),
+        "model_jacobi_no_dropout_1": LeNet_MNIST(dropout_rate=0.0, jacobi=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
-    n_epochs = 50
+    n_epochs = 250
 
     # Iterate through each model
     for model_name, model in models.items():
