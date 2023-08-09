@@ -32,6 +32,11 @@ if __name__ == "__main__":
         "model_svb_2": LeNet_MNIST(svb=True),
         "model_jacobi_2": LeNet_MNIST(jacobi=True),
         "model_jacobi_no_dropout_2": LeNet_MNIST(dropout_rate=0.0, jacobi=True),
+        "model_no_reg_3": LeNet_MNIST(),
+        "model_l2_3": LeNet_MNIST(l2_lmbd=0.0005),
+        "model_svb_3": LeNet_MNIST(svb=True),
+        "model_jacobi_3": LeNet_MNIST(jacobi=True),
+        "model_jacobi_no_dropout_3": LeNet_MNIST(dropout_rate=0.0, jacobi=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
