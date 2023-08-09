@@ -55,12 +55,12 @@ if __name__ == "__main__":
     models = {name: ModelInfo(name, dataset) for name in model_names}
 
     # Load the trained models
-    for model_name in model_names:
-        models[model_name].model.load_state_dict(
-            torch.load(f"./trained_{dataset}_models/{model_name}.pt")
-        )
-        models[model_name].model.to(device)
-        models[model_name].model.eval()
+    # for model_name in model_names:
+    #     models[model_name].model.load_state_dict(
+    #         torch.load(f"./trained_{dataset}_models/{model_name}.pt")
+    #     )
+    #     models[model_name].model.to(device)
+    #     models[model_name].model.eval()
 
     # Epsilons to use for FGSM attacks
     epsilons = [
