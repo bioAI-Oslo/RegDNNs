@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     # Loop over the selected models
     for name in tqdm(model_names):
-        model = models[name].model  # Get model
+        model = models[name].model.to(device)  # Get model
         tv_values = {
             zoom: [] for zoom in zoom_levels
         }  # To store total variation values for each zoom level
@@ -63,6 +63,8 @@ if __name__ == "__main__":
             v1, v2 = generate_random_vectors(img)
 
             img = img.to(device)
+            v1 = v1.to(device)
+            v2 = v2.to(device)
 
             # Compute the isotropic total variation of decision boundaries for the current model
             # and the generated image at different zoom levels
