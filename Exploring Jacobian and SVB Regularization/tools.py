@@ -230,7 +230,8 @@ def load_trained_model(model_name, dataset):
     # Create new OrderedDict that does not contain `module.` prefix
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
-        name = k[7:] if k.startswith("module.") else k
+        # name = k[7:] if k.startswith("module.") else k
+        name = k[len("module.") :] if k.startswith("module.") else k
         new_state_dict[name] = v
 
     # Load parameters into model
