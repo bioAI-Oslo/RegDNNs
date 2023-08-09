@@ -4,7 +4,7 @@ from tqdm import tqdm
 from torchvision import transforms
 
 
-def fgsm_attack(image, epsilon, data_grad, dataset):
+def fgsm_attack(image, device, epsilon, data_grad, dataset):
     """
     Implements the Fast Gradient Sign Method (FGSM) attack.
 
@@ -16,7 +16,6 @@ def fgsm_attack(image, epsilon, data_grad, dataset):
     Returns:
     torch.Tensor: The perturbed image.
     """
-    device = image.device  # Get device of image
     # Collect the element-wise sign of the data gradient
     sign_data_grad = data_grad.sign()
     # Inverse the original normalization
@@ -81,7 +80,7 @@ def fgsm_attack_test(model, device, test_loader, epsilon, dataset):
         # Collect datagrad
         data_grad = data.grad.data
         # Call FGSM Attack
-        perturbed_data = fgsm_attack(data, epsilon, data_grad, dataset)
+        perturbed_data = fgsm_attack(data, device, epsilon, data_grad, dataset)
         # Re-classify the perturbed image
         output = model(perturbed_data)
         final_pred = output.max(1, keepdim=True)[
