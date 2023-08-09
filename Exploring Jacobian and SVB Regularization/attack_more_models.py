@@ -71,15 +71,15 @@ if __name__ == "__main__":
         0.2,
         0.25,
         0.3,
-        0.35,
-        0.4,
-        0.45,
-        0.5,
-        0.55,
-        0.6,
-        0.65,
-        0.7,
-        0.75,
+        # 0.35,
+        # 0.4,
+        # 0.45,
+        # 0.5,
+        # 0.55,
+        # 0.6,
+        # 0.65,
+        # 0.7,
+        # 0.75,
     ]
 
     # Iterations to use for PGD attack
@@ -99,9 +99,9 @@ if __name__ == "__main__":
                     models[model_name].model,
                     device,
                     test_loader,
-                    eps=128
+                    eps=32
                     / 255,  # Four times the value from Hoffman 2019 (which was 32/255)
-                    alpha=4
+                    alpha=1
                     / 255,  # Four times the value from Hoffman 2019 (which was 1/255)
                     iters=iter,
                     dataset=dataset,
