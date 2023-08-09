@@ -24,34 +24,19 @@ if __name__ == "__main__":
     elif dataset == "cifar100":
         _, test_loader = data_loader_CIFAR100()
 
-    # Define the models
-    model_names = [
-        "model_no_reg_0",
-        "model_l2_0",
-        "model_jacobi_0",
-        "model_jacobi_no_dropout_0",
-        "model_svb_0",
-        "model_no_reg_1",
-        "model_l2_1",
-        "model_jacobi_1",
-        "model_jacobi_no_dropout_1",
-        "model_svb_1",
-        "model_no_reg_2",
-        "model_l2_2",
-        "model_jacobi_2",
-        "model_jacobi_no_dropout_2",
-        "model_svb_2",
-        # "model_no_reg_3",
-        # "model_l2_3",
-        # "model_jacobi_3",
-        # "model_jacobi_no_dropout_3",
-        # "model_svb_3",
-        # "model_no_reg_4",
-        # "model_l2_4",
-        # "model_jacobi_4",
-        # "model_jacobi_no_dropout_4",
-        # "model_svb_4",
+    model_names_set = [
+        "model_no_reg",
+        "model_l2",
+        "model_jacobi",
+        "model_jacobi_no_dropout",
+        "model_svb",
     ]
+    model_names = []
+
+    for i in range(5):
+        for name in model_names_set:
+            model_names.append(f"{name}_{i}")
+
     models = {name: ModelInfo(name, dataset) for name in model_names}
 
     # Load the trained models
