@@ -362,7 +362,7 @@ def compute_total_variation(
     v1,
     v2,
     device,
-    resolution=300,
+    resolution=250,
     zoom=[0.025, 0.01, 0.001],
     mode="isotropic",
     dataset="mnist",
@@ -418,6 +418,22 @@ def compute_total_variation(
             + yv[..., None] * v2[None, None, :]
         ).to(device)
 
+        # Split plane tensor into smaller chunks
+        chunks = torch.chunk(plane, chunks=10, dim=0)  # for example, 10 chunks
+
+        output_list = []
+        for chunk in chunks:
+            with torch.no_grad():
+                if dataset == "mnist":
+                    output_chunk = model(chunk.view(-1, 1, 28, 28))
+                elif dataset == "cifar10" or dataset == "cifar100":
+                    output_chunk = model(chunk.view(-1, 3, 32, 32))
+                output_list.append(output_chunk)
+
+        # Concatenate chunks to get full output tensor
+        output = torch.cat(output_list).view(resolution, resolution, -1)
+
+        """
         # Compute the model's predictions over the grid
         with torch.no_grad():
             if dataset == "mnist":
@@ -427,7 +443,7 @@ def compute_total_variation(
             elif dataset == "cifar10" or dataset == "cifar100":
                 output = model(plane.view(-1, 3, 32, 32)).view(
                     resolution, resolution, -1
-                )
+                )"""
 
         probs = torch.nn.functional.softmax(output, dim=-1)
 
