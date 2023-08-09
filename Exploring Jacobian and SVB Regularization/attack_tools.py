@@ -16,6 +16,7 @@ def fgsm_attack(image, epsilon, data_grad, dataset):
     Returns:
     torch.Tensor: The perturbed image.
     """
+    device = image.device  # Get device of image
     # Collect the element-wise sign of the data gradient
     sign_data_grad = data_grad.sign()
     # Inverse the original normalization
@@ -25,8 +26,8 @@ def fgsm_attack(image, epsilon, data_grad, dataset):
         inversed_image = image * 0.5 + 0.5
     elif dataset == "cifar100":
         inversed_image = (
-            image * torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
-        ) + torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
+            image * torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1).to(device)
+        ) + torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1).to(device)
     # Create the perturbed image by adjusting each pixel of the input image
     perturbed_image = inversed_image + epsilon * sign_data_grad
     # Adding clipping to maintain [0,1] range
@@ -146,8 +147,8 @@ def pgd_attack(model, images, labels, device, eps, alpha, iters, dataset):
             images = images * 0.5 + 0.5
         elif dataset == "cifar100":
             images = (
-                images * torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
-            ) + torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
+                images * torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1).to(device)
+            ) + torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1).to(device)
 
         # Clip values to [0,1]
         images = torch.clamp(images, min=0, max=1)
