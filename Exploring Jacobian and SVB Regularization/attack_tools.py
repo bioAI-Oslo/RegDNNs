@@ -160,8 +160,8 @@ def pgd_attack(model, images, labels, device, eps, alpha, iters, dataset):
             images = (images - 0.5) / 0.5
         elif dataset == "cifar100":
             images = (
-                images - torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1)
-            ) / torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1)
+                images - torch.tensor([0.5071, 0.4865, 0.4409]).view(3, 1, 1).to(device)
+            ) / torch.tensor([0.2009, 0.1984, 0.2023]).view(3, 1, 1).to(device)
 
     return images
 
