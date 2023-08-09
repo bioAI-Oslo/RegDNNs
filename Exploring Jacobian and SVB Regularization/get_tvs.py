@@ -28,7 +28,7 @@ if __name__ == "__main__":
         "model_no_reg",
         "model_l2",
         "model_jacobi",
-        "model_jacobi_no_dropout",
+        # "model_jacobi_no_dropout", # Not included for ResNet18
         "model_svb",
     ]
     model_names = []
