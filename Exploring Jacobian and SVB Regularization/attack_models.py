@@ -14,8 +14,8 @@ if __name__ == "__main__":
     # dataset = "cifar100"
 
     # Set attack
-    # attack = "fgsm"
-    attack = "pgd"
+    attack = "fgsm"
+    # attack = "pgd"
 
     if dataset == "mnist":
         _, test_loader = data_loader_MNIST()
@@ -31,6 +31,26 @@ if __name__ == "__main__":
         "model_jacobi_0",
         "model_jacobi_no_dropout_0",
         "model_svb_0",
+        "model_no_reg_1",
+        "model_l2_1",
+        "model_jacobi_1",
+        "model_jacobi_no_dropout_1",
+        "model_svb_1",
+        "model_no_reg_2",
+        "model_l2_2",
+        "model_jacobi_2",
+        "model_jacobi_no_dropout_2",
+        "model_svb_2",
+        "model_no_reg_3",
+        "model_l2_3",
+        "model_jacobi_3",
+        "model_jacobi_no_dropout_3",
+        "model_svb_3",
+        "model_no_reg_4",
+        "model_l2_4",
+        "model_jacobi_4",
+        "model_jacobi_no_dropout_4",
+        "model_svb_4",
     ]
     models = {name: ModelInfo(name, dataset) for name in model_names}
 
