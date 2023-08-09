@@ -418,7 +418,7 @@ def compute_total_variation(
             + yv[..., None] * v2[None, None, :]
         ).to(device)
 
-        # Split plane tensor into smaller chunks
+        # Split plane tensor into smaller chunks, to deal with memory issues
         chunks = torch.chunk(plane, chunks=10, dim=0)  # for example, 10 chunks
 
         output_list = []

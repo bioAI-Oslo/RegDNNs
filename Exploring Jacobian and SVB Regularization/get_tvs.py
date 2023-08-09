@@ -74,7 +74,7 @@ if __name__ == "__main__":
                 v1,
                 v2,
                 device,
-                resolution=300,
+                resolution=250,
                 zoom=zoom_levels,
                 mode=mode,
                 dataset=dataset,
