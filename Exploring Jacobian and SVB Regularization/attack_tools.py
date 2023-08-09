@@ -16,6 +16,7 @@ def fgsm_attack(image, device, epsilon, data_grad, dataset):
     Returns:
     torch.Tensor: The perturbed image.
     """
+    image = image.to(device)
     # Collect the element-wise sign of the data gradient
     sign_data_grad = data_grad.sign()
     # Inverse the original normalization
