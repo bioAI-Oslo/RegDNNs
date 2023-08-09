@@ -10,8 +10,8 @@ if __name__ == "__main__":
 
     # Set dataset
     # dataset = "mnist"
-    # dataset = "cifar10"
-    dataset = "cifar100"
+    dataset = "cifar10"
+    # dataset = "cifar100"
 
     # Set attack
     # attack = "fgsm"
@@ -99,10 +99,8 @@ if __name__ == "__main__":
                     models[model_name].model,
                     device,
                     test_loader,
-                    eps=32
-                    / 255,  # Four times the value from Hoffman 2019 (which was 32/255)
-                    alpha=1
-                    / 255,  # Four times the value from Hoffman 2019 (which was 1/255)
+                    eps=32 / 255,  # The value from Hoffman 2019 is 32/255
+                    alpha=1 / 255,  # The value from Hoffman 2019 is 1/255
                     iters=iter,
                     dataset=dataset,
                 )

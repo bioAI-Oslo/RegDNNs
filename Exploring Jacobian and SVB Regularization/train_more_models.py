@@ -43,12 +43,10 @@ if __name__ == "__main__":
         "model_l2_3": ResNet18(l2_lmbd=l2_lmbd),
         "model_svb_3": ResNet18(svb=True),
         "model_jacobi_3": ResNet18(jacobi=True),
-        "model_jacobi_no_dropout_3": ResNet18(dropout_rate=0.0, jacobi=True),
         "model_no_reg_4": ResNet18(),
         "model_l2_4": ResNet18(l2_lmbd=l2_lmbd),
         "model_svb_4": ResNet18(svb=True),
         "model_jacobi_4": ResNet18(jacobi=True),
-        "model_jacobi_no_dropout_4": ResNet18(dropout_rate=0.0, jacobi=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019
