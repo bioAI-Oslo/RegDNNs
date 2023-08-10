@@ -111,6 +111,26 @@ Occlusion sensitivity is a method that involves systematically occluding differe
   
   
 ## Part Three: Exploring Jacobian and SVB Regularization
+After doing a lot of testing, I was ready to face the problem of generalization and robustness in models head on. For this part I train LeNet models on MNIST, DDNet models on CIFAR10 and ResNet18 models on CIFAR100. For MNIST and CIFAR10 I train models with dropout regularization and no, l2, jacobian and svb regularization. I also train models without any regularization, and with jacobian regularization without dropout. For the ResNet18 models I use ResNet18 from torchvision which comes without dropout, so I only train four models: no, l2, jacobian and svb regularization, all without dropout.
+
+I started by reproducing most of Hoffman 2019, and using the Singular Value Bounding regularization scheme from Jia 2019. I train models for MNIST and CIFAR10 as described in Hoffman 2019. I also implement decision boundary visualization, and introduce isotropic and anisotropic total variation as a measure of rugedness in plots of decision boundaries. Lastly, I attack the models using FGSM and PGD attacks. The results and plots can be found in the results and visualization notebooks for each dataset.
+
+The key takeaways from my investigations were:
+
+The following is a more detailed description of the techniques used in this part in terms of implementation and what they show, as well as motivation for why I used them.
+
+### Jacobian Regularization
+
+### Singular Value Bounding Regularization
+
+### Visualization of Decision Boundaries
+
+### Anisotropic and Isotropic Total Variation
+
+### Fast Gradient Sign Method (FGSM) Attack
+
+### Projected Gradient Descent (PGD) Attack
+
 
 Todo:
 Make total variation functions compatible with CIFAR10, calculate remotely using get_tvs.py, and visualize in cifar10_ddnet_results notebook. 
@@ -121,11 +141,6 @@ Try to look for correlations in the output - can one use a visualization techniq
 Train large model (resnet) on large dataset (imagenet), see if results are clearer here
 Look into more adverserial attacks
 Look into adverserial training, and how that effects performance, as in Hoffman 2019
-
-
-In this part I trained models with the following regularization techniques: No, L2, Jacobian and SVB Regularization. I trained all these models both with and without dropout regularization. In addition to this I trained models with dropout regularization, and the following combinations of other regularization techniques: jacobian and l2, jacobian and svb, svb and l2, and jacobian, svb and l2. I trained these models on MNIST and CIFAR10.
-
-I then chose to continue with the following models: No, L2, SVB and Jacobian Regularization with Dropout, and Jacobian regularization without dropout. And look at decision boundaries, accuracy curves, adverserial attacks and decision boundaries (i.e drop PCA). I also now train models on CIFAR100 with these five models. While PCA does show interesting and enlightening differences between the different regularization techniques in terms of seperation between the classes, I found it more interesting to go deeper into decision boundaries. For results of PCA with the different trained models, see part 2 of the project. 
 
 
 *This is an ongoing part of the project, so notes are messy.*

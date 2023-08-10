@@ -30,9 +30,9 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Set dataset
-    # dataset = "mnist"
+    dataset = "mnist"
     # dataset = "cifar10"
-    dataset = "cifar100"
+    # dataset = "cifar100"
 
     if dataset == "mnist":
         _, test_loader = data_loader_MNIST()
@@ -43,9 +43,9 @@ if __name__ == "__main__":
 
     model_names_set = [
         "model_no_reg",
-        "model_l2",
+        "model_no_reg_no_dropout" "model_l2",
         "model_jacobi",
-        # "model_jacobi_no_dropout", # Not included for ResNet18
+        "model_jacobi_no_dropout",  # Not included for ResNet18
         "model_svb",
     ]
     model_names = []
