@@ -8,6 +8,23 @@ from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_
 from tools import ModelInfo, compute_total_variation
 from plotting_tools import get_random_img, generate_random_vectors
 
+
+# Setting random seeds for reproducibility
+SEED_VALUE = 42  # Use any integer you prefer
+
+import random
+
+random.seed(SEED_VALUE)
+
+np.random.seed(SEED_VALUE)
+
+torch.manual_seed(SEED_VALUE)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(SEED_VALUE)
+    torch.cuda.manual_seed_all(SEED_VALUE)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+
 if __name__ == "__main__":
     # Device configuration, use GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
