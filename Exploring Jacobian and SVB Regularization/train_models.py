@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # "model_no_reg_no_dropout": LeNet_MNIST(dropout_rate = 0.0)
     # "model_l2": LeNet_MNIST(l2_lmbd = 0.0005
     # "model_jacobi/svb": LeNet_MNIST(svb = True)
-    # For CIFAR10 on DDNet, same as LeNet_MNIST:
+    # For CIFAR10 on DDNet, same as LeNet_MNIST, but lr = 0.01:
     # "model_no_reg": DDNet(),
     # For CIFAR100 on DDNET, same as above, except add keyword first:
     # "model_no_reg": DDNET(dataset = "cifar100")
