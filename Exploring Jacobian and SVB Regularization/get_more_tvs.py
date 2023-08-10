@@ -43,7 +43,8 @@ if __name__ == "__main__":
 
     model_names_set = [
         "model_no_reg",
-        "model_no_reg_no_dropout" "model_l2",
+        "model_no_reg_no_dropout",
+        "model_l2",
         "model_jacobi",
         "model_jacobi_no_dropout",  # Not included for ResNet18
         "model_svb",
