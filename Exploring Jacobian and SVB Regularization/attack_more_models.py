@@ -96,8 +96,8 @@ if __name__ == "__main__":
                     models[model_name].model,
                     device,
                     test_loader,
-                    eps=32 / 255,  # The value from Hoffman 2019 is 32/255
-                    alpha=1 / 255,  # The value from Hoffman 2019 is 1/255
+                    eps=64 / 255,  # The value from Hoffman 2019 is 32/255
+                    alpha=2 / 255,  # The value from Hoffman 2019 is 1/255
                     iters=iter,
                     dataset=dataset,
                 )
