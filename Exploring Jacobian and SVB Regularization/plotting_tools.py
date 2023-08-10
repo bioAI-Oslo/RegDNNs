@@ -114,7 +114,7 @@ def plot_decision_boundary(
     v1,
     v2,
     device,
-    resolution=300,
+    resolution=250,
     zoom=[0.025, 0.01, 0.001],
     dataset="mnist",
     title="No regularization",
