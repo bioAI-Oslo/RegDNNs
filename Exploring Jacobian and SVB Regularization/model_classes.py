@@ -255,7 +255,7 @@ class DDNet(nn.Module):
     def __init__(
         self,
         dataset="cifar10",
-        lr=0.1,  # 0.1 in Hoffman 2019
+        lr=0.01,  # 0.01 in Hoffman 2019 for DDNet on CIFAR10
         momentum=0.9,
         dropout_rate=0.5,
         l2_lmbd=0.0,
