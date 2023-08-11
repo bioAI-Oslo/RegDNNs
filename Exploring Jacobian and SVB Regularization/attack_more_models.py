@@ -9,8 +9,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Set dataset
-    dataset = "mnist"
-    # dataset = "cifar10"
+    # dataset = "mnist"
+    dataset = "cifar10"
     # dataset = "cifar100"
 
     # Set attack
@@ -96,8 +96,8 @@ if __name__ == "__main__":
                     models[model_name].model,
                     device,
                     test_loader,
-                    eps=64 / 255,  # The value from Hoffman 2019 is 32/255
-                    alpha=2 / 255,  # The value from Hoffman 2019 is 1/255
+                    eps=32 / 255,  # The value from Hoffman 2019 is 32/255
+                    alpha=1 / 255,  # The value from Hoffman 2019 is 1/255
                     iters=iter,
                     dataset=dataset,
                 )
