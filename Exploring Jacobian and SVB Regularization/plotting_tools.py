@@ -6,6 +6,7 @@ import torch
 from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
+import torch.nn.functional as F
 
 from attack_tools import fgsm_attack_test, pgd_attack_test
 from tools import total_variation_isotropic
@@ -659,4 +660,109 @@ def plot_multiple_pgd(
     plt.ylabel("Accuracy")
     plt.legend()  # Add a legend to distinguish lines for different models
     plt.grid(True)  # Add a grid for better visualization
+    plt.show()
+
+
+def plot_decision_boundaries_for_multiple_models(
+    models_with_names,
+    dataset,
+    img,
+    v1,
+    v2,
+    device,
+    resolution=250,
+    zoom=0.025,
+    title=None,
+):
+    """
+    Plots the decision boundaries of multiple models for a given image.
+
+    Parameters:
+    - models_with_names (list): List of tuples containing trained model and its name.
+    - dataset (str): The dataset name the models were trained on.
+    - img (torch.Tensor): The input image.
+    - v1, v2 (torch.Tensor): Vectors to construct the 2D plane.
+    - device (str): The device for computation ('cuda' or 'cpu').
+    - resolution (int, optional): The resolution for visualization. Defaults to 250.
+    - zoom (float, optional): The zoom level. Defaults to 0.025.
+    - title (str, optional): Optional title prefix. Defaults to None.
+    """
+
+    if title is None:
+        title = f"Decision Boundaries for Models Trained on {dataset}"
+
+    num_models = len(models_with_names)
+    assert 4 <= num_models <= 6, "Function supports only 4, 5, or 6 models."
+
+    if num_models == 4:
+        nrows, ncols = 2, 2
+    elif num_models == 5:
+        nrows, ncols = 2, 3  # we'll leave one spot empty
+    else:  # 6 models
+        nrows, ncols = 2, 3
+
+    fig, axes = plt.subplots(nrows, ncols, figsize=(8 * ncols, 8 * nrows))
+    if num_models == 5:
+        fig.delaxes(axes[1, 2])  # Delete the last axis for 5 models scenario
+
+    # Flatten the image and move to device
+    img = img.view(-1).to(device).float()
+
+    scale = 1 / zoom
+    x = torch.linspace(-scale, scale, resolution)
+    y = torch.linspace(-scale, scale, resolution)
+    xv, yv = torch.meshgrid(x, y)
+
+    plane = (
+        img[None, None, :]
+        + xv[..., None] * v1[None, None, :]
+        + yv[..., None] * v2[None, None, :]
+    ).to(device)
+
+    for idx, (model, model_name) in enumerate(models_with_names):
+        row = idx // ncols
+        col = idx % ncols
+        model.to(device)
+        model.eval()
+
+        with torch.no_grad():
+            if dataset == "mnist":
+                output = model(plane.view(-1, 1, 28, 28)).view(
+                    resolution, resolution, -1
+                )
+            elif dataset == "cifar10" or dataset == "cifar100":
+                output = model(plane.view(-1, 3, 32, 32)).view(
+                    resolution, resolution, -1
+                )
+
+        probs = F.softmax(output, dim=-1)
+        _, predictions = torch.max(probs, dim=-1)
+        decision_boundary = ndi.morphology.distance_transform_edt(
+            predictions.cpu().numpy()
+            == predictions.cpu().numpy()[resolution // 2, resolution // 2]
+        )
+        distance_to_boundary = (
+            decision_boundary[resolution // 2, resolution // 2] / resolution * 2 * scale
+        )
+
+        colors = plt.get_cmap("tab10").colors
+        cmap = ListedColormap([colors[i] for i in range(10)])
+
+        ax = axes[row, col]
+        img_plot = ax.imshow(
+            predictions.cpu(),
+            origin="lower",
+            extent=(-scale, scale, -scale, scale),
+            cmap=cmap,
+        )
+        ax.plot(0, 0, "ro")
+        circle = plt.Circle((0, 0), distance_to_boundary, color="black", fill=False)
+        ax.add_patch(circle)
+
+        # Assuming you have a function called `total_variation_isotropic`
+        tv = total_variation_isotropic(predictions.cpu().numpy())
+        ax.set_title(f"Model: {model_name}\nTotal Variation (isotropic): {tv}")
+
+    plt.tight_layout()
+    plt.suptitle(title, fontsize=20, y=1.05)  # Adjust title position slightly above
     plt.show()
