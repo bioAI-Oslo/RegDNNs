@@ -30,8 +30,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Set dataset
-    dataset = "mnist"
-    # dataset = "cifar10"
+    # dataset = "mnist"
+    dataset = "cifar10"
     # dataset = "cifar100"
 
     if dataset == "mnist":
