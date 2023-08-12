@@ -75,7 +75,7 @@ if __name__ == "__main__":
         }  # To store total variation values for each zoom level
 
         # Generate tv values for n_images number of images
-        for _ in range(n_images):
+        for _ in tqdm(range(n_images)):
             # Get random image and vectors
             img = get_random_img(test_loader)
             v1, v2 = generate_random_vectors(img)

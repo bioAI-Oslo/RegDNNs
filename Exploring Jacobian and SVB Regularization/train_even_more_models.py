@@ -28,14 +28,14 @@ if __name__ == "__main__":
 
     # Initialize all models and store them in a dictionary with their names
     models = {
-        "model_no_reg_6": ResNet18(lr=0.1),
-        "model_l2_6": ResNet18(lr=0.1, l2_lmbd=0.0005),
-        "model_jacobi_6": ResNet18(lr=0.1, jacobi=True),
-        "model_svb_6": ResNet18(lr=0.1, svb=True),
-        "model_no_reg_7": ResNet18(lr=0.01),
-        "model_l2_7": ResNet18(lr=0.01, l2_lmbd=0.0005),
-        "model_jacobi_7": ResNet18(lr=0.01, jacobi=True),
-        "model_svb_7": ResNet18(lr=0.01, svb=True),
+        "model_no_reg_1": ResNet18(lr=0.01),
+        "model_l2_1": ResNet18(lr=0.01, l2_lmbd=0.0005),
+        "model_jacobi_1": ResNet18(lr=0.01, jacobi=True),
+        "model_svb_1": ResNet18(lr=0.01, svb=True),
+        "model_no_reg_2": ResNet18(lr=0.01),
+        "model_l2_2": ResNet18(lr=0.01, l2_lmbd=0.0005),
+        "model_jacobi_2": ResNet18(lr=0.01, jacobi=True),
+        "model_svb_2": ResNet18(lr=0.01, svb=True),
     }
 
     # Number of epochs for training, 250 in Hoffman 2019 for MNIST, 300 for CIFAR10 (150 000 SGD iterations)
