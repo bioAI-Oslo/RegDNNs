@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     # Set dataset
     # dataset = "mnist"
-    dataset = "cifar10"
-    # dataset = "cifar100"
+    # dataset = "cifar10"
+    dataset = "cifar100"
 
     if dataset == "mnist":
         _, test_loader = data_loader_MNIST()
@@ -43,10 +43,10 @@ if __name__ == "__main__":
 
     model_names_set = [
         "model_no_reg",
-        "model_no_reg_no_dropout",
+        # "model_no_reg_no_dropout", # Not included for ResNet18
         "model_l2",
         "model_jacobi",
-        "model_jacobi_no_dropout",  # Not included for ResNet18
+        # "model_jacobi_no_dropout",  # Not included for ResNet18
         "model_svb",
     ]
     model_names = []
