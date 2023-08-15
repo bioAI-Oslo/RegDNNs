@@ -711,8 +711,8 @@ def plot_decision_boundaries_for_multiple_models(
     img = img.view(-1).to(device).float()
 
     scale = 1 / zoom
-    x = torch.linspace(-scale, scale, resolution)
-    y = torch.linspace(-scale, scale, resolution)
+    x = torch.linspace(-scale, scale, resolution, device=device)
+    y = torch.linspace(-scale, scale, resolution, device=device)
     xv, yv = torch.meshgrid(x, y)
 
     plane = (
