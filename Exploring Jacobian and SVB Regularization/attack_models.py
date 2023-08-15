@@ -27,35 +27,11 @@ if __name__ == "__main__":
     # Define the models
     model_names = [
         "model_no_reg_0",
-        # "model_no_reg_no_dropout_0",
+        "model_no_reg_no_dropout_0",
         "model_l2_0",
         "model_jacobi_0",
-        # "model_jacobi_no_dropout_0",
+        "model_jacobi_no_dropout_0",
         "model_svb_0",
-        "model_no_reg_1",
-        # "model_no_reg_no_dropout_1",
-        "model_l2_1",
-        "model_jacobi_1",
-        # "model_jacobi_no_dropout_1",
-        "model_svb_1",
-        "model_no_reg_2",
-        # "model_no_reg_no_dropout_2",
-        "model_l2_2",
-        "model_jacobi_2",
-        # "model_jacobi_no_dropout_2",
-        "model_svb_2",
-        "model_no_reg_3",
-        # "model_no_reg_no_dropout_3",
-        "model_l2_3",
-        "model_jacobi_3",
-        # "model_jacobi_no_dropout_3",
-        "model_svb_3",
-        "model_no_reg_4",
-        # "model_no_reg_no_dropout_4",
-        "model_l2_4",
-        "model_jacobi_4",
-        # "model_jacobi_no_dropout_4",
-        "model_svb_4",
     ]
     models = {name: ModelInfo(name, dataset) for name in model_names}
 
@@ -68,15 +44,6 @@ if __name__ == "__main__":
         0.2,
         0.25,
         0.3,
-        # 0.35,
-        # 0.4,
-        # 0.45,
-        # 0.5,
-        # 0.55,
-        # 0.6,
-        # 0.65,
-        # 0.7,
-        # 0.75,
     ]
 
     # Iterations to use for PGD attack

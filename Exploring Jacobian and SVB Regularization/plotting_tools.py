@@ -7,6 +7,7 @@ from matplotlib.patches import Patch
 from matplotlib.colors import ListedColormap
 import scipy.ndimage as ndi
 import torch.nn.functional as F
+from tqdm import tqdm
 
 from attack_tools import fgsm_attack_test, pgd_attack_test
 from tools import total_variation_isotropic
@@ -719,7 +720,7 @@ def plot_decision_boundaries_for_multiple_models(
         + yv[..., None] * v2[None, None, :]
     ).to(device)
 
-    for idx, (model, model_name) in enumerate(models_with_names):
+    for idx, (model, model_name) in tqdm(enumerate(models_with_names)):
         row = idx // ncols
         col = idx % ncols
         model.to(device)
@@ -765,4 +766,176 @@ def plot_decision_boundaries_for_multiple_models(
 
     plt.tight_layout()
     plt.suptitle(title, fontsize=20, y=1.05)  # Adjust title position slightly above
+    plt.show()
+
+
+def plot_multiple_pgd_with_labels(
+    models,
+    model_name_labels,  # Changed this from model_names
+    device,
+    test_loader,
+    dataset,
+    eps=0.2,
+    alpha=0.1,
+    iters_list=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+    title=None,  # New parameter
+):
+    """
+    Test the models' accuracy under PGD attacks with different number of iterations and plot the results.
+
+    Parameters:
+    - models (dict): The models to attack.
+    - model_name_labels (list): A list of tuples where each tuple contains (model_name, model_label).
+    - device (torch.device): The device to perform computations on.
+    - test_loader (torch.utils.data.DataLoader): The test data loader.
+    - dataset (str): The name of the dataset.
+    - eps (float): The maximum perturbation for each pixel.
+    - alpha (float): The step size for each iteration.
+    - iters_list (list, optional): A list of iteration counts for the PGD attacks.
+    - suptitle (str, optional): An optional title for the entire plot.
+
+    This function will test each models' robustness against PGD attacks by calculating its accuracy on the test
+    dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the iteration
+    counts. The xticks and yticks on the graph are dynamically determined based on the range of iteration counts
+    and accuracies, respectively.
+    """
+    colors = [
+        "blue",
+        "orange",
+        "green",
+        "red",
+        "purple",
+        "brown",
+        "pink",
+        "gray",
+        "olive",
+        "cyan",
+        "lime",
+        "navy",
+    ]  # Add more colors if needed
+
+    plt.figure(figsize=(10, 7))  # Increase the size of the plot for readability
+    # Set the current color cycle
+    plt.gca().set_prop_cycle("color", colors)
+
+    for model_name, model_label in model_name_labels:  # Updated loop
+        model = models[model_name].model
+        filepath = f"./attacked_{dataset}_models/{model_name}_pgd_accuracies.pkl"
+
+        if os.path.exists(filepath):
+            # Load the results if they have been previously calculated and saved
+            with open(filepath, "rb") as f:
+                data = pickle.load(f)
+                iters_list = data["iters_list"]
+                accuracies = data["accuracies"]
+        else:
+            accuracies = []  # List to store results
+
+            # Test the model's accuracy under PGD attacks with each number of iterations
+            for iters in iters_list:
+                acc = pgd_attack_test(
+                    model, device, test_loader, eps, alpha, iters, dataset
+                )
+                accuracies.append(acc)
+
+            # Save the accuracies for all iterations for this model
+            with open(filepath, "wb") as f:
+                pickle.dump({"iters_list": iters_list, "accuracies": accuracies}, f)
+
+        # Plot the results for each model using model_label for the legend
+        plt.plot(iters_list, accuracies, "-*", label=model_label)
+
+    plt.yticks(np.arange(0, 1.1, step=0.1))
+    plt.xticks(np.arange(min(iters_list), max(iters_list) + 1, step=5))
+    plt.title(f"{title}")
+    plt.xlabel("PGD Iterations")
+    plt.ylabel("Accuracy")
+    plt.legend()  # Add a legend to distinguish lines for different models
+    plt.grid(True)  # Add a grid for better visualization
+    plt.tight_layout()  # Adjusts the plot so that everything fits without overlap
+    plt.show()
+
+
+def plot_multiple_fgsm_with_labels(
+    models,
+    model_name_labels,  # Changed this from model_names
+    device,
+    test_loader,
+    dataset,
+    epsilons=[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
+    title=None,  # New parameter
+):
+    """
+    Test the models' accuracy under FGSM attacks with different epsilon values and plot the results.
+
+    Parameters:
+    - models (dict): The dictionary of models to attack.
+    - model_name_labels (list): A list of tuples where each tuple contains (model_name, model_label).
+    - device (torch.device): The device to perform computations on.
+    - test_loader (torch.utils.data.DataLoader): The test data loader.
+    - dataset (str): The dataset the models were trained on.
+    - epsilons (list, optional): A list of epsilon values for the FGSM attacks.
+    - suptitle (str, optional): An optional title for the entire plot.
+
+    This function will test each model's robustness against FGSM attacks by calculating its accuracy on the test
+    dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the epsilon
+    values. The xticks and yticks on the graph are dynamically determined based on the range of epsilon values
+    and accuracies, respectively.
+    """
+    colors = [
+        "blue",
+        "orange",
+        "green",
+        "red",
+        "purple",
+        "brown",
+        "pink",
+        "gray",
+        "olive",
+        "cyan",
+        "lime",
+        "navy",
+    ]  # Add more colors if needed
+
+    plt.figure(figsize=(10, 7))  # Increase the size of the plot for readability
+
+    # Set the current color cycle
+    plt.gca().set_prop_cycle("color", colors)
+
+    for model_name, model_label in model_name_labels:  # Updated loop
+        model = models[model_name].model
+        filepath = f"./attacked_{dataset}_models/{model_name}_fgsm_accuracies.pkl"
+
+        if os.path.exists(filepath):
+            # Load the results if they have been previously calculated and saved
+            with open(filepath, "rb") as f:
+                data = pickle.load(f)
+                epsilons = data["epsilons"]
+                accuracies = data["accuracies"]
+        else:
+            accuracies = []  # List to store results
+
+            # Test the model's accuracy under FGSM attacks with each epsilon value
+            for eps in epsilons:
+                acc = fgsm_attack_test(model, device, test_loader, eps, dataset)
+                accuracies.append(acc)
+
+            # Save the accuracies for all epsilon values for this model
+            with open(filepath, "wb") as f:
+                pickle.dump({"epsilons": epsilons, "accuracies": accuracies}, f)
+
+        # Plot the results for each model using model_label for the legend
+        plt.plot(epsilons, accuracies, "-*", label=model_label)
+
+    # Calculate suitable step sizes for xticks
+    xstep = (max(epsilons) - min(epsilons)) / (len(epsilons) - 1)
+
+    plt.yticks(np.arange(0, 1.1, step=0.1))
+    plt.xticks(np.arange(min(epsilons), max(epsilons) + xstep, step=xstep))
+    plt.title(f"{title}")
+    plt.xlabel("Epsilon")
+    plt.ylabel("Accuracy")
+    plt.legend()  # Add a legend to distinguish lines for different models
+    plt.grid(True)  # Add a grid for better visualization
+    plt.tight_layout()  # Adjusts the plot so that everything fits without overlap
     plt.show()
