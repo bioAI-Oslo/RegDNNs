@@ -1,6 +1,7 @@
 import jupyter_black
 import torch
 import numpy as np
+from tqdm import tqdm
 
 from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_CIFAR100
 from plotting_tools import (
