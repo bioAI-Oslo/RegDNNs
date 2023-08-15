@@ -729,12 +729,16 @@ def plot_decision_boundaries_for_multiple_models(
 
         with torch.no_grad():
             if dataset == "mnist":
-                output = model(plane.view(-1, 1, 28, 28)).view(
-                    resolution, resolution, -1
+                output = (
+                    model(plane.view(-1, 1, 28, 28))
+                    .view(resolution, resolution, -1)
+                    .to(device)
                 )
             elif dataset == "cifar10" or dataset == "cifar100":
-                output = model(plane.view(-1, 3, 32, 32)).view(
-                    resolution, resolution, -1
+                output = (
+                    model(plane.view(-1, 3, 32, 32))
+                    .view(resolution, resolution, -1)
+                    .to(device)
                 )
 
         probs = F.softmax(output, dim=-1)
