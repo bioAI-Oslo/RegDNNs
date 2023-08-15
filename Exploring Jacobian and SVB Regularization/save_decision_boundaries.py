@@ -114,7 +114,7 @@ if __name__ == "__main__":
     v1_3, v2_3 = generate_random_vectors(image_3)
     v1_4, v2_4 = generate_random_vectors(image_4)
 
-    for i in range(5):
+    for i in tqdm(range(5)):
         plot_decision_boundaries_for_multiple_models(
             models_cifar10_with_names_0,
             "cifar10",
