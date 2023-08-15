@@ -674,6 +674,7 @@ def plot_decision_boundaries_for_multiple_models(
     resolution=250,
     zoom=0.025,
     title=None,
+    saveas=None,
 ):
     """
     Plots the decision boundaries of multiple models for a given image.
@@ -766,7 +767,10 @@ def plot_decision_boundaries_for_multiple_models(
 
     plt.tight_layout()
     plt.suptitle(title, fontsize=20, y=1.05)  # Adjust title position slightly above
-    plt.show()
+    # plt.show()
+    plt.savefig(
+        f"{saveas}.png", dpi=300
+    )  # You can set the desired dpi for better resolution
 
 
 def plot_multiple_pgd_with_labels(

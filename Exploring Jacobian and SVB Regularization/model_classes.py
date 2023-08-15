@@ -252,6 +252,35 @@ class LeNet_MNIST(nn.Module):
 
 
 class DDNet(nn.Module):
+    """
+    DDNet model architecture for CIFAR10/CIFAR100 classification with optional
+    Jacobian, SVB, Dropout and L2 regularization, following the design used in Hoffman 2019.
+
+    This model is a deep neural network with four convolutional layers and
+    three fully connected layers.
+
+    Parameters
+    ----------
+    lr : float
+        The learning rate for the SGD optimizer.
+    momentum : float
+        The momentum for the SGD optimizer.
+    dropout_rate : float
+        The dropout rate applied after each fully connected layer.
+    l2_lmbd : float
+        The weight decay coefficient for L2 regularization.
+    jacobi : bool
+        If True, applies Jacobian regularization.
+    jacobi_lmbd : float
+        The regularization coefficient for Jacobian regularization.
+    svb_reg : bool
+        If True, applies singular value bounding (SVB) regularization.
+    svb_freq : int
+        The frequency for computing SVB.
+    svb_eps : float
+        The epsilon for computing SVB.
+    """
+
     def __init__(
         self,
         dataset="cifar10",
@@ -259,11 +288,11 @@ class DDNet(nn.Module):
         momentum=0.9,
         dropout_rate=0.5,
         l2_lmbd=0.0,
+        jacobi=False,
+        jacobi_lmbd=0.01,  # 0.01 in Hoffman 2019
         svb=False,
         svb_freq=600,
         svb_eps=0.05,
-        jacobi=False,
-        jacobi_lmbd=0.01,  # 0.01 in Hoffman 2019
     ):
         super(DDNet, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -328,6 +357,19 @@ class DDNet(nn.Module):
         )
 
     def forward(self, x):
+        """
+        Forward pass of the DDNet model.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+
+        Returns
+        -------
+        x : torch.Tensor
+            The output tensor (predictions of the model).
+        """
         x = self.conv1(x)
         x = F.relu(x)
         x = self.conv2(x)
@@ -387,8 +429,26 @@ class DDNet(nn.Module):
         x,
         y,
     ):
-        y_pred = self(x.float())
-        loss = self.L(y_pred, y)
+        """
+        Calculates the loss function (cross-entropy) with an optional
+        Jacobian regularization term.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+        y : torch.Tensor
+            The true labels.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            The calculated loss.
+        jacobi_loss : torch.Tensor
+            The calculated Jacobian regularization loss (if applicable).
+        """
+        y_pred = self(x.float())  # Forward pass to get predictions
+        loss = self.L(y_pred, y)  # Compute loss using cross-entropy
 
         # Jacobi regularization
         if self.jacobi:
@@ -405,14 +465,31 @@ class DDNet(nn.Module):
         data,
         labels,
     ):
-        self.opt.zero_grad()
+        """
+        Performs one step of training: forward pass, loss calculation,
+        backward pass and parameters update.
 
+        Parameters
+        ----------
+        data : torch.Tensor
+            The input tensor.
+        labels : torch.Tensor
+            The true labels.
+
+        Returns
+        -------
+        loss : float
+            The calculated loss.
+        reg_loss : float
+            The calculated regularization loss (if applicable).
+        """
+        self.opt.zero_grad()  # Zero out gradients
         loss, reg_loss = self.loss_fn(
             data,
             labels.long(),
-        )
-        loss.backward()
-        self.opt.step()
+        )  # Compute loss
+        loss.backward()  # Backward pass to compute gradients
+        self.opt.step()  # Update parameters
 
         # If SVB regularization, apply every svb_freq steps
         if self.svb and self.training_steps % self.svb_freq == 0:
@@ -443,16 +520,45 @@ class DDNet(nn.Module):
 
 
 class ResNet18(nn.Module):  # For CIFAR100
+    """
+    ResNet18 model architecture for CIFAR100 classification with optional
+    Jacobian, SVB, Dropout and L2 regularization, using preloaded pytorch model.
+
+    This model is a deep neural network with 17 convolutional layers and
+    one fully connected layers.
+
+    Parameters
+    ----------
+    lr : float
+        The learning rate for the SGD optimizer.
+    momentum : float
+        The momentum for the SGD optimizer.
+    dropout_rate : float
+        The dropout rate applied after each fully connected layer.
+    l2_lmbd : float
+        The weight decay coefficient for L2 regularization.
+    jacobi : bool
+        If True, applies Jacobian regularization.
+    jacobi_lmbd : float
+        The regularization coefficient for Jacobian regularization.
+    svb_reg : bool
+        If True, applies singular value bounding (SVB) regularization.
+    svb_freq : int
+        The frequency for computing SVB.
+    svb_eps : float
+        The epsilon for computing SVB.
+    """
+
     def __init__(
         self,
         lr=0.1,  # 0.1 in Hoffman 2019
         momentum=0.9,
         l2_lmbd=0.0,
+        jacobi=False,
+        jacobi_lmbd=0.01,  # 0.01 in Hoffman 2019
         svb=False,
         svb_freq=600,
         svb_eps=0.05,
-        jacobi=False,
-        jacobi_lmbd=0.01,  # 0.01 in Hoffman 2019
     ):
         super(ResNet18, self).__init__()
         # Initialize ResNet18 with pretrained=False since we're using CIFAR100, not ImageNet
@@ -476,6 +582,19 @@ class ResNet18(nn.Module):  # For CIFAR100
         )
 
     def forward(self, x):
+        """
+        Forward pass of the ResNet18 model.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+
+        Returns
+        -------
+        x : torch.Tensor
+            The output tensor (predictions of the model).
+        """
         return self.model(x)
 
     def jacobian_regularizer(self, x):
@@ -523,8 +642,26 @@ class ResNet18(nn.Module):  # For CIFAR100
         x,
         y,
     ):
-        y_pred = self(x.float())
-        loss = self.L(y_pred, y)
+        """
+        Calculates the loss function (cross-entropy) with an optional
+        Jacobian regularization term.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor.
+        y : torch.Tensor
+            The true labels.
+
+        Returns
+        -------
+        loss : torch.Tensor
+            The calculated loss.
+        jacobi_loss : torch.Tensor
+            The calculated Jacobian regularization loss (if applicable).
+        """
+        y_pred = self(x.float())  # Forward pass to get predictions
+        loss = self.L(y_pred, y)  # Compute loss using cross-entropy
 
         # Jacobi regularization
         if self.jacobi:
@@ -541,14 +678,31 @@ class ResNet18(nn.Module):  # For CIFAR100
         data,
         labels,
     ):
-        self.opt.zero_grad()
+        """
+        Performs one step of training: forward pass, loss calculation,
+        backward pass and parameters update.
 
+        Parameters
+        ----------
+        data : torch.Tensor
+            The input tensor.
+        labels : torch.Tensor
+            The true labels.
+
+        Returns
+        -------
+        loss : float
+            The calculated loss.
+        reg_loss : float
+            The calculated regularization loss (if applicable).
+        """
+        self.opt.zero_grad()  # Zero out gradients
         loss, reg_loss = self.loss_fn(
             data,
             labels.long(),
-        )
-        loss.backward()
-        self.opt.step()
+        )  # Compute loss
+        loss.backward()  # Backward pass to compute gradients
+        self.opt.step()  # Update parameters
 
         # If SVB regularization, apply every svb_freq steps
         if self.svb and self.training_steps % self.svb_freq == 0:
