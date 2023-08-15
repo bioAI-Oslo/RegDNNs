@@ -171,21 +171,39 @@ def register_hooks(model):
 
 def load_trained_model(model_name, dataset):
     """
-    Loads a pre-trained PyTorch model and associated training data.
+    Loads a pre-trained PyTorch model and its associated training metadata from the disk.
+
+    The function is designed to load models that were trained on different datasets such as MNIST, CIFAR10, or CIFAR100.
+    Depending on the dataset and model name provided, it initializes a similar architecture to ensure compatibility
+    when loading model weights. The function also handles the "module." prefix that appears in model keys when
+    models were trained with DataParallel.
 
     Parameters:
-    model_name (str): The name of the model to load. This is used to locate the saved model
-                      and training data files.
+    - model_name (str): Specifies the name of the model to be loaded. This is used to locate the saved model
+                        and associated training metadata files on the disk.
+    - dataset (str): Indicates the dataset on which the model was trained. Possible values are 'mnist', 'cifar10',
+                     and 'cifar100'.
 
     Returns:
-    tuple: A tuple containing the loaded model and lists of losses, regularization losses,
-           epochs, and train/test accuracies from training.
+    - tuple: A tuple containing:
+        * model (torch.nn.Module): The loaded PyTorch model.
+        * losses (list): A list of loss values from the training.
+        * reg_losses (list): A list of regularization losses from the training.
+        * epochs (list): A list of epoch numbers.
+        * train_accuracies (list): Training accuracy values for each epoch.
+        * test_accuracies (list): Test accuracy values for each epoch.
+
+    Notes:
+    - The function assumes the model's state_dict and training data are stored in the "./trained_{dataset}_models/" directory.
+    - For compatibility with models trained on multiple GPUs using DataParallel, the function strips the "module." prefix from the
+      state dictionary keys.
+    - After loading, the model is switched to evaluation mode using `model.eval()`.
+    - If the dataset is not one of the predefined datasets ('mnist', 'cifar10', 'cifar100'), an error message is printed.
     """
     # Set to cpu as we will be loading on a laptop
     device = torch.device("cpu")
 
     # Initialize model based on provided model_name to get a similar model to prevent errors
-    # FIX THIS!
     if dataset == "mnist":
         if model_name.startswith("model_no_reg"):
             model = LeNet_MNIST()
@@ -259,6 +277,8 @@ class ModelInfo:
 
     Attributes:
     name (str): The name of the model.
+    dataset (str): Indicates the dataset on which the model was trained. Possible values are 'mnist', 'cifar10',
+                     and 'cifar100'.
     model (nn.Module): The PyTorch model.
     losses (list): The list of loss values during training.
     reg_losses (list): The list of regularization loss values during training.
@@ -293,6 +313,8 @@ class ModelInfo:
 
         Parameters:
         name (str): The name of the model.
+        dataset (str): Indicates the dataset on which the model was trained. Possible values are 'mnist', 'cifar10',
+                     and 'cifar100'.
 
         Returns:
         model (nn.Module): The loaded PyTorch model.
@@ -368,26 +390,62 @@ def compute_total_variation(
     dataset="mnist",
 ):
     """
-    Function to calculate the total variation of decision boundaries of a model in a 2D plane for different zoom levels.
+    Computes the total variation of decision boundaries for a given trained model over a 2D plane constructed using
+    the specified input image and two vectors. The total variation is calculated at multiple zoom levels to provide
+    insights into the model's decision boundaries at various scales.
 
     Parameters
     ----------
     model : torch.nn.Module
-        The trained model.
+        The trained model for which decision boundaries are being explored.
+
     img : torch.Tensor
-        The input image to construct the 2D plane.
-    v1 : torch.Tensor
-        First vector to construct the 2D plane.
-    v2 : torch.Tensor
-        Second vector to construct the 2D plane.
+        The base image tensor which, along with v1 and v2, will be used to construct the 2D plane.
+        The shape of this tensor should be compatible with the expected input shape of the model.
+
+    v1, v2 : torch.Tensor
+        Tensors representing two vectors that, along with img, define the 2D plane.
+        These vectors should have the same dimension as img.
+
     device : str
-        The device to run the model ('cpu' or 'cuda').
-    resolution : int, optional
-        The resolution of the grid to be used, by default 300.
-    zoom : list, optional
-        The zoom levels to calculate total variation of, by default [0.025, 0.01, 0.001].
-    mode : str, optional
-        The mode of total variation to be used, can be either 'isotropic' or 'anisotropic', by default 'isotropic'.
+        Device on which computations will be performed. Valid values are 'cpu' or 'cuda'.
+
+    resolution : int, optional (default=250)
+        Resolution of the grid on which decision boundaries will be analyzed. Defines the number of points
+        in both dimensions of the grid.
+
+    zoom : list, optional (default=[0.025, 0.01, 0.001])
+        List of zoom levels at which the total variation will be calculated. Smaller values correspond to
+        finer zoom levels.
+
+    mode : str, optional (default="isotropic")
+        Mode of total variation calculation. Accepted values are:
+        - 'isotropic': Computes the isotropic total variation.
+        - 'anisotropic': Computes the anisotropic total variation.
+
+    dataset : str, optional (default="mnist")
+        Name of the dataset which informs the function about the expected input shape of the model.
+        Accepted values are 'mnist', 'cifar10', and 'cifar100'.
+
+    Returns
+    -------
+    tv_list : list
+        List of total variation values computed at each zoom level.
+
+    Notes
+    -----
+    - The function first creates a 2D plane in the feature space using the input image and the two vectors.
+      The plane is then divided into a grid with the specified resolution, and the model's predictions are computed
+      over this grid.
+
+    - To handle potential memory issues, the plane tensor can be split into smaller chunks for inference.
+      Outputs from each chunk are then concatenated to form the complete output tensor.
+
+    - The predictions over the grid are transformed into a hard decision by taking the class with the highest probability
+      for each grid point.
+
+    - Depending on the specified mode, the total variation is computed using either the isotropic or anisotropic method.
+      This provides a measure of how much the model's decision boundaries vary across the grid.
     """
 
     # Check if the mode is valid
@@ -432,18 +490,6 @@ def compute_total_variation(
 
         # Concatenate chunks to get full output tensor
         output = torch.cat(output_list).view(resolution, resolution, -1)
-
-        """
-        # Compute the model's predictions over the grid
-        with torch.no_grad():
-            if dataset == "mnist":
-                output = model(plane.view(-1, 1, 28, 28)).view(
-                    resolution, resolution, -1
-                )
-            elif dataset == "cifar10" or dataset == "cifar100":
-                output = model(plane.view(-1, 3, 32, 32)).view(
-                    resolution, resolution, -1
-                )"""
 
         probs = torch.nn.functional.softmax(output, dim=-1)
 

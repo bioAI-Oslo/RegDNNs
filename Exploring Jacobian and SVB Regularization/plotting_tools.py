@@ -540,8 +540,10 @@ def plot_pgd(
 
     Parameters:
     model (torch.nn.Module): The model to attack.
+    model_name (str): The name of the model.
     device (torch.device): The device to perform computations on.
     test_loader (torch.utils.data.DataLoader): The test data loader.
+    dataset (str): The dataset the models were trained on.
     eps (float): The maximum perturbation for each pixel.
     alpha (float): The step size for each iteration.
     iters_list (list, optional): A list of iteration counts for the PGD attacks.
@@ -674,28 +676,59 @@ def plot_decision_boundaries_for_multiple_models(
     resolution=250,
     zoom=0.025,
     title=None,
-    saveas=None,
 ):
     """
-    Plots the decision boundaries of multiple models for a given image.
+    Visualizes the decision boundaries of multiple models on a 2D plane constructed from an image and two vectors.
+    The decision boundaries are shown at a specified zoom level to provide insights into model behavior at that scale.
 
     Parameters:
-    - models_with_names (list): List of tuples containing trained model and its name.
-    - dataset (str): The dataset name the models were trained on.
-    - img (torch.Tensor): The input image.
-    - v1, v2 (torch.Tensor): Vectors to construct the 2D plane.
-    - device (str): The device for computation ('cuda' or 'cpu').
-    - resolution (int, optional): The resolution for visualization. Defaults to 250.
-    - zoom (float, optional): The zoom level. Defaults to 0.025.
-    - title (str, optional): Optional title prefix. Defaults to None.
+    ----------
+    models_with_names : list of (torch.nn.Module, str)
+        List of tuples, where each tuple consists of a trained model and its corresponding name.
+
+    dataset : str
+        The dataset name that the models were trained on. It determines the input shape for the model.
+        Accepted values are 'mnist', 'cifar10', and 'cifar100'.
+
+    img : torch.Tensor
+        The base image tensor used along with v1 and v2 to construct the 2D visualization plane.
+        Its shape should be compatible with the expected input shape of the models.
+
+    v1, v2 : torch.Tensor
+        Tensors representing two orthogonal vectors used to define the 2D visualization plane.
+        These vectors should have the same dimensionality as img.
+
+    device : str
+        The computational device to which tensors will be moved for processing. It can be 'cpu' or 'cuda'.
+
+    resolution : int, optional (default=250)
+        Defines the resolution of the grid on which decision boundaries will be visualized.
+
+    zoom : float, optional (default=0.025)
+        The zoom level for visualization. Smaller values correspond to finer zoom levels.
+
+    title : str, optional (default=None)
+        An optional prefix to be added to the plot title. If not provided, a default title will be used.
+
+    Notes:
+    -----
+    - The function visualizes decision boundaries on a 2D plane for several models, allowing for comparison
+      of model behaviors on the same input space.
+
+    - Decision boundaries are computed by evaluating model predictions across a grid in the constructed 2D plane.
+
+    - A circle is drawn on the plot indicating the distance from the center of the image to the nearest decision boundary.
+
     """
 
+    # If a custom title isn't provided, use a default one
     if title is None:
         title = f"Decision Boundaries for Models Trained on {dataset}"
 
     num_models = len(models_with_names)
     assert 4 <= num_models <= 6, "Function supports only 4, 5, or 6 models."
 
+    # Determine grid layout for the plots
     if num_models == 4:
         nrows, ncols = 2, 2
     elif num_models == 5:
@@ -705,29 +738,28 @@ def plot_decision_boundaries_for_multiple_models(
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(8 * ncols, 8 * nrows))
     if num_models == 5:
-        fig.delaxes(axes[1, 2])  # Delete the last axis for 5 models scenario
+        fig.delaxes(axes[1, 2])  # Delete the last axis for 5 models
 
-    # Flatten the image and move to device
+    # Construct the 2D plane for visualization
     img = img.view(-1).to(device).float()
-
     scale = 1 / zoom
     x = torch.linspace(-scale, scale, resolution, device=device)
     y = torch.linspace(-scale, scale, resolution, device=device)
     xv, yv = torch.meshgrid(x, y)
-
     plane = (
         img[None, None, :]
         + xv[..., None] * v1[None, None, :]
         + yv[..., None] * v2[None, None, :]
     ).to(device)
 
+    # Loop through each model, compute its decision boundary and plot it
     for idx, (model, model_name) in tqdm(enumerate(models_with_names)):
         row = idx // ncols
         col = idx % ncols
-        model.to(device)
-        model.eval()
+        model.to(device).eval()
 
-        num_chunks = 10  # This divides your data into 10 chunks. Adjust as needed.
+        # Split plane tensor into chunks to handle potential memory constraints during inference
+        num_chunks = 10
         chunks = torch.chunk(plane, num_chunks, dim=0)
 
         outputs = []
@@ -743,8 +775,11 @@ def plot_decision_boundaries_for_multiple_models(
 
         output = torch.cat(outputs, dim=0).view(resolution, resolution, -1)
 
+        # Convert raw outputs to probability distributions and then get hard class predictions
         probs = F.softmax(output, dim=-1)
         _, predictions = torch.max(probs, dim=-1)
+
+        # Compute the distance from the center of the image to the nearest decision boundary
         decision_boundary = ndi.morphology.distance_transform_edt(
             predictions.cpu().numpy()
             == predictions.cpu().numpy()[resolution // 2, resolution // 2]
@@ -753,9 +788,9 @@ def plot_decision_boundaries_for_multiple_models(
             decision_boundary[resolution // 2, resolution // 2] / resolution * 2 * scale
         )
 
+        # Plotting
         colors = plt.get_cmap("tab10").colors
         cmap = ListedColormap([colors[i] for i in range(10)])
-
         ax = axes[row, col]
         img_plot = ax.imshow(
             predictions.cpu(),
@@ -767,16 +802,13 @@ def plot_decision_boundaries_for_multiple_models(
         circle = plt.Circle((0, 0), distance_to_boundary, color="black", fill=False)
         ax.add_patch(circle)
 
-        # Assuming you have a function called `total_variation_isotropic`
+        # Display total variation
         tv = total_variation_isotropic(predictions.cpu().numpy())
         ax.set_title(f"Model: {model_name}\nTotal Variation (isotropic): {tv}")
 
     plt.tight_layout()
     plt.suptitle(title, fontsize=20, y=1.05)  # Adjust title position slightly above
-    # plt.show()
-    plt.savefig(
-        f"{saveas}.png", dpi=300
-    )  # You can set the desired dpi for better resolution
+    plt.show()
 
 
 def plot_multiple_pgd_with_labels(
@@ -802,7 +834,7 @@ def plot_multiple_pgd_with_labels(
     - eps (float): The maximum perturbation for each pixel.
     - alpha (float): The step size for each iteration.
     - iters_list (list, optional): A list of iteration counts for the PGD attacks.
-    - suptitle (str, optional): An optional title for the entire plot.
+    - title (str, optional): An optional title for the plot.
 
     This function will test each models' robustness against PGD attacks by calculating its accuracy on the test
     dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the iteration
@@ -885,7 +917,7 @@ def plot_multiple_fgsm_with_labels(
     - test_loader (torch.utils.data.DataLoader): The test data loader.
     - dataset (str): The dataset the models were trained on.
     - epsilons (list, optional): A list of epsilon values for the FGSM attacks.
-    - suptitle (str, optional): An optional title for the entire plot.
+    - title (str, optional): An optional title for the plot.
 
     This function will test each model's robustness against FGSM attacks by calculating its accuracy on the test
     dataset after each attack. Then, it will plot a graph of the accuracy results as a function of the epsilon

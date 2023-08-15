@@ -1,3 +1,24 @@
+"""
+This script evaluates the isotropic/anisotropic total variation of the decision boundaries
+of various models on a given dataset. 
+
+Setting Random Seeds:
+    To ensure reproducibility, the random seeds for random, numpy, and PyTorch are set.
+    
+Main Script Execution:
+    1. Sets up the device for computations (GPU if available, otherwise CPU).
+    2. Chooses the dataset.
+    3. Loads the test data for the selected dataset.
+    4. Defines the models' names and loads the models.
+    5. Defines zoom levels, number of images, and confidence level for calculations.
+    6. Creates a DataFrame to store the results.
+    7. Iterates over each model:
+        a. Gets a random image.
+        b. Computes the isotropic/anisotropic total variation of the decision boundaries.
+        c. Stores the mean and 95% confidence interval of the computed values.
+    8. Saves the results to disk.
+"""
+
 import torch
 import numpy as np
 import pandas as pd

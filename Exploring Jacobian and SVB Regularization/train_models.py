@@ -1,7 +1,26 @@
+"""
+This script focuses on training different configurations of models on specified datasets and then saving both the trained model weights and the training metadata. The models are initialized with various configurations to evaluate different regularization and training techniques.
+
+Main Script Execution:
+    1. Sets up the device for computations (GPU if available, otherwise CPU).
+    2. Chooses the dataset for training.
+    3. Loads the train and test data for the selected dataset.
+    4. Defines hyperparameters, specifically for L2 regularization (lambda) and dropout rate.
+    5. Initializes different model configurations, focusing on different regularization techniques and dropout variations.
+    6. Specifies the number of training epochs.
+    7. Iteratively trains each model, displaying the progress.
+    8. Checks if there are multiple GPUs available, and if so, leverages all of them for training using DataParallel.
+    9. Trains the model, and after training, saves the model weights to a specified directory.
+    10. Serializes and saves training metadata such as losses, regularized losses, epoch numbers, train, and test accuracies to disk using pickle.
+
+Usage:
+    Run this script to train various model configurations on the specified dataset, then save the models and training metadata for further analysis or deployment.
+"""
+
 import torch
 import pickle
 from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_CIFAR100
-from model_classes import LeNet_MNIST, DDNet
+from model_classes import LeNet_MNIST, DDNet, ResNet18
 from tools import train
 from torch.nn import DataParallel
 
@@ -63,10 +82,12 @@ if __name__ == "__main__":
         # Move the model to the device (CPU or GPU)
         model.to(device)
 
+        # Train model
         losses, reg_losses, epochs, train_accuracies, test_accuracies = train(
             train_loader, test_loader, model, device, n_epochs
         )
 
+        # Save trained model
         torch.save(model.state_dict(), f"./trained_{dataset}_models/{model_name}.pt")
 
         # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle

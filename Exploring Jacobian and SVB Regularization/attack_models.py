@@ -1,3 +1,23 @@
+"""
+This script performs adversarial attacks on different neural network models trained on datasets MNIST, CIFAR-10, and CIFAR-100. 
+Two types of attacks are supported: Fast Gradient Sign Method (FGSM) and Projected Gradient Descent (PGD).
+
+Structure:
+1. Set device configuration (use GPU if available).
+2. Set the dataset (MNIST, CIFAR-10, or CIFAR-100) to be used.
+3. Set the type of attack to be performed (FGSM or PGD).
+4. Load the appropriate test data based on the chosen dataset.
+5. Define the names of models to be attacked.
+6. Set the epsilon values for FGSM attacks and the iteration values for PGD attacks.
+7. For each model:
+    - Load the model.
+    - For each epsilon (for FGSM) or iteration (for PGD), perform the attack and record the accuracy.
+    - Save the recorded accuracies to a pickle file.
+
+Output:
+The output accuracies of the models post-attack are saved in pickle files under the `./attacked_{dataset}_models/` directory.
+"""
+
 import torch
 import pickle
 from data_generators import data_loader_MNIST, data_loader_CIFAR10, data_loader_CIFAR100
