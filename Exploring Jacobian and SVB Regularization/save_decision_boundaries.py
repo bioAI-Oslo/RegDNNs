@@ -49,71 +49,101 @@ if __name__ == "__main__":
     models_CIFAR10 = {name: ModelInfo(name, "cifar10") for name in model_names}
 
     models_cifar10_with_names_0 = [
-        (models_CIFAR10[f"model_no_reg_0"].model, "Only Dropout Regularization"),
-        (models_CIFAR10[f"model_no_reg_no_dropout_0"].model, "No Regularization"),
-        (models_CIFAR10[f"model_l2_0"].model, "L2 Regularization"),
-        (models_CIFAR10[f"model_jacobi_0"].model, "Jacobian Regularization"),
         (
-            models_CIFAR10[f"model_jacobi_no_dropout_0"].model,
+            models_CIFAR10[f"model_no_reg_0"].model.to(device),
+            "Only Dropout Regularization",
+        ),
+        (
+            models_CIFAR10[f"model_no_reg_no_dropout_0"].model.to(device),
+            "No Regularization",
+        ),
+        (models_CIFAR10[f"model_l2_0"].model.to(device), "L2 Regularization"),
+        (models_CIFAR10[f"model_jacobi_0"].model.to(device), "Jacobian Regularization"),
+        (
+            models_CIFAR10[f"model_jacobi_no_dropout_0"].model.to(device),
             "Jacobian Regularization, No Dropout",
         ),
-        (models_CIFAR10[f"model_svb_0"].model, "SVB Regularization"),
+        (models_CIFAR10[f"model_svb_0"].model.to(device), "SVB Regularization"),
     ]
     models_cifar10_with_names_1 = [
-        (models_CIFAR10[f"model_no_reg_1"].model, "Only Dropout Regularization"),
-        (models_CIFAR10[f"model_no_reg_no_dropout_1"].model, "No Regularization"),
-        (models_CIFAR10[f"model_l2_1"].model, "L2 Regularization"),
-        (models_CIFAR10[f"model_jacobi_1"].model, "Jacobian Regularization"),
         (
-            models_CIFAR10[f"model_jacobi_no_dropout_1"].model,
+            models_CIFAR10[f"model_no_reg_1"].model.to(device),
+            "Only Dropout Regularization",
+        ),
+        (
+            models_CIFAR10[f"model_no_reg_no_dropout_1"].model.to(device),
+            "No Regularization",
+        ),
+        (models_CIFAR10[f"model_l2_1"].model.to(device), "L2 Regularization"),
+        (models_CIFAR10[f"model_jacobi_1"].model.to(device), "Jacobian Regularization"),
+        (
+            models_CIFAR10[f"model_jacobi_no_dropout_1"].model.to(device),
             "Jacobian Regularization, No Dropout",
         ),
-        (models_CIFAR10[f"model_svb_1"].model, "SVB Regularization"),
+        (models_CIFAR10[f"model_svb_1"].model.to(device), "SVB Regularization"),
     ]
     models_cifar10_with_names_2 = [
-        (models_CIFAR10[f"model_no_reg_2"].model, "Only Dropout Regularization"),
-        (models_CIFAR10[f"model_no_reg_no_dropout_2"].model, "No Regularization"),
-        (models_CIFAR10[f"model_l2_2"].model, "L2 Regularization"),
-        (models_CIFAR10[f"model_jacobi_2"].model, "Jacobian Regularization"),
         (
-            models_CIFAR10[f"model_jacobi_no_dropout_2"].model,
+            models_CIFAR10[f"model_no_reg_2"].model.to(device),
+            "Only Dropout Regularization",
+        ),
+        (
+            models_CIFAR10[f"model_no_reg_no_dropout_2"].model.to(device),
+            "No Regularization",
+        ),
+        (models_CIFAR10[f"model_l2_2"].model.to(device), "L2 Regularization"),
+        (models_CIFAR10[f"model_jacobi_2"].model.to(device), "Jacobian Regularization"),
+        (
+            models_CIFAR10[f"model_jacobi_no_dropout_2"].model.to(device),
             "Jacobian Regularization, No Dropout",
         ),
-        (models_CIFAR10[f"model_svb_2"].model, "SVB Regularization"),
+        (models_CIFAR10[f"model_svb_2"].model.to(device), "SVB Regularization"),
     ]
     models_cifar10_with_names_3 = [
-        (models_CIFAR10[f"model_no_reg_3"].model, "Only Dropout Regularization"),
-        (models_CIFAR10[f"model_no_reg_no_dropout_3"].model, "No Regularization"),
-        (models_CIFAR10[f"model_l2_3"].model, "L2 Regularization"),
-        (models_CIFAR10[f"model_jacobi_3"].model, "Jacobian Regularization"),
         (
-            models_CIFAR10[f"model_jacobi_no_dropout_3"].model,
+            models_CIFAR10[f"model_no_reg_3"].model.to(device),
+            "Only Dropout Regularization",
+        ),
+        (
+            models_CIFAR10[f"model_no_reg_no_dropout_3"].model.to(device),
+            "No Regularization",
+        ),
+        (models_CIFAR10[f"model_l2_3"].model.to(device), "L2 Regularization"),
+        (models_CIFAR10[f"model_jacobi_3"].model.to(device), "Jacobian Regularization"),
+        (
+            models_CIFAR10[f"model_jacobi_no_dropout_3"].model.to(device),
             "Jacobian Regularization, No Dropout",
         ),
-        (models_CIFAR10[f"model_svb_3"].model, "SVB Regularization"),
+        (models_CIFAR10[f"model_svb_3"].model.to(device), "SVB Regularization"),
     ]
     models_cifar10_with_names_4 = [
-        (models_CIFAR10[f"model_no_reg_4"].model, "Only Dropout Regularization"),
-        (models_CIFAR10[f"model_no_reg_no_dropout_4"].model, "No Regularization"),
-        (models_CIFAR10[f"model_l2_4"].model, "L2 Regularization"),
-        (models_CIFAR10[f"model_jacobi_4"].model, "Jacobian Regularization"),
         (
-            models_CIFAR10[f"model_jacobi_no_dropout_4"].model,
+            models_CIFAR10[f"model_no_reg_4"].model.to(device),
+            "Only Dropout Regularization",
+        ),
+        (
+            models_CIFAR10[f"model_no_reg_no_dropout_4"].model.to(device),
+            "No Regularization",
+        ),
+        (models_CIFAR10[f"model_l2_4"].model.to(device), "L2 Regularization"),
+        (models_CIFAR10[f"model_jacobi_4"].model.to(device), "Jacobian Regularization"),
+        (
+            models_CIFAR10[f"model_jacobi_no_dropout_4"].model.to(device),
             "Jacobian Regularization, No Dropout",
         ),
-        (models_CIFAR10[f"model_svb_4"].model, "SVB Regularization"),
+        (models_CIFAR10[f"model_svb_4"].model.to(device), "SVB Regularization"),
     ]
 
-    image_0 = get_random_img(test_loader_CIFAR10)
-    image_1 = get_random_img(test_loader_CIFAR10)
-    image_2 = get_random_img(test_loader_CIFAR10)
-    image_3 = get_random_img(test_loader_CIFAR10)
-    image_4 = get_random_img(test_loader_CIFAR10)
-    v1_0, v2_0 = generate_random_vectors(image_0)
-    v1_1, v2_1 = generate_random_vectors(image_1)
-    v1_2, v2_2 = generate_random_vectors(image_2)
-    v1_3, v2_3 = generate_random_vectors(image_3)
-    v1_4, v2_4 = generate_random_vectors(image_4)
+    image_0 = get_random_img(test_loader_CIFAR10).to(device)
+    image_1 = get_random_img(test_loader_CIFAR10).to(device)
+    image_2 = get_random_img(test_loader_CIFAR10).to(device)
+    image_3 = get_random_img(test_loader_CIFAR10).to(device)
+    image_4 = get_random_img(test_loader_CIFAR10).to(device)
+    v1_0, v2_0 = generate_random_vectors(image_0).to(device)
+    v1_1, v2_1 = generate_random_vectors(image_1).to(device)
+    v1_2, v2_2 = generate_random_vectors(image_2).to(device)
+    v1_3, v2_3 = generate_random_vectors(image_3).to(device)
+    v1_4, v2_4 = generate_random_vectors(image_4).to(device)
 
     for i in tqdm(range(5)):
         plot_decision_boundaries_for_multiple_models(
