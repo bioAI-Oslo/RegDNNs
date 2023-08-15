@@ -727,19 +727,21 @@ def plot_decision_boundaries_for_multiple_models(
         model.to(device)
         model.eval()
 
-        with torch.no_grad():
-            if dataset == "mnist":
-                output = (
-                    model(plane.view(-1, 1, 28, 28))
-                    .view(resolution, resolution, -1)
-                    .to(device)
-                )
-            elif dataset == "cifar10" or dataset == "cifar100":
-                output = (
-                    model(plane.view(-1, 3, 32, 32))
-                    .view(resolution, resolution, -1)
-                    .to(device)
-                )
+        num_chunks = 10  # This divides your data into 10 chunks. Adjust as needed.
+        chunks = torch.chunk(plane, num_chunks, dim=0)
+
+        outputs = []
+
+        for chunk in chunks:
+            with torch.no_grad():
+                if dataset == "mnist":
+                    chunk_output = model(chunk.view(-1, 1, 28, 28))
+                elif dataset == "cifar10" or dataset == "cifar100":
+                    chunk_output = model(chunk.view(-1, 3, 32, 32))
+
+                outputs.append(chunk_output)
+
+        output = torch.cat(outputs, dim=0).view(resolution, resolution, -1)
 
         probs = F.softmax(output, dim=-1)
         _, predictions = torch.max(probs, dim=-1)
