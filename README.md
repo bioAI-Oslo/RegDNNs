@@ -12,8 +12,9 @@ This project developed over time, and has three parts. Part one was a collaborat
     1. [Overview of Regularization Techniques](#overview-of-regularization-techniques)  
     2. [Overview of Visualization Techniques](#overview-of-visualization-techniques)  
 4. [Part Three: Exploring Jacobian and SVB Regularization](#part-three-exploring-jacobian-and-svb-regularization)  
-  
-  
+    1. [Takeaways and Further Work](#takeaways-and-further-work)   
+   
+
 ## Setup: Packages and Software
 I use two conda environments for the project. One for running the files under the folder *JAX* in part one of the project, and another for running all other files. This was due to some packages breaking when combined with the jax packages. For both conda environments I installed jupyter via:
 ```
@@ -111,19 +112,10 @@ Occlusion sensitivity is a method that involves systematically occluding differe
   
   
 ## Part Three: Exploring Jacobian and SVB Regularization
-After doing a lot of testing, I was ready to face the problem of generalization and robustness in models head on. For this part I train LeNet models on MNIST, DDNet models on CIFAR10 and ResNet18 models on CIFAR100. For MNIST and CIFAR10 I train models with dropout regularization and no, l2, jacobian and svb regularization. I also train models without any regularization, and with jacobian regularization without dropout. For the ResNet18 models I use ResNet18 from torchvision which comes without dropout, so I only train four models: no, l2, jacobian and svb regularization, all without dropout.
-
-I started by reproducing most of Hoffman 2019, and using the Singular Value Bounding regularization scheme from Jia 2019. I trained models for MNIST and CIFAR10 as described in Hoffman 2019. I also implemented decision boundary visualization, and introduced isotropic and anisotropic total variation as a measure of ruggedness in plots of decision boundaries. Lastly, I attack the models using FGSM and PGD attacks. The results and plots can be found in the results and visualization notebooks for each dataset.
-
-The key takeaways from my investigations were:
-## TODO
-
-If I were to continue working on the project, I would:
-* Train larger models on larger datasets (for example ImageNet)  
-* Try to control for overfitting (partly by the point above, finding models/datasets where the model cannot overfit everything to solve the problem)  
-* Investigate more the correlations between total variation measures and decision boundaries, and between decision boundaries and model performance  
-* Implement standard deviation around the graphs in the plots of model performance against adverserial attacks
-
+After doing a lot of testing, I was ready to face the problem of generalization and robustness in models head on. For this part I train LeNet models on MNIST, DDNet models on CIFAR10 and ResNet18 models on CIFAR100. For MNIST and CIFAR10 I train models with dropout regularization and no, l2, jacobian and svb regularization. I also train models without any regularization, and with jacobian regularization without dropout. For the ResNet18 models I use ResNet18 from torchvision which comes without dropout, so I only train four models: no, l2, jacobian and svb regularization, all without dropout.   
+   
+I started by reproducing most of Hoffman 2019, and using the Singular Value Bounding regularization scheme from Jia 2019. I trained models for MNIST and CIFAR10 as described in Hoffman 2019. I also implemented decision boundary visualization, and introduced isotropic and anisotropic total variation as a measure of ruggedness in plots of decision boundaries. Lastly, I attack the models using FGSM and PGD attacks. The results and plots can be found in the results and visualization notebooks for each dataset.   
+   
 The following is a more detailed description of the problem, and techniques used in this part in terms of implementation and what they show, as well as motivation for why I used them.   
    
 ### Problem Description   
@@ -146,3 +138,20 @@ FGSM perturbs an input image in the direction of the gradient of the loss with r
    
 ### Projected Gradient Descent (PGD) Attack   
 I have also implemented a white-box untargeted Projected Gradient Descent (PGD) attack, as used in Hoffman 2019 and outlined in Madry et al, 2017. PGD is an iterative version of FGSM that applies the same type of perturbation multiple times with small (alpha) step sizes. The input image is shifted along the gradient of the loss function with respect to the input data, but clipped to hold the perturbations within a certain limit (epsilon). This should produce images that look similar to humans, but still leading to a misclassification. According to Hoffman 2019, this is a stronger attack than the non-iterative FGSM. It is stronger because it can search for the optimal perturbation within the epsilon-range, instead of making a single-step one. In the visualization notebook I plot how the models do against the attack for different numbers of iterations with set alpha/epsilon values. It is relevant for the problem of generalization/robustness for the same reasons as FGSM.   
+   
+   
+### Takeaways and Further Work    
+
+The key takeaways from my investigations were:
+* Regularization does not effect model generalization (in terms of accuracy on test sets) that much, but for models implemented in the real world where small differences matter it is important.
+* When models are much larger than datasets (in the sense that they can overfit training data), regularization does not effect model robustness much.
+* When there is a balance between model and dataset size, regularization markedly increases model robustness, and contributes to models learning more robust representations.
+* Jacobian and SVB regularization, and regularization in general, has a positive effect on model learning in terms of building more robust representations.   
+   
+If I were to continue working on the project, I would:   
+* Train larger models on larger datasets (for example ImageNet), including learning how to do this  
+* Try to control for overfitting (partly by the point above, finding models/datasets where the model cannot overfit everything to solve the problem)  
+* Investigate more the correlations between total variation measures and decision boundaries, and between decision boundaries and model performance  
+* Implement standard deviation around the graphs in the plots of model performance against adverserial attacks   
+* Look into more adverserial attacks, implement them, and test them on my models   
+* Look into adverserial training (as in Hoffman 2019)   
