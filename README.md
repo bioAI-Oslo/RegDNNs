@@ -123,9 +123,10 @@ The problem my project has revolved around and that this part tries to make prog
      
 ### Jacobian Regularization   
 Jacobian regularization aims to make models more robust and better at generalizing by introducing a penalty term on the norm of the jacobian matrix of the model's outputs with respect to its inputs in the loss function. The jacobian matrix represents the first-order derivatives of the model. By penalizing the norm of the jacobian, the model is encouraged to have outputs that change linearly or sub-linearly with respect to small changes in the inputs. This can help in achieving more stable models with larger and smoother decision boundaries - showing that the model is more robust to small perturbations. However, calculating the jacobian matrix can be computationally expensive for complex models and large inputs. I solve this issue by approximating it, following an algorithm laid out in Hoffman 2019.  
-   
-### Singular Value Bounding Regularization   
-# TODO
+    
+### Singular Value Bounding Regularization    
+Singular value bounding regularization was developed based on an upper generalization error bound for nonlinear DNNs, which Jia et al showed can be achieved through equal singular values of weight matrices. This can be most easily achieved through orthogonal deep neural networks (all singular values are 1). Since this is expensive, Jia et al developed an algorithm to achieve approximate Orthogonal Deep Neural Networks. To do this, one has to first initialize the weights orthogonally. Then, every N SGD iterations one performs singular value decomposition on the weight matrices to seperate out the singular values, and then bound them in a small band around 1.   
+    
 ### Visualization of Decision Boundaries   
 The file plotting_tools.py contains functionality for plotting decision boundaries. These boundaries take a random subsample of the 784-dimensional input space (for MNIST) and plots a 2D plane of decision boundaries. Because of this it is somewhat limited, and will sometimes show the wrong prediction even though the model actually makes the right prediction. It is useful to study the decision boundaries because we can observe how the different regularizers behave. The ruggedness/shape of the decision boundaries tells us something about how the model has been trained and is performing. We expect models that generalize worse and/or that overfits the training data to have more irregular decision cell boundaries (overfitting makes complex decision boundaries to fit single training data). For these models, small perturbations such as those provided by the FGSM attack and other adverserial attacks might be detrimental to model generalization. For models that generalize better and that are regularized in a better way we expect more smooth and larger decision cell boundaries. This would signify robustness, as perturbations in the input data would not easily lead to a change in classification. It would also mean that the model has learnt representations of the high-dimensional image input space that is more clearly separated into regions, and less irregular. Intuitively, models with those properties are needed to solve the problem of instability to perturbations, especially in image classification. In image classification models are constantly faced with many challenges: variations in lighting, scale, viewpoint, background clutter/variation and intra-class variation (for example: some cars look very different from other cars). This makes robustness and generalizability essential features of such models.    
     
@@ -146,7 +147,9 @@ The key takeaways from my investigations were:
 * Regularization does not effect model generalization (in terms of accuracy on test sets) that much, but for models implemented in the real world where small differences matter it is important.
 * When models are much larger than datasets (in the sense that they can overfit training data), regularization does not effect model robustness much.
 * When there is a balance between model and dataset size, regularization markedly increases model robustness, and contributes to models learning more robust representations.
-* Jacobian and SVB regularization, and regularization in general, has a positive effect on model learning in terms of building more robust representations.   
+* Jacobian and SVB regularization, and regularization in general, has a positive effect on model learning in terms of building more robust representations.  
+* Visualizing decision boundaries is quite useful as an interpretability tool.   
+ 
    
 If I were to continue working on the project, I would:   
 * Train larger models on larger datasets (for example ImageNet), including learning how to do this  
