@@ -144,11 +144,12 @@ I have also implemented a white-box untargeted Projected Gradient Descent (PGD) 
 ### Takeaways and Further Work    
 
 The key takeaways from my investigations were:
-* Regularization does not effect model generalization (in terms of accuracy on test sets) that much, but for models implemented in the real world where small differences matter it is important.
+* Regularization does not effect model generalization (in terms of accuracy on test sets) significantly, but for models implemented in the real world where small differences matter it is important.
 * When models are much larger than datasets (in the sense that they can overfit training data), regularization does not effect model robustness much.
 * When there is a balance between model and dataset size, regularization markedly increases model robustness, and contributes to models learning more robust representations.
-* Jacobian and SVB regularization, and regularization in general, has a positive effect on model learning in terms of building more robust representations.  
-* Visualizing decision boundaries is quite useful as an interpretability tool.   
+* Based on the two points above, one could say that increasing models size is a type of regularization.
+* Jacobian and SVB regularization, and regularization in general, has a positive effect on model learning in terms of building more robust representations, making them more robust to adverserial attacks.  
+* Visualizing decision boundaries is useful as an interpretability tool, and the metric of total variation helps in interpreting them.   
  
    
 If I were to continue working on the project, I would:   
