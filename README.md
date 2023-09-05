@@ -1,6 +1,6 @@
 # Regularization of Neural Networks
 **Project**: Exploring soft and hard constraints in artificial neural networks  
-**Goal**: Understand how different regularization techniques promotes better generalization in ANNs  
+**Goal**: Understand how different regularization techniques promotes better generalization and robustness in DNNs  
   
 This project developed over time, and has three parts. Part one was a collaboration between me and [@Dalsaetra](https://www.github.com/Dalsaetra). All parts were done under supervision by [@Vemundss](https://www.github.com/Vemundss).
   
@@ -144,11 +144,12 @@ I have also implemented a white-box untargeted Projected Gradient Descent (PGD) 
 ### Takeaways and Further Work    
 
 The key takeaways from my investigations were:
-* Regularization does not effect model generalization (in terms of accuracy on test sets) that much, but for models implemented in the real world where small differences matter it is important.
+* Regularization does not effect model generalization (in terms of accuracy on test sets) significantly, but for models implemented in the real world where small differences matter it is important.
 * When models are much larger than datasets (in the sense that they can overfit training data), regularization does not effect model robustness much.
 * When there is a balance between model and dataset size, regularization markedly increases model robustness, and contributes to models learning more robust representations.
-* Jacobian and SVB regularization, and regularization in general, has a positive effect on model learning in terms of building more robust representations.  
-* Visualizing decision boundaries is quite useful as an interpretability tool.   
+* Based on the two points above, one could say that increasing models size is a type of regularization.
+* Jacobian and SVB regularization, and regularization in general, has a positive effect on model learning in terms of building more robust representations, making them more robust to adverserial attacks.  
+* Visualizing decision boundaries is useful as an interpretability tool, and the metric of total variation helps in interpreting them.   
  
    
 If I were to continue working on the project, I would:   
