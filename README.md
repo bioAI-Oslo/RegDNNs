@@ -158,4 +158,4 @@ If I were to continue working on the project, I would:
 * Investigate more the correlations between total variation measures and decision boundaries, and between decision boundaries and model performance  
 * Implement standard deviation around the graphs in the plots of model performance against adverserial attacks   
 * Look into more adverserial attacks, implement them, and test them on my models   
-* Look into adverserial training (as in Hoffman 2019)   
+* Look into adverserial training (as in Hoffman 2019)  
