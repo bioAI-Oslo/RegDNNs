@@ -1,6 +1,17 @@
 # Created by https://www.toptal.com/developers/gitignore/api/windows,python,jupyternotebooks,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,python,jupyternotebooks,visualstudiocode
 
+# manual
+data/
+trained_cifar10_models/
+trained_cifar100_models/
+trained_mnist_models/
+attacked_cifar10_models/
+attacked_cifar100_models/
+attacked_mnist_models/
+total_variation_cifar10_models/
+total_variation_cifar100_models/
+total_variation_mnist_models/
 
 # dependencies
 **/data
