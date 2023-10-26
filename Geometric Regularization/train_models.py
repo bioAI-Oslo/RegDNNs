@@ -87,7 +87,8 @@ if __name__ == "__main__":
         )
 
         # Save trained model
-        torch.save(model.state_dict(), f"./trained_{dataset}_models/{model_name}.pt")
+        torch.save(model.state_dict(), f"./trained_models/{model_name}.pt")
+        # torch.save(model.state_dict(), f"./trained_{dataset}_models/{model_name}.pt")
 
         # Save losses, reg_losses, epochs, train_accuracies, test_accuracies using pickle
         data = {
