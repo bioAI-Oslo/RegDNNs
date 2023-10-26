@@ -5,7 +5,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from collections import OrderedDict
 
-from model_classes import LeNet_MNIST, ResNet18
+from model_classes import LeNet, ResNet18
 
 
 def train(
@@ -206,26 +206,22 @@ def load_trained_model(model_name, dataset):
     # Initialize model based on provided model_name to get a similar model to prevent errors
     if dataset == "mnist":
         if model_name.startswith("model_no_reg"):
-            model = LeNet_MNIST()
+            model = LeNet()
         elif model_name.startswith("model_l2"):
-            model = LeNet_MNIST(l2_lmbd=0.0005)
+            model = LeNet(l2_lmbd=0.0005)
         elif model_name.startswith("model_svb"):
-            model = LeNet_MNIST(svb=True)
+            model = LeNet(svb=True)
         elif model_name.startswith("model_jacobi"):
-            model = LeNet_MNIST(jacobi=True)
-        elif model_name.startswith("model_all"):
-            model = LeNet_MNIST(l2_lmbd=0.0005, jacobi=True, svb=True)
+            model = LeNet(jacobi=True)
     elif dataset == "cifar10":
         if model_name.startswith("model_no_reg"):
-            model = DDNet()
+            model = LeNet()
         elif model_name.startswith("model_l2"):
-            model = DDNet(l2_lmbd=0.0005)
+            model = LeNet(l2_lmbd=0.0005)
         elif model_name.startswith("model_svb"):
-            model = DDNet(svb=True)
+            model = LeNet(svb=True)
         elif model_name.startswith("model_jacobi"):
-            model = DDNet(jacobi=True)
-        elif model_name.startswith("model_all"):
-            model = DDNet(l2_lmbd=0.0005, jacobi=True, svb=True)
+            model = LeNet(jacobi=True)
     elif dataset == "cifar100":
         if model_name.startswith("model_no_reg"):
             model = ResNet18()
@@ -235,8 +231,6 @@ def load_trained_model(model_name, dataset):
             model = ResNet18(svb=True)
         elif model_name.startswith("model_jacobi"):
             model = ResNet18(jacobi=True)
-        elif model_name.startswith("model_all"):
-            model = ResNet18(l2_lmbd=0.0005, jacobi=True, svb=True)
     else:
         print("Error: Dataset not implemented")
 
