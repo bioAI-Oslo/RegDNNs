@@ -67,7 +67,7 @@ if __name__ == "__main__":
     }
 
     # Number of epochs for training, 250/300 in Hoffman 2019 for MNIST/CIFAR10
-    n_epochs = 25
+    n_epochs = 10
 
     # Iterate through each model
     for model_name, model in models.items():
