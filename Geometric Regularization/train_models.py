@@ -98,5 +98,8 @@ if __name__ == "__main__":
             "test_accuracies": test_accuracies,
         }
 
-        with open(f"./trained_{dataset}_models/{model_name}_data.pkl", "wb") as f:
+        with open(f"./trained_models/{model_name}_data.pkl", "wb") as f:
             pickle.dump(data, f)
+
+# with open(f"./trained_{dataset}_models/{model_name}_data.pkl", "wb") as f:
+#           pickle.dump(data, f)
