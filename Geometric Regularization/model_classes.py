@@ -46,6 +46,8 @@ class LeNet(nn.Module):
         svb=False,
         svb_freq=600,
         svb_eps=0.05,
+        isometric=False,
+        isometric_lmbd=0.1,
         dataset="MNIST",
     ):
         super(LeNet, self).__init__()
@@ -97,6 +99,8 @@ class LeNet(nn.Module):
         self.svb = svb
         self.svb_freq = svb_freq
         self.svb_eps = svb_eps
+        self.isometric = isometric
+        self.isometric_lmbd = isometric_lmbd
 
         # Track training steps
         self.training_steps = 0
@@ -191,6 +195,12 @@ class LeNet(nn.Module):
             jacobi_loss = self.jacobi_lmbd * self.jacobian_regularizer(x)
             loss += jacobi_loss
             return loss, jacobi_loss
+
+        # Isometric regularization
+        if self.isometric:
+            isometric_loss = self.isometric_regularization_term(x)
+            loss += isometric_loss
+            return loss, isometric_loss
 
         return loss, loss
 

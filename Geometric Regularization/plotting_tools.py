@@ -9,8 +9,8 @@ import scipy.ndimage as ndi
 import torch.nn.functional as F
 from tqdm import tqdm
 
-from attack_tools import fgsm_attack_test, pgd_attack_test
-from tools import total_variation_isotropic
+#from attack_tools import fgsm_attack_test, pgd_attack_test
+#from tools import total_variation_isotropic
 
 
 def plot_results(

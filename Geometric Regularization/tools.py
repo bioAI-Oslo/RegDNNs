@@ -207,6 +207,8 @@ def load_trained_model(model_name, dataset):
     if dataset == "mnist":
         if model_name.startswith("model_no_reg"):
             model = LeNet()
+        elif model_name.startswith("model_dropout"):
+            model = LeNet(dropout_rate=0.5)
         elif model_name.startswith("model_l2"):
             model = LeNet(l2_lmbd=0.0005)
         elif model_name.startswith("model_svb"):
